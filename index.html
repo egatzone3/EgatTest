@@ -51,7 +51,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span>ประวัติ (<span id="historyBadgeCount">0</span>)</span>
+                    <span>ประวัติกลาง (<span id="historyBadgeCount">0</span>)</span>
                 </button>
             </div>
         </div>
@@ -707,7 +707,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
-                    <span>ประวัติ (<span id="historyBadgeCount">0</span>)</span>
+                    <span>ประวัติกลาง (<span id="historyBadgeCount">0</span>)</span>
                 `;
                 toggleBtn.classList.replace('text-gray-700', 'text-blue-700');
                 syncCloudData();
@@ -815,7 +815,7 @@
 
                 localStorage.setItem('weed_inspection_history', JSON.stringify(existingHistory));
                 updateHistoryBadge();
-                showModal('success', 'ส่งงานสำเร็จ!', `ส่งข้อมูล Tower ${tower} (${department}) ขึ้นคลาวด์เรียบร้อยแล้ว`);
+                showModal('success', 'ส่งงานสำเร็จ!', `ส่งข้อมูล Tower ${tower} (${department}) ขึ้นคลาวด์กลางเรียบร้อยแล้ว`);
                 
             } catch (error) {
                 console.error("Error saving document: ", error);
