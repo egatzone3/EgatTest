@@ -245,15 +245,15 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
-                    รายการงานตรวจรับทั้งหมด (Dashboard)
+                    รายการงานตรวจรับทั้งหมด (Dashboard กลาง)
                 </h2>
-                <p class="text-xs text-gray-500 mt-1">ข้อมูลที่ผู้รับเหมาส่งเข้ามาจากมือถือ จะปรากฏรวมกันที่นี่เพื่อให้คุณตรวจสอบ</p>
+                <p class="text-xs text-gray-500 mt-1">ข้อมูลจากมือถือผู้รับเหมาจะซิงค์มาแสดงที่นี่โดยอัตโนมัติ</p>
             </div>
             <button onclick="syncCloudData()" class="bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
-                รีเฟรชข้อมูล
+                รีเฟรชข้อมูลคลาวด์
             </button>
         </div>
 
@@ -395,7 +395,7 @@
             { tower: "059/1", lat: "6.506879027", lng: "101.6926326", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
             { tower: "059/2", lat: "6.504447675", lng: "101.694203", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
             { tower: "059/3", lat: "6.502326474", lng: "101.6955732", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
-            { tower: "059/4", lat: "6.49978088", lng: "101.69596", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "059/4", lng: "101.69596", lat: "6.49978088", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
             { tower: "060/1", lat: "6.496883272", lng: "101.6964003", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
             { tower: "060/2", lat: "6.494185568", lng: "101.6968103", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
             { tower: "060/3", lat: "6.491620146", lng: "101.6972002", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
@@ -456,7 +456,7 @@
             { tower: "077/2", lat: "6.420230625", lng: "101.7884665", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" }
         ];
 
-        // Organization Structure based on user data
+        // Organization Structure
         const organizationStructure = {
             "บสส.พัทลุง": [
                 { lineName: "115 kV HY1-PU", totalTowers: 283 },
@@ -504,7 +504,7 @@
         let uploadedPhotosCount = 0;
         let currentViewMode = 'form';
 
-        // Free JSONBin endpoint for multi-device cross-syncing between contractor and inspector
+        // Public cloud bin for cross-device syncing between contractor and supervisor
         const SYNC_BIN_URL = 'https://api.jsonbin.io/v3/b/65f8a02c66874043b8b15d2a';
         const SYNC_API_KEY = '$2a$10$7v5Qy8FwZ8uL8qZ8uL8qZeu8qZ8uL8qZ8uL8qZ8uL8qZ8uL8qZ8uL';
 
@@ -695,7 +695,7 @@
                     <span>กลับไปหน้าส่งงาน</span>
                 `;
                 toggleBtn.classList.replace('text-blue-700', 'text-gray-700');
-                loadHistoryData();
+                syncCloudData();
             } else {
                 currentViewMode = 'form';
                 historyView.classList.replace('block', 'hidden');
@@ -714,7 +714,7 @@
             }
         }
 
-        function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.6) {
+        function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.5) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
@@ -756,7 +756,7 @@
             const originalBtnText = saveBtn.innerText;
             
             saveBtn.disabled = true;
-            saveBtn.innerText = 'กำลังบีบอัดและส่งข้อมูลขึ้นระบบ...';
+            saveBtn.innerText = 'กำลังบีบอัดและส่งข้อมูลขึ้นคลาวด์...';
 
             try {
                 let photosData = {};
@@ -764,7 +764,7 @@
                     const fileInput = document.getElementById('photo' + i);
                     if (fileInput.files.length > 0) {
                         const file = fileInput.files[0];
-                        const base64Image = await compressImage(file, 800, 800, 0.6);
+                        const base64Image = await compressImage(file, 800, 800, 0.5);
                         photosData['photo' + i] = base64Image;
                     }
                 }
@@ -779,33 +779,47 @@
                     timestamp: new Date().toISOString()
                 };
 
-                let existingHistory = JSON.parse(localStorage.getItem('weed_inspection_history') || '[]');
-                existingHistory.unshift(newRecord);
-                
-                if (existingHistory.length > 50) existingHistory = existingHistory.slice(0, 50);
-
-                localStorage.setItem('weed_inspection_history', JSON.stringify(existingHistory));
-
-                // Sync to cloud so inspector can review from another device
+                // Fetch existing records from cloud first
+                let existingHistory = [];
                 try {
-                    await fetch(SYNC_BIN_URL, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Master-Key': SYNC_API_KEY
-                        },
-                        body: JSON.stringify({ records: existingHistory })
+                    const response = await fetch(SYNC_BIN_URL, {
+                        method: 'GET',
+                        headers: { 'X-Master-Key': SYNC_API_KEY }
                     });
-                } catch (syncErr) {
-                    console.log("Cloud sync queued.");
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data && data.record && Array.isArray(data.record.records)) {
+                            existingHistory = data.record.records;
+                        }
+                    }
+                } catch (e) {
+                    console.log("Could not fetch remote before save.");
                 }
 
+                existingHistory.unshift(newRecord);
+                if (existingHistory.length > 50) existingHistory = existingHistory.slice(0, 50);
+
+                // Save back to cloud
+                const updateRes = await fetch(SYNC_BIN_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': SYNC_API_KEY
+                    },
+                    body: JSON.stringify({ records: existingHistory })
+                });
+
+                if (!updateRes.ok) {
+                    throw new Error("Failed to sync with cloud bin");
+                }
+
+                localStorage.setItem('weed_inspection_history', JSON.stringify(existingHistory));
                 updateHistoryBadge();
-                showModal('success', 'ส่งงานสำเร็จ!', `ส่งข้อมูล Tower ${tower} (${department}) ให้ผู้ตรวจเรียบร้อยแล้ว`);
+                showModal('success', 'ส่งงานสำเร็จ!', `ส่งข้อมูล Tower ${tower} (${department}) ขึ้นคลาวด์เรียบร้อยแล้ว`);
                 
             } catch (error) {
                 console.error("Error saving document: ", error);
-                showModal('error', 'ส่งงานไม่สำเร็จ', 'เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ ลองใหม่อีกครั้ง');
+                showModal('error', 'ส่งงานไม่สำเร็จ', 'สัญญาณอินเทอร์เน็ตมีปัญหา หรือขนาดไฟล์รูปใหญ่เกินไป ลองใหม่อีกครั้ง');
             } finally {
                 saveBtn.innerText = originalBtnText;
                 saveBtn.disabled = false;
@@ -822,7 +836,7 @@
                 });
                 if (response.ok) {
                     const data = await response.json();
-                    if (data && data.record && data.record.records) {
+                    if (data && data.record && Array.isArray(data.record.records)) {
                         localStorage.setItem('weed_inspection_history', JSON.stringify(data.record.records));
                     }
                 }
@@ -901,11 +915,25 @@
             }
         }
 
-        function deleteRecord(id) {
-            if (confirm('คุณต้องการลบรายการตรวจรับนี้ออกจากระบบใช่หรือไม่?')) {
+        async function deleteRecord(id) {
+            if (confirm('คุณต้องการลบรายการตรวจรับนี้ออกจากระบบคลาวด์ใช่หรือไม่?')) {
                 let records = JSON.parse(localStorage.getItem('weed_inspection_history') || '[]');
                 records = records.filter(r => r.id !== id);
                 localStorage.setItem('weed_inspection_history', JSON.stringify(records));
+                
+                try {
+                    await fetch(SYNC_BIN_URL, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Master-Key': SYNC_API_KEY
+                        },
+                        body: JSON.stringify({ records: records })
+                    });
+                } catch (e) {
+                    console.log("Delete sync error.");
+                }
+
                 loadHistoryData();
                 updateHistoryBadge();
             }
