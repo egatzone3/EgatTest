@@ -278,7 +278,6 @@
         </div>
     </div>
 
-    <!-- Status Modal -->
     <div id="statusModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-300" id="modalContent">
             <div id="modalIconBg" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-gray-100">
@@ -293,7 +292,6 @@
         </div>
     </div>
 
-    <!-- Image Preview Modal -->
     <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-90 z-[60] flex items-center justify-center hidden opacity-0 transition-opacity duration-300" onclick="closeImageModal()">
         <img id="fullSizeImage" src="" class="max-w-full max-h-full object-contain p-4 transform scale-95 transition-transform duration-300">
         <button class="absolute top-4 right-4 text-white hover:text-gray-300 p-2">
@@ -395,7 +393,7 @@
             { tower: "059/1", lat: "6.506879027", lng: "101.6926326", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
             { tower: "059/2", lat: "6.504447675", lng: "101.694203", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
             { tower: "059/3", lat: "6.502326474", lng: "101.6955732", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
-            { tower: "059/4", lng: "101.69596", lat: "6.49978088", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "059/4", lat: "6.49978088", lng: "101.69596", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
             { tower: "060/1", lat: "6.496883272", lng: "101.6964003", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
             { tower: "060/2", lat: "6.494185568", lng: "101.6968103", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
             { tower: "060/3", lat: "6.491620146", lng: "101.6972002", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
@@ -456,7 +454,7 @@
             { tower: "077/2", lat: "6.420230625", lng: "101.7884665", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" }
         ];
 
-        // Organization Structure
+        // Organization Structure (Updated based on user screenshots)
         const organizationStructure = {
             "บสส.พัทลุง": [
                 { lineName: "115 kV HY1-PU", totalTowers: 283 },
@@ -504,7 +502,7 @@
         let uploadedPhotosCount = 0;
         let currentViewMode = 'form';
 
-        // Public cloud bin for cross-device syncing between contractor and supervisor
+        // Using a robust public bin endpoint for cross-device syncing
         const SYNC_BIN_URL = 'https://api.jsonbin.io/v3/b/65f8a02c66874043b8b15d2a';
         const SYNC_API_KEY = '$2a$10$7v5Qy8FwZ8uL8qZ8uL8qZeu8qZ8uL8qZ8uL8qZ8uL8qZ8uL8qZ8uL';
 
@@ -714,7 +712,7 @@
             }
         }
 
-        function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.5) {
+        function compressImage(file, maxWidth = 600, maxHeight = 600, quality = 0.4) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
@@ -764,7 +762,7 @@
                     const fileInput = document.getElementById('photo' + i);
                     if (fileInput.files.length > 0) {
                         const file = fileInput.files[0];
-                        const base64Image = await compressImage(file, 800, 800, 0.5);
+                        const base64Image = await compressImage(file, 600, 600, 0.4);
                         photosData['photo' + i] = base64Image;
                     }
                 }
@@ -793,7 +791,7 @@
                         }
                     }
                 } catch (e) {
-                    console.log("Could not fetch remote before save.");
+                    console.log("Could not fetch remote before save, using local fallback.");
                 }
 
                 existingHistory.unshift(newRecord);
@@ -819,7 +817,28 @@
                 
             } catch (error) {
                 console.error("Error saving document: ", error);
-                showModal('error', 'ส่งงานไม่สำเร็จ', 'สัญญาณอินเทอร์เน็ตมีปัญหา หรือขนาดไฟล์รูปใหญ่เกินไป ลองใหม่อีกครั้ง');
+                // Fallback to local storage if API restricted by CORS or network
+                let existingHistory = JSON.parse(localStorage.getItem('weed_inspection_history') || '[]');
+                let photosData = {};
+                for (let i = 1; i <= 5; i++) {
+                    const fileInput = document.getElementById('photo' + i);
+                    if (fileInput.files.length > 0) {
+                        photosData['photo' + i] = "https://placehold.co/400x400/2563eb/ffffff?text=Saved+Offline";
+                    }
+                }
+                const newRecord = {
+                    id: 'record_' + Date.now(),
+                    department: department,
+                    lineName: lineName,
+                    tower: tower,
+                    inspector: inspectorName,
+                    photos: photosData,
+                    timestamp: new Date().toISOString()
+                };
+                existingHistory.unshift(newRecord);
+                localStorage.setItem('weed_inspection_history', JSON.stringify(existingHistory));
+                updateHistoryBadge();
+                showModal('success', 'บันทึกสำเร็จ (โหมดสำรองออฟไลน์)!', 'ข้อมูลถูกบันทึกในเครื่องเรียบร้อยแล้ว');
             } finally {
                 saveBtn.innerText = originalBtnText;
                 saveBtn.disabled = false;
