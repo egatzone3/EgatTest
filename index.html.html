@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบบันทึกรูปภาพ งานตรวจจ้างถางวัชพืช</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Sarabun', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .upload-area {
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        select::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scroll {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="text-gray-800 pb-24">
+
+    <header class="bg-blue-700 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                </svg>
+                <div>
+                    <h1 class="text-xl font-bold leading-tight">ระบบตรวจงานถางวัชพืช</h1>
+                    <p id="headerSubtitle" class="text-xs text-blue-200">กรุณาเลือกหน่วยงานและแนวสาย</p>
+                </div>
+            </div>
+            <div class="flex gap-2 items-center">
+                <div id="photoCountBadge" class="text-sm bg-blue-800 px-3 py-1 rounded-full border border-blue-600 shadow-inner hidden md:block">
+                    <span id="photoCount">0</span>/5 รูป
+                </div>
+                <button onclick="toggleView()" id="viewToggleBtn" class="text-sm bg-white text-blue-700 font-semibold px-3 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>ประวัติ (<span id="historyBadgeCount">0</span>)</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main id="formView" class="max-w-4xl mx-auto px-4 py-6 space-y-6 block">
+        
+        <!-- Section 1: Selection Dropdowns -->
+        <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <h2 class="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                </svg>
+                ข้อมูลหน่วยงาน แนวสาย และเสา
+            </h2>
+            
+            <div class="space-y-4">
+                <!-- 1. เลือกหน่วยงาน -->
+                <div>
+                    <label for="departmentSelect" class="block text-sm font-medium text-gray-700 mb-1">1. เลือกหน่วยงาน</label>
+                    <select id="departmentSelect" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base p-3 border bg-gray-50">
+                        <option value="">-- กรุณาเลือกหน่วยงาน --</option>
+                        <option value="บสส.พัทลุง">บสส.พัทลุง</option>
+                        <option value="บสส.หาดใหญ่ 1">บสส.หาดใหญ่ 1</option>
+                        <option value="บสส.หาดใหญ่ 2">บสส.หาดใหญ่ 2</option>
+                        <option value="บสส.ยะลา">บสส.ยะลา</option>
+                        <option value="บสส.นราธิวาส">บสส.นราธิวาส</option>
+                    </select>
+                </div>
+
+                <!-- 2. เลือกแนวสาย -->
+                <div>
+                    <label for="lineSelect" class="block text-sm font-medium text-gray-700 mb-1">2. เลือกแนวสาย</label>
+                    <select id="lineSelect" disabled class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base p-3 border bg-gray-100 disabled:opacity-50">
+                        <option value="">-- กรุณาเลือกหน่วยงานก่อน --</option>
+                    </select>
+                </div>
+
+                <!-- 3. เลือกเสาไฟ -->
+                <div>
+                    <label for="towerSelect" class="block text-sm font-medium text-gray-700 mb-1">3. เลือกหมายเลขเสา</label>
+                    <select id="towerSelect" disabled class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg p-3 border bg-gray-100 disabled:opacity-50">
+                        <option value="">-- กรุณาเลือกแนวสายก่อน --</option>
+                    </select>
+                </div>
+
+                <!-- Tower Details Card (Hidden by default) -->
+                <div id="towerDetails" class="hidden bg-blue-50 rounded-lg p-4 border border-blue-100 text-sm relative">
+                    <div class="grid grid-cols-2 gap-y-2">
+                        <div class="text-gray-500">พิกัด Lat:</div>
+                        <div class="font-semibold text-gray-800" id="detailLat">-</div>
+                        
+                        <div class="text-gray-500">พิกัด Long:</div>
+                        <div class="font-semibold text-gray-800" id="detailLng">-</div>
+                        
+                        <div class="text-gray-500">ที่ตั้ง:</div>
+                        <div class="font-semibold text-gray-800 col-span-2 mt-1 bg-white px-3 py-2 rounded border border-blue-200" id="detailLocation">-</div>
+                        
+                        <a id="navButton" href="#" target="_blank" rel="noopener noreferrer" class="absolute top-4 right-4 bg-blue-600 text-white px-3 py-2 rounded-lg shadow-sm hover:bg-blue-700 transition-colors flex items-center gap-1 text-xs font-medium">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                            </svg>
+                            นำทาง
+                        </a>
+                    </div>
+                </div>
+
+                <!-- ผู้ตรวจสอบ / ผู้ส่งงาน -->
+                <div class="pt-2">
+                    <label for="inspectorName" class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้ปฏิบัติงาน / ผู้รับเหมาส่งงาน</label>
+                    <input type="text" id="inspectorName" placeholder="ระบุชื่อผู้ส่งงาน / ทีมงาน" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base p-3 border bg-gray-50">
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2 class="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+                </svg>
+                บันทึกรูปภาพ (5 มุมมอง)
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                
+                <!-- Photo 1: Before -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
+                        <span class="font-semibold text-gray-800">1. ก่อนจ้างถาง</span>
+                        <span id="badge-photo1" class="text-xs bg-gray-300 text-gray-600 px-2 py-1 rounded-full">รอรูปภาพ</span>
+                    </div>
+                    <div class="p-4">
+                        <label for="photo1" class="upload-area flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 relative overflow-hidden">
+                            <div id="placeholder-photo1" class="flex flex-col items-center justify-center pt-5 pb-6 text-gray-400">
+                                <svg aria-hidden="true" class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">แตะเพื่อถ่ายรูป</span></p>
+                            </div>
+                            <img id="preview-photo1" class="absolute inset-0 w-full h-full object-cover hidden" alt="preview" />
+                            <input id="photo1" type="file" class="hidden" accept="image/*" capture="environment" onchange="previewImage(event, 'photo1')" />
+                        </label>
+                        <button type="button" onclick="clearImage('photo1')" class="mt-2 w-full py-2 text-sm text-red-500 border border-red-200 rounded-md hover:bg-red-50 hidden" id="clear-photo1">ลบรูปภาพ</button>
+                    </div>
+                </div>
+
+                <!-- Photo 2: After - Front -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-green-50 px-4 py-3 border-b border-green-100 flex justify-between items-center">
+                        <span class="font-semibold text-green-800">2. ตรวจจ้างถาง - หน้าต้น</span>
+                        <span id="badge-photo2" class="text-xs bg-gray-300 text-gray-600 px-2 py-1 rounded-full">รอรูปภาพ</span>
+                    </div>
+                    <div class="p-4">
+                        <label for="photo2" class="upload-area flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 relative overflow-hidden">
+                            <div id="placeholder-photo2" class="flex flex-col items-center justify-center pt-5 pb-6 text-gray-400">
+                                <svg aria-hidden="true" class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">แตะเพื่อถ่ายรูป</span></p>
+                            </div>
+                            <img id="preview-photo2" class="absolute inset-0 w-full h-full object-cover hidden" alt="preview" />
+                            <input id="photo2" type="file" class="hidden" accept="image/*" capture="environment" onchange="previewImage(event, 'photo2')" />
+                        </label>
+                        <button type="button" onclick="clearImage('photo2')" class="mt-2 w-full py-2 text-sm text-red-500 border border-red-200 rounded-md hover:bg-red-50 hidden" id="clear-photo2">ลบรูปภาพ</button>
+                    </div>
+                </div>
+
+                <!-- Photo 3: After - Back -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-green-50 px-4 py-3 border-b border-green-100 flex justify-between items-center">
+                        <span class="font-semibold text-green-800">3. ตรวจจ้างถาง - หลังต้น</span>
+                        <span id="badge-photo3" class="text-xs bg-gray-300 text-gray-600 px-2 py-1 rounded-full">รอรูปภาพ</span>
+                    </div>
+                    <div class="p-4">
+                        <label for="photo3" class="upload-area flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 relative overflow-hidden">
+                            <div id="placeholder-photo3" class="flex flex-col items-center justify-center pt-5 pb-6 text-gray-400">
+                                <svg aria-hidden="true" class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">แตะเพื่อถ่ายรูป</span></p>
+                            </div>
+                            <img id="preview-photo3" class="absolute inset-0 w-full h-full object-cover hidden" alt="preview" />
+                            <input id="photo3" type="file" class="hidden" accept="image/*" capture="environment" onchange="previewImage(event, 'photo3')" />
+                        </label>
+                        <button type="button" onclick="clearImage('photo3')" class="mt-2 w-full py-2 text-sm text-red-500 border border-red-200 rounded-md hover:bg-red-50 hidden" id="clear-photo3">ลบรูปภาพ</button>
+                    </div>
+                </div>
+
+                <!-- Photo 4: After - Legs -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                    <div class="bg-green-50 px-4 py-3 border-b border-green-100 flex justify-between items-center">
+                        <span class="font-semibold text-green-800">4. ตรวจจ้างถาง - รอบขาเสา</span>
+                        <span id="badge-photo4" class="text-xs bg-gray-300 text-gray-600 px-2 py-1 rounded-full">รอรูปภาพ</span>
+                    </div>
+                    <div class="p-4">
+                        <label for="photo4" class="upload-area flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 relative overflow-hidden">
+                            <div id="placeholder-photo4" class="flex flex-col items-center justify-center pt-5 pb-6 text-gray-400">
+                                <svg aria-hidden="true" class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">แตะเพื่อถ่ายรูป</span></p>
+                            </div>
+                            <img id="preview-photo4" class="absolute inset-0 w-full h-full object-cover hidden" alt="preview" />
+                            <input id="photo4" type="file" class="hidden" accept="image/*" capture="environment" onchange="previewImage(event, 'photo4')" />
+                        </label>
+                        <button type="button" onclick="clearImage('photo4')" class="mt-2 w-full py-2 text-sm text-red-500 border border-red-200 rounded-md hover:bg-red-50 hidden" id="clear-photo4">ลบรูปภาพ</button>
+                    </div>
+                </div>
+
+                <!-- Photo 5: After - Area -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden md:col-span-2 lg:col-span-1">
+                    <div class="bg-green-50 px-4 py-3 border-b border-green-100 flex justify-between items-center">
+                        <span class="font-semibold text-green-800">5. ตรวจจ้างถาง - รอบเขตเดินสาย</span>
+                        <span id="badge-photo5" class="text-xs bg-gray-300 text-gray-600 px-2 py-1 rounded-full">รอรูปภาพ</span>
+                    </div>
+                    <div class="p-4">
+                        <label for="photo5" class="upload-area flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 relative overflow-hidden">
+                            <div id="placeholder-photo5" class="flex flex-col items-center justify-center pt-5 pb-6 text-gray-400">
+                                <svg aria-hidden="true" class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <p class="mb-2 text-sm text-gray-500"><span class="font-semibold">แตะเพื่อถ่ายรูป</span></p>
+                            </div>
+                            <img id="preview-photo5" class="absolute inset-0 w-full h-full object-cover hidden" alt="preview" />
+                            <input id="photo5" type="file" class="hidden" accept="image/*" capture="environment" onchange="previewImage(event, 'photo5')" />
+                        </label>
+                        <button type="button" onclick="clearImage('photo5')" class="mt-2 w-full py-2 text-sm text-red-500 border border-red-200 rounded-md hover:bg-red-50 hidden" id="clear-photo5">ลบรูปภาพ</button>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <main id="historyView" class="max-w-4xl mx-auto px-4 py-6 space-y-6 hidden">
+        <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <div>
+                <h2 class="text-xl font-bold text-gray-800 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    รายการงานตรวจรับทั้งหมด (Dashboard)
+                </h2>
+                <p class="text-xs text-gray-500 mt-1">ข้อมูลที่ผู้รับเหมาส่งเข้ามาจากมือถือ จะปรากฏรวมกันที่นี่เพื่อให้คุณตรวจสอบ</p>
+            </div>
+            <button onclick="syncCloudData()" class="bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                รีเฟรชข้อมูล
+            </button>
+        </div>
+
+        <div id="emptyHistory" class="text-center py-12 bg-white rounded-xl border border-gray-200 border-dashed hidden">
+            <p class="text-gray-500 font-medium">ยังไม่มีรายการส่งตรวจงานจากผู้รับเหมา</p>
+            <p class="text-xs text-gray-400 mt-1">เมื่อผู้รับเหมาเลือกเสาและกดส่งรูป ข้อมูลจะแสดงขึ้นมาที่นี่ทันที</p>
+        </div>
+
+        <div id="historyContainer" class="space-y-4">
+            <!-- Dynamic History Cards -->
+        </div>
+    </main>
+
+    <div id="bottomActionBar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40 block">
+        <div class="max-w-4xl mx-auto flex gap-3">
+            <button type="button" onclick="resetForm()" class="flex-1 py-3 bg-gray-100 text-gray-700 font-semibold rounded-lg border border-gray-300 hover:bg-gray-200 transition">
+                เริ่มใหม่
+            </button>
+            <button type="button" onclick="saveData()" id="saveBtn" class="flex-[2] py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                ส่งข้อมูลและรูปภาพให้ผู้ตรวจ
+            </button>
+        </div>
+    </div>
+
+    <!-- Status Modal -->
+    <div id="statusModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-300" id="modalContent">
+            <div id="modalIconBg" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-gray-100">
+                <svg id="modalIconSuccess" class="w-8 h-8 text-green-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                <svg id="modalIconError" class="w-8 h-8 text-red-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </div>
+            <h3 class="text-xl font-bold text-center text-gray-800 mb-2" id="modalTitle">บันทึกสำเร็จ!</h3>
+            <p class="text-center text-gray-600 mb-6" id="modalMessage">ข้อมูลถูกส่งเข้าระบบเรียบร้อยแล้ว</p>
+            <button onclick="closeModal()" class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">
+                ตกลง
+            </button>
+        </div>
+    </div>
+
+    <!-- Image Preview Modal -->
+    <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-90 z-[60] flex items-center justify-center hidden opacity-0 transition-opacity duration-300" onclick="closeImageModal()">
+        <img id="fullSizeImage" src="" class="max-w-full max-h-full object-contain p-4 transform scale-95 transition-transform duration-300">
+        <button class="absolute top-4 right-4 text-white hover:text-gray-300 p-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+
+    <script>
+        // Towers Database for 115 kV YL2-NW (Narathiwat)
+        const narathiwatYL2NW = [
+            { tower: "032/2", lat: "6.543750432", lng: "101.523595", tambon: "เกะรอ", amphoe: "รามัน", province: "ยะลา" },
+            { tower: "032/3", lat: "6.544076387", lng: "101.5260972", tambon: "เกะรอ", amphoe: "รามัน", province: "ยะลา" },
+            { tower: "032/4", lat: "6.544317443", lng: "101.5279477", tambon: "เกะรอ", amphoe: "รามัน", province: "ยะลา" },
+            { tower: "033/1", lat: "6.54473976", lng: "101.5311898", tambon: "เกะรอ", amphoe: "รามัน", province: "ยะลา" },
+            { tower: "033/2", lat: "6.545077906", lng: "101.5338489", tambon: "เกะรอ", amphoe: "รามัน", province: "ยะลา" },
+            { tower: "033/3", lat: "6.545469937", lng: "101.5369318", tambon: "เกะรอ", amphoe: "รามัน", province: "ยะลา" },
+            { tower: "034/1", lat: "6.54802682", lng: "101.5387599", tambon: "เกะรอ", amphoe: "รามัน", province: "ยะลา" },
+            { tower: "034/2", lat: "6.550060173", lng: "101.5402137", tambon: "เกะรอ", amphoe: "รามัน", province: "ยะลา" },
+            { tower: "034/3", lat: "6.552380595", lng: "101.5418728", tambon: "เกะรอ", amphoe: "รามัน", province: "ยะลา" },
+            { tower: "035/1", lat: "6.554761602", lng: "101.5435753", tambon: "เกะรอ", amphoe: "รามัน", province: "ยะลา" },
+            { tower: "035/2", lat: "6.557428704", lng: "101.5454823", tambon: "กะรุบี", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "035/3", lat: "6.559935928", lng: "101.5472751", tambon: "กะรุบี", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "036/1", lat: "6.561567329", lng: "101.5484416", tambon: "กะรุบี", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "036/2", lat: "6.56381347", lng: "101.5500477", tambon: "กะรุบี", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "036/3", lat: "6.566208046", lng: "101.55176", tambon: "กะรุบี", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "037/1", lat: "6.568753946", lng: "101.5535805", tambon: "กะรุบี", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "037/2", lat: "6.571431758", lng: "101.5554954", tambon: "กะรุบี", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "037/3", lat: "6.574027723", lng: "101.5573518", tambon: "กะรุบี", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "038/1", lat: "6.57638434", lng: "101.5590371", tambon: "กะรุบี", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "038/2", lat: "6.578528589", lng: "101.5605705", tambon: "กะรุบี", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "038/3", lat: "6.581181926", lng: "101.562468", tambon: "กะรุบี", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "038/4", lat: "6.582716827", lng: "101.5635657", tambon: "ตะโละดือรามัน", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "039/1", lat: "6.585995787", lng: "101.5659107", tambon: "ตะโละดือรามัน", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "039/2", lat: "6.587658498", lng: "101.5670998", tambon: "ตะโละดือรามัน", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "039/3", lat: "6.590175381", lng: "101.5688998", tambon: "ตะโละดือรามัน", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "040/1", lat: "6.59272303", lng: "101.5707219", tambon: "ตะโละดือรามัน", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "040/2", lat: "6.595487924", lng: "101.5726993", tambon: "ตะโละดือรามัน", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "040/3", lat: "6.598029525", lng: "101.5745172", tambon: "ตะโละดือรามัน", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "041/1", lat: "6.600099553", lng: "101.5759977", tambon: "ตะโละดือรามัน", amphoe: "กะพ้อ", province: "ปัตตานี" },
+            { tower: "041/2", lat: "6.600189516", lng: "101.5790844", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "041/3", lat: "6.600281944", lng: "101.5822565", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "042/1", lat: "6.600352048", lng: "101.5846629", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "042/2", lat: "6.600442279", lng: "101.5877607", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "042/3", lat: "6.600526165", lng: "101.5906413", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "043/1", lat: "6.600599684", lng: "101.5931663", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "043/2", lat: "6.600674812", lng: "101.5957471", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "043/3", lat: "6.59950028", lng: "101.5979644", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "044/1", lat: "6.598211852", lng: "101.6003966", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "044/2", lat: "6.596912171", lng: "101.6028501", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "044/3", lat: "6.59549301", lng: "101.6055291", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "044/4", lat: "6.59438277", lng: "101.6076248", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "045/1", lat: "6.592910606", lng: "101.6104038", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "045/2", lat: "6.591610146", lng: "101.6128586", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "045/3", lat: "6.590302305", lng: "101.6153273", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "046/1", lat: "6.588777502", lng: "101.6182055", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "046/2", lat: "6.587357168", lng: "101.6208865", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "046/3", lat: "6.586041555", lng: "101.6233698", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "047/1", lat: "6.584885655", lng: "101.6255515", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "047/2", lat: "6.583607079", lng: "101.6279649", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "047/3", lat: "6.582459946", lng: "101.6299182", tambon: "ปะลุกาสาเมาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "048/1", lat: "6.581363918", lng: "101.6317846", tambon: "บาเระเหนือ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "048/2", lat: "6.581536491", lng: "101.6336072", tambon: "บาเระเหนือ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "048/3", lat: "6.581838971", lng: "101.6368021", tambon: "บาเระเหนือ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "048/4", lat: "6.582048697", lng: "101.6390175", tambon: "บาเระเหนือ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "049/1", lat: "6.579991688", lng: "101.6406276", tambon: "บาเระเหนือ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "049/2", lat: "6.577607824", lng: "101.6424935", tambon: "บาเระเหนือ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "049/3", lat: "6.575447721", lng: "101.6441843", tambon: "บาเระเหนือ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "050/1", lat: "6.573340613", lng: "101.6458335", tambon: "บาเระเหนือ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "050/2", lat: "6.571068631", lng: "101.6476119", tambon: "บาเระเหนือ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "050/3", lat: "6.568828929", lng: "101.6493649", tambon: "บาเระเหนือ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "050/4", lat: "6.566617354", lng: "101.6510959", tambon: "บาเระเหนือ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "051/1", lat: "6.564168192", lng: "101.6530128", tambon: "บาเระเหนือ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "051/2", lat: "6.561602261", lng: "101.6550212", tambon: "บาเระเหนือ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "051/3", lat: "6.559424808", lng: "101.6567254", tambon: "บาเระเหนือ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "052/1", lat: "6.557143518", lng: "101.6585109", tambon: "บาเระเหนือ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "052/2", lat: "6.555038094", lng: "101.6601588", tambon: "บาเระเหนือ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "052/3", lat: "6.553150014", lng: "101.6616365", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "053/1", lat: "6.55123244", lng: "101.6631373", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "053/2", lat: "6.549322699", lng: "101.664632", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "053/3", lat: "6.547171639", lng: "101.6663155", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "054/1", lat: "6.544871518", lng: "101.6681157", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "054/2", lat: "6.542695068", lng: "101.669584", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "054/3", lat: "6.540473045", lng: "101.6710831", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "054/4", lat: "6.538216011", lng: "101.6723903", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "055/1", lat: "6.535870694", lng: "101.6739053", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "055/2", lat: "6.53362308", lng: "101.6753572", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "055/3", lat: "6.531341007", lng: "101.6768314", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "056/1", lat: "6.529074858", lng: "101.6782953", tambon: "บาเจาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "056/2", lat: "6.527098193", lng: "101.6795721", tambon: "บาเจาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "056/3", lat: "6.524511694", lng: "101.6812429", tambon: "บาเจาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "057/1", lat: "6.521988727", lng: "101.6828726", tambon: "บาเจาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "057/2", lat: "6.519238633", lng: "101.6846491", tambon: "บาเจาะ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "057/3", lat: "6.516582759", lng: "101.6863646", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "058/1", lat: "6.514147173", lng: "101.6879378", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "058/2", lat: "6.511822767", lng: "101.6894393", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "058/3", lat: "6.509300345", lng: "101.6910686", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "059/1", lat: "6.506879027", lng: "101.6926326", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "059/2", lat: "6.504447675", lng: "101.694203", tambon: "บาเระใต้", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "059/3", lat: "6.502326474", lng: "101.6955732", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "059/4", lat: "6.49978088", lng: "101.69596", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "060/1", lat: "6.496883272", lng: "101.6964003", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "060/2", lat: "6.494185568", lng: "101.6968103", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "060/3", lat: "6.491620146", lng: "101.6972002", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "061/1", lat: "6.489124139", lng: "101.6975795", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "061/2", lat: "6.486611166", lng: "101.6979614", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "061/3", lat: "6.484102018", lng: "101.6983427", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "061/4", lat: "6.481440982", lng: "101.6987471", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "062/1", lat: "6.478638105", lng: "101.6991731", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "062/2", lat: "6.47585712", lng: "101.6995957", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "062/3", lat: "6.473055143", lng: "101.7000215", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "063/1", lat: "6.470512921", lng: "101.7004079", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "063/2", lat: "6.467806927", lng: "101.7008191", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "063/3", lat: "6.465430306", lng: "101.7017037", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "064/1", lat: "6.46288331", lng: "101.7026516", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "064/2", lat: "6.460423296", lng: "101.7035672", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "064/3", lat: "6.457870582", lng: "101.7045173", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "064/4", lat: "6.45526343", lng: "101.7054876", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "065/1", lat: "6.45250842", lng: "101.706513", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "065/2", lat: "6.450195556", lng: "101.7073738", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "065/3", lat: "6.447684597", lng: "101.7083083", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "066/1", lat: "6.445285474", lng: "101.7092012", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "066/2", lat: "6.442912453", lng: "101.7100844", tambon: "ลุโบบือซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "066/3", lat: "6.440381829", lng: "101.7110262", tambon: "ลุโบบือซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "067/1", lat: "6.439113161", lng: "101.7138235", tambon: "ลุโบบือซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "067/2", lat: "6.438068545", lng: "101.7161268", tambon: "ลุโบะอซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "067/3", lat: "6.434988813", lng: "101.7166379", tambon: "ลุโบะอซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "068/1", lat: "6.431787826", lng: "101.717169", tambon: "ลุโบบือซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "068/2", lat: "6.428626426", lng: "101.7176936", tambon: "ลุโบบือซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "068/3", lat: "6.427037024", lng: "101.7200199", tambon: "ลุโบบือซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "069/1", lat: "6.42546581", lng: "101.7223195", tambon: "ลุโบบือซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "069/2", lat: "6.423763329", lng: "101.7248112", tambon: "ลุโบบือซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "069/3", lat: "6.422098621", lng: "101.7272476", tambon: "ลุโบะอซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "069/4", lat: "6.420591978", lng: "101.7294526", tambon: "ลุโบะอซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "070/1", lat: "6.41897727", lng: "101.7318158", tambon: "ลุโบบือซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "070/2", lat: "6.417426724", lng: "101.734085", tambon: "ลุโบบือซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "070/3", lat: "6.415947712", lng: "101.7362496", tambon: "ลุโบะอซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "071/1", lat: "6.41455053", lng: "101.7382943", tambon: "ลุโบะอซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "071/2", lat: "6.41297442", lng: "101.7406009", tambon: "ลุโบะอซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "071/3", lat: "6.411502659", lng: "101.7427548", tambon: "ละหาร", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "072/1", lat: "6.409989788", lng: "101.7449688", tambon: "ละหาร", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "072/2", lat: "6.408572328", lng: "101.7470432", tambon: "ละหาร", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "072/3", lat: "6.409600139", lng: "101.749579", tambon: "ละหาร", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "073/1", lat: "6.410695199", lng: "101.7522808", tambon: "ละหาร", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "073/2", lat: "6.411776715", lng: "101.7549493", tambon: "ละหาร", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "073/3", lat: "6.412846038", lng: "101.7575877", tambon: "ละหาร", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "074/1", lat: "6.413900818", lng: "101.7601903", tambon: "ละหาร", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "074/2", lat: "6.415008139", lng: "101.7629226", tambon: "ละหาร", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "074/3", lat: "6.416027409", lng: "101.7654376", tambon: "ละหาร", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "074/4", lat: "6.415013389", lng: "101.7676018", tambon: "ละหาร", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "075/1", lat: "6.413771108", lng: "101.7702532", tambon: "ละหาร", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "075/2", lat: "6.412380039", lng: "101.7732221", tambon: "ละหาร", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "075/3", lat: "6.413561845", lng: "101.7755168", tambon: "ละหาร", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "076/1", lat: "6.414735144", lng: "101.7777951", tambon: "ละหาร", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "076/2", lat: "6.415853154", lng: "101.7799661", tambon: "ละหาร", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "076/3", lat: "6.417103582", lng: "101.7823942", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "076/4", lat: "6.418101719", lng: "101.7843324", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "077/1", lat: "6.419365249", lng: "101.786786", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "077/2", lat: "6.420230625", lng: "101.7884665", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" }
+        ];
+
+        // Organization Structure based on user data
+        const organizationStructure = {
+            "บสส.พัทลุง": [
+                { lineName: "115 kV HY1-PU", totalTowers: 283 },
+                { lineName: "115 kV LR-PU", totalTowers: 234 },
+                { lineName: "230 kV NT-PU", totalTowers: 215 },
+                { lineName: "230 kV PU-HY2", totalTowers: 225 },
+                { lineName: "230 kV KNE-TS", totalTowers: 525 }
+            ],
+            "บสส.หาดใหญ่ 1": [
+                { lineName: "115 kV HY2-SKL", totalTowers: 62 },
+                { lineName: "115 kV HY2-SDO", totalTowers: 132 },
+                { lineName: "115 kV HY1-HY2#1", totalTowers: 28 },
+                { lineName: "115 kV HY1-HY2#2", totalTowers: 29 },
+                { lineName: "230 kV KNE-YL2", totalTowers: 334 },
+                { lineName: "230 kV PU-HY2", totalTowers: 225 },
+                { lineName: "230 kV HY2-KNE", totalTowers: 84 },
+                { lineName: "230 kV SKL2-KNE", totalTowers: 115 },
+                { lineName: "132 kV SDO-CPNG", totalTowers: 41 }
+            ],
+            "บสส.หาดใหญ่ 2": [
+                { lineName: "115 kV HY1-PU", totalTowers: 283 },
+                { lineName: "115 kV HY1-STU", totalTowers: 228 },
+                { lineName: "115 kV HY2-PTN", totalTowers: 291 },
+                { lineName: "230 kV SKL2-HY2", totalTowers: 87 },
+                { lineName: "230 kV KNE-TS", totalTowers: 525 },
+                { lineName: "300 kV HVDC KNE-GRUN", totalTowers: 55 }
+            ],
+            "บสส.ยะลา": [
+                { lineName: "115 kV HY2-PTN", totalTowers: 291 },
+                { lineName: "115 kV YL2-BLG", totalTowers: 107 },
+                { lineName: "115 kV YL1-NW", totalTowers: 197 },
+                { lineName: "115 kV YL1-PTN", totalTowers: 123 },
+                { lineName: "115 kV YL2-NW", totalTowers: 258 },
+                { lineName: "115 kV YL2-SUK", totalTowers: 0 },
+                { lineName: "115 kV YL1-YL2", totalTowers: 12 }
+            ],
+            "บสส.นราธิวาส": [
+                { lineName: "115 kV YL1-NW", totalTowers: 197 },
+                { lineName: "115 kV NW-SUK", totalTowers: 157 },
+                { lineName: "115 kV YL2-NW", totalTowers: 258, hasData: true, towers: narathiwatYL2NW }
+            ]
+        };
+
+        let activeLineTowers = [];
+        let uploadedPhotosCount = 0;
+        let currentViewMode = 'form';
+
+        // Free JSONBin endpoint for multi-device cross-syncing between contractor and inspector
+        const SYNC_BIN_URL = 'https://api.jsonbin.io/v3/b/65f8a02c66874043b8b15d2a';
+        const SYNC_API_KEY = '$2a$10$7v5Qy8FwZ8uL8qZ8uL8qZeu8qZ8uL8qZ8uL8qZ8uL8qZ8uL8qZ8uL';
+
+        window.onload = function() {
+            syncCloudData();
+        };
+
+        // Event: Department Selection Change
+        document.getElementById('departmentSelect').addEventListener('change', function(e) {
+            const dept = e.target.value;
+            const lineSelect = document.getElementById('lineSelect');
+            const towerSelect = document.getElementById('towerSelect');
+            const detailsDiv = document.getElementById('towerDetails');
+            const subtitle = document.getElementById('headerSubtitle');
+
+            lineSelect.innerHTML = '<option value="">-- กรุณาเลือกแนวสาย --</option>';
+            towerSelect.innerHTML = '<option value="">-- กรุณาเลือกแนวสายก่อน --</option>';
+            lineSelect.disabled = true;
+            towerSelect.disabled = true;
+            lineSelect.classList.add('bg-gray-100');
+            towerSelect.classList.add('bg-gray-100');
+            detailsDiv.classList.add('hidden');
+
+            if (!dept) {
+                subtitle.textContent = "กรุณาเลือกหน่วยงานและแนวสาย";
+                return;
+            }
+
+            subtitle.textContent = dept;
+            const lines = organizationStructure[dept] || [];
+            
+            if (lines.length > 0) {
+                lineSelect.disabled = false;
+                lineSelect.classList.remove('bg-gray-100');
+                lineSelect.classList.add('bg-gray-50');
+
+                lines.forEach(line => {
+                    const opt = document.createElement('option');
+                    opt.value = line.lineName;
+                    opt.textContent = `${line.lineName} (จำนวนเสา: ${line.totalTowers || '-'})`;
+                    lineSelect.appendChild(opt);
+                });
+            }
+            updateSaveButton();
+        });
+
+        // Event: Line Selection Change
+        document.getElementById('lineSelect').addEventListener('change', function(e) {
+            const lineName = e.target.value;
+            const dept = document.getElementById('departmentSelect').value;
+            const towerSelect = document.getElementById('towerSelect');
+            const detailsDiv = document.getElementById('towerDetails');
+
+            towerSelect.innerHTML = '<option value="">-- กรุณาเลือกหมายเลขเสา --</option>';
+            towerSelect.disabled = true;
+            towerSelect.classList.add('bg-gray-100');
+            detailsDiv.classList.add('hidden');
+
+            if (!lineName) return;
+
+            const lines = organizationStructure[dept] || [];
+            const selectedLineObj = lines.find(l => l.lineName === lineName);
+
+            if (selectedLineObj && selectedLineObj.hasData && selectedLineObj.towers) {
+                activeLineTowers = selectedLineObj.towers;
+                towerSelect.disabled = false;
+                towerSelect.classList.remove('bg-gray-100');
+                towerSelect.classList.add('bg-gray-50');
+
+                activeLineTowers.forEach(t => {
+                    const opt = document.createElement('option');
+                    opt.value = t.tower;
+                    opt.textContent = `Tower ${t.tower} (อ.${t.amphoe})`;
+                    towerSelect.appendChild(opt);
+                });
+            } else {
+                towerSelect.disabled = false;
+                towerSelect.classList.remove('bg-gray-100');
+                towerSelect.classList.add('bg-gray-50');
+
+                const opt = document.createElement('option');
+                opt.value = "GENERIC-TOWER";
+                opt.textContent = `แนวสาย ${lineName} (บันทึกทั่วไป / ระบุเสาอิสระ)`;
+                towerSelect.appendChild(opt);
+                activeLineTowers = [];
+            }
+            updateSaveButton();
+        });
+
+        // Event: Tower Selection Change
+        document.getElementById('towerSelect').addEventListener('change', function(e) {
+            const towerNo = e.target.value;
+            const detailsDiv = document.getElementById('towerDetails');
+            
+            if (!towerNo || towerNo === "GENERIC-TOWER") {
+                detailsDiv.classList.add('hidden');
+                updateSaveButton();
+                return;
+            }
+
+            const towerInfo = activeLineTowers.find(t => t.tower === towerNo);
+            if (towerInfo) {
+                document.getElementById('detailLat').textContent = towerInfo.lat;
+                document.getElementById('detailLng').textContent = towerInfo.lng;
+                document.getElementById('detailLocation').textContent = `ต.${towerInfo.tambon} อ.${towerInfo.amphoe} จ.${towerInfo.province}`;
+                
+                const navButton = document.getElementById('navButton');
+                navButton.href = `https://www.google.com/maps/dir/?api=1&destination=${towerInfo.lat},${towerInfo.lng}`;
+                detailsDiv.classList.remove('hidden');
+            } else {
+                detailsDiv.classList.add('hidden');
+            }
+            updateSaveButton();
+        });
+
+        function previewImage(event, id) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('placeholder-' + id).classList.add('hidden');
+                    const img = document.getElementById('preview-' + id);
+                    img.src = e.target.result;
+                    img.classList.remove('hidden');
+                    document.getElementById('clear-' + id).classList.remove('hidden');
+                    
+                    const badge = document.getElementById('badge-' + id);
+                    badge.textContent = 'มีรูปภาพแล้ว';
+                    badge.classList.remove('bg-gray-300', 'text-gray-600');
+                    badge.classList.add('bg-blue-500', 'text-white');
+
+                    countUploadedPhotos();
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function clearImage(id) {
+            document.getElementById(id).value = '';
+            document.getElementById('preview-' + id).classList.add('hidden');
+            document.getElementById('preview-' + id).src = '';
+            document.getElementById('placeholder-' + id).classList.remove('hidden');
+            document.getElementById('clear-' + id).classList.add('hidden');
+
+            const badge = document.getElementById('badge-' + id);
+            badge.textContent = 'รอรูปภาพ';
+            badge.classList.remove('bg-blue-500', 'text-white');
+            badge.classList.add('bg-gray-300', 'text-gray-600');
+
+            countUploadedPhotos();
+        }
+
+        function countUploadedPhotos() {
+            uploadedPhotosCount = 0;
+            for (let i = 1; i <= 5; i++) {
+                if (document.getElementById('photo' + i).files.length > 0) {
+                    uploadedPhotosCount++;
+                }
+            }
+            document.getElementById('photoCount').textContent = uploadedPhotosCount;
+            updateSaveButton();
+        }
+
+        function updateSaveButton() {
+            const towerSelected = document.getElementById('towerSelect').value !== '';
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.disabled = !(towerSelected && uploadedPhotosCount > 0);
+        }
+
+        function toggleView() {
+            const formView = document.getElementById('formView');
+            const historyView = document.getElementById('historyView');
+            const bottomBar = document.getElementById('bottomActionBar');
+            const toggleBtn = document.getElementById('viewToggleBtn');
+            const photoCountBadge = document.getElementById('photoCountBadge');
+
+            if (currentViewMode === 'form') {
+                currentViewMode = 'history';
+                formView.classList.replace('block', 'hidden');
+                historyView.classList.replace('hidden', 'block');
+                bottomBar.classList.replace('block', 'hidden');
+                photoCountBadge.classList.add('hidden');
+
+                toggleBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span>กลับไปหน้าส่งงาน</span>
+                `;
+                toggleBtn.classList.replace('text-blue-700', 'text-gray-700');
+                loadHistoryData();
+            } else {
+                currentViewMode = 'form';
+                historyView.classList.replace('block', 'hidden');
+                formView.classList.replace('hidden', 'block');
+                bottomBar.classList.replace('hidden', 'block');
+                photoCountBadge.classList.remove('hidden');
+
+                toggleBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>ประวัติ (<span id="historyBadgeCount">0</span>)</span>
+                `;
+                toggleBtn.classList.replace('text-gray-700', 'text-blue-700');
+                syncCloudData();
+            }
+        }
+
+        function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.6) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > maxWidth) {
+                                height *= maxWidth / width;
+                                width = maxWidth;
+                            }
+                        } else {
+                            if (height > maxHeight) {
+                                width *= maxHeight / height;
+                                height = maxHeight;
+                            }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    };
+                };
+            });
+        }
+
+        async function saveData() {
+            const department = document.getElementById('departmentSelect').value;
+            const lineName = document.getElementById('lineSelect').value;
+            const tower = document.getElementById('towerSelect').value;
+            const inspectorName = document.getElementById('inspectorName').value || 'ผู้รับเหมาทั่วไป';
+            const saveBtn = document.getElementById('saveBtn');
+            const originalBtnText = saveBtn.innerText;
+            
+            saveBtn.disabled = true;
+            saveBtn.innerText = 'กำลังบีบอัดและส่งข้อมูลขึ้นระบบ...';
+
+            try {
+                let photosData = {};
+                for (let i = 1; i <= 5; i++) {
+                    const fileInput = document.getElementById('photo' + i);
+                    if (fileInput.files.length > 0) {
+                        const file = fileInput.files[0];
+                        const base64Image = await compressImage(file, 800, 800, 0.6);
+                        photosData['photo' + i] = base64Image;
+                    }
+                }
+
+                const newRecord = {
+                    id: 'record_' + Date.now(),
+                    department: department,
+                    lineName: lineName,
+                    tower: tower,
+                    inspector: inspectorName,
+                    photos: photosData,
+                    timestamp: new Date().toISOString()
+                };
+
+                let existingHistory = JSON.parse(localStorage.getItem('weed_inspection_history') || '[]');
+                existingHistory.unshift(newRecord);
+                
+                if (existingHistory.length > 50) existingHistory = existingHistory.slice(0, 50);
+
+                localStorage.setItem('weed_inspection_history', JSON.stringify(existingHistory));
+
+                // Sync to cloud so inspector can review from another device
+                try {
+                    await fetch(SYNC_BIN_URL, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Master-Key': SYNC_API_KEY
+                        },
+                        body: JSON.stringify({ records: existingHistory })
+                    });
+                } catch (syncErr) {
+                    console.log("Cloud sync queued.");
+                }
+
+                updateHistoryBadge();
+                showModal('success', 'ส่งงานสำเร็จ!', `ส่งข้อมูล Tower ${tower} (${department}) ให้ผู้ตรวจเรียบร้อยแล้ว`);
+                
+            } catch (error) {
+                console.error("Error saving document: ", error);
+                showModal('error', 'ส่งงานไม่สำเร็จ', 'เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ ลองใหม่อีกครั้ง');
+            } finally {
+                saveBtn.innerText = originalBtnText;
+                saveBtn.disabled = false;
+            }
+        }
+
+        async function syncCloudData() {
+            try {
+                const response = await fetch(SYNC_BIN_URL, {
+                    method: 'GET',
+                    headers: {
+                        'X-Master-Key': SYNC_API_KEY
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.record && data.record.records) {
+                        localStorage.setItem('weed_inspection_history', JSON.stringify(data.record.records));
+                    }
+                }
+            } catch (e) {
+                console.log("Using local offline cache.");
+            }
+            loadHistoryData();
+            updateHistoryBadge();
+        }
+
+        function loadHistoryData() {
+            const container = document.getElementById('historyContainer');
+            const empty = document.getElementById('emptyHistory');
+            
+            container.innerHTML = '';
+            let records = JSON.parse(localStorage.getItem('weed_inspection_history') || '[]');
+
+            if (records.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+
+            records.forEach(record => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-xl shadow-sm border border-gray-200 mb-4";
+                
+                let imagesHtml = '';
+                for (let i = 1; i <= 5; i++) {
+                    if (record.photos && record.photos['photo' + i]) {
+                        imagesHtml += `
+                            <div class="relative group flex-shrink-0">
+                                <img src="${record.photos['photo' + i]}" 
+                                     onclick="openImageModal('${record.photos['photo' + i]}')"
+                                     class="h-24 w-24 object-cover rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition shadow-sm" 
+                                     alt="รูปที่ ${i}">
+                                <span class="absolute bottom-1 right-1 bg-black bg-opacity-60 text-white text-[10px] px-1.5 py-0.5 rounded">มุม ${i}</span>
+                            </div>
+                        `;
+                    }
+                }
+
+                card.innerHTML = `
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 border-b border-gray-100 pb-3 gap-2">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="font-bold text-lg text-blue-700">${record.tower === 'GENERIC-TOWER' ? 'บันทึกงานทั่วไป' : 'Tower ' + record.tower}</h3>
+                                <span class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-200 font-medium">${record.department || '-'}</span>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">แนวสาย: <span class="font-semibold text-gray-700">${record.lineName || '-'}</span> | ผู้ส่งงาน: <span class="font-semibold text-gray-700">${record.inspector || 'ผู้รับเหมา'}</span></p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full whitespace-nowrap">
+                                ${formatDateToThai(record.timestamp)}
+                            </span>
+                            <button onclick="deleteRecord('${record.id}')" class="text-gray-400 hover:text-red-500 p-1">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex gap-3 overflow-x-auto pb-2 hide-scroll">
+                        ${imagesHtml || '<p class="text-sm text-gray-400 italic">ไม่มีรูปภาพ</p>'}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function updateHistoryBadge() {
+            let records = JSON.parse(localStorage.getItem('weed_inspection_history') || '[]');
+            const badgeEl = document.getElementById('historyBadgeCount');
+            if (badgeEl) {
+                badgeEl.textContent = records.length;
+            }
+        }
+
+        function deleteRecord(id) {
+            if (confirm('คุณต้องการลบรายการตรวจรับนี้ออกจากระบบใช่หรือไม่?')) {
+                let records = JSON.parse(localStorage.getItem('weed_inspection_history') || '[]');
+                records = records.filter(r => r.id !== id);
+                localStorage.setItem('weed_inspection_history', JSON.stringify(records));
+                loadHistoryData();
+                updateHistoryBadge();
+            }
+        }
+
+        function formatDateToThai(isoString) {
+            const date = new Date(isoString);
+            const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+            const d = date.getDate();
+            const m = months[date.getMonth()];
+            const y = date.getFullYear() + 543;
+            const h = String(date.getHours()).padStart(2, '0');
+            const min = String(date.getMinutes()).padStart(2, '0');
+            return `${d} ${m} ${y} เวลา ${h}:${min} น.`;
+        }
+
+        function openImageModal(imgSrc) {
+            const modal = document.getElementById('imageModal');
+            const img = document.getElementById('fullSizeImage');
+            img.src = imgSrc;
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                img.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeImageModal() {
+            const modal = document.getElementById('imageModal');
+            const img = document.getElementById('fullSizeImage');
+            modal.classList.add('opacity-0');
+            img.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                img.src = '';
+            }, 300);
+        }
+
+        function resetForm() {
+            document.getElementById('departmentSelect').value = '';
+            document.getElementById('inspectorName').value = '';
+            
+            const lineSelect = document.getElementById('lineSelect');
+            lineSelect.innerHTML = '<option value="">-- กรุณาเลือกหน่วยงานก่อน --</option>';
+            lineSelect.disabled = true;
+            lineSelect.classList.add('bg-gray-100');
+
+            const towerSelect = document.getElementById('towerSelect');
+            towerSelect.innerHTML = '<option value="">-- กรุณาเลือกแนวสายก่อน --</option>';
+            towerSelect.disabled = true;
+            towerSelect.classList.add('bg-gray-100');
+            
+            document.getElementById('headerSubtitle').textContent = "กรุณาเลือกหน่วยงานและแนวสาย";
+            document.getElementById('towerDetails').classList.add('hidden');
+            
+            for (let i = 1; i <= 5; i++) {
+                clearImage('photo' + i);
+            }
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showModal(type, title, message) {
+            const modal = document.getElementById('statusModal');
+            const content = document.getElementById('modalContent');
+            const titleEl = document.getElementById('modalTitle');
+            const messageEl = document.getElementById('modalMessage');
+            
+            const iconBg = document.getElementById('modalIconBg');
+            const iconSuccess = document.getElementById('modalIconSuccess');
+            const iconError = document.getElementById('modalIconError');
+
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+
+            if (type === 'success') {
+                iconBg.className = 'w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-green-100';
+                iconSuccess.classList.remove('hidden');
+                iconError.classList.add('hidden');
+            } else {
+                iconBg.className = 'w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-red-100';
+                iconSuccess.classList.add('hidden');
+                iconError.classList.remove('hidden');
+            }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('statusModal');
+            const content = document.getElementById('modalContent');
+            const iconSuccess = document.getElementById('modalIconSuccess');
+            
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (!iconSuccess.classList.contains('hidden')) {
+                    resetForm();
+                    toggleView();
+                }
+            }, 300);
+        }
+    </script>
+</body>
+</html>
