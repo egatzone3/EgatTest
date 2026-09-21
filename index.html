@@ -303,7 +303,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB_SWCXmlSUb4GbE5vWxMTZLQaznPX2VEc",
@@ -319,10 +319,25 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // Safely sign in anonymously without crashing if Auth is not yet fully toggled in console
         signInAnonymously(auth).catch((error) => {
             console.warn("Anonymous auth info:", error.message);
         });
+
+        // Discord Webhook URLs
+        const DISCORD_WEBHOOK_CREATE = "https://discord.com/api/webhooks/1551514471153926205/HKFoA9kpF6RNIJjDYcnfwGTZ5PAzNMptNC6ghmzpBaROn5n9zw6r3eRa-0yUM_TUp-fz";
+        const DISCORD_WEBHOOK_DELETE = "https://discord.com/api/webhooks/1551515240217313350/IN8_w_qEuXy0LLc1CH5pSK6LobUlMuYpmBR0s2Uuts6ngGxliZsTa4k5f6zt1cZ4WRjS";
+
+        async function sendDiscordNotification(webhookUrl, message) {
+            try {
+                await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: message })
+                });
+            } catch (err) {
+                console.error("Discord notification error:", err);
+            }
+        }
 
         // Towers Database for 115 kV YL2-NW (Narathiwat)
         const narathiwatYL2NW = [
@@ -420,7 +435,7 @@
             { tower: "060/2", lat: "6.494185568", lng: "101.6968103", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
             { tower: "060/3", lat: "6.491620146", lng: "101.6972002", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
             { tower: "061/1", lat: "6.489124139", lng: "101.6975795", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
-            { tower: "061/2", lat: "6.486611166", lng: "101.6979614", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "061/2", lng: "101.6979614", lat: "6.486611166", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
             { tower: "061/3", lat: "6.484102018", lng: "101.6983427", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
             { tower: "061/4", lat: "6.481440982", lng: "101.6987471", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
             { tower: "062/1", lat: "6.478638105", lng: "101.6991731", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
@@ -796,6 +811,10 @@
 
                 await addDoc(collection(db, "inspections"), newRecord);
 
+                // Send Discord Notification for Creation
+                const discordMsg = `📢 **มีรายงานการส่งงานใหม่!**\n🏢 หน่วยงาน: **${department}**\n⚡ แนวสาย: **${lineName}**\n🗼 เสา: **${tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + tower}**\n👷 ผู้ปฏิบัติงาน: **${inspectorName}**\n🕒 เวลา: ${formatDateToThai(newRecord.timestamp)}`;
+                await sendDiscordNotification(DISCORD_WEBHOOK_CREATE, discordMsg);
+
                 showModal('success', 'ส่งงานสำเร็จ!', `ส่งข้อมูล Tower ${tower} (${department}) ขึ้น Firebase Cloud เรียบร้อยแล้ว`);
                 
             } catch (error) {
@@ -895,7 +914,6 @@
         }
 
         window.promptDeleteRecord = function(id) {
-            // สร้าง Custom Prompt สำหรับกรอกรหัสพนักงาน 6 หลัก
             const modalHtml = `
                 <div id="deleteAuthModal" class="fixed inset-0 bg-black bg-opacity-50 z-[70] flex items-center justify-center">
                     <div class="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
@@ -928,6 +946,10 @@
                 return;
             }
 
+            // Find record details before deleting for discord notification
+            let records = JSON.parse(localStorage.getItem('weed_inspection_firebase_cache') || '[]');
+            const recordToDelete = records.find(r => r.id === id);
+
             closeDeleteModal();
 
             try {
@@ -936,12 +958,18 @@
                 console.log("Error deleting from Firebase:", e);
             }
 
-            let records = JSON.parse(localStorage.getItem('weed_inspection_firebase_cache') || '[]');
             records = records.filter(r => r.id !== id);
             localStorage.setItem('weed_inspection_firebase_cache', JSON.stringify(records));
             
             loadHistoryData();
             updateHistoryBadge();
+
+            // Send Discord Notification for Deletion
+            if (recordToDelete) {
+                const deleteMsg = `🗑️ **มีการลบข้อมูลรายงานตรวจงาน!**\n🏢 หน่วยงาน: **${recordToDelete.department}**\n⚡ แนวสาย: **${recordToDelete.lineName}**\n🗼 เสา: **${recordToDelete.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + recordToDelete.tower}**\n👤 ผู้ดำเนินการลบ (รหัสพนักงาน): **${empId}**`;
+                await sendDiscordNotification(DISCORD_WEBHOOK_DELETE, deleteMsg);
+            }
+
             showModal('success', 'ลบสำเร็จ', `ลบรายการเรียบร้อยแล้ว (โดยรหัสพนักงาน: ${empId})`);
         }
 
