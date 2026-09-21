@@ -18,9 +18,6 @@
             border-color: #3b82f6;
             background-color: #eff6ff;
         }
-        select::-webkit-scrollbar {
-            display: none;
-        }
         .hide-scroll::-webkit-scrollbar {
             display: none;
         }
@@ -59,7 +56,7 @@
 
     <main id="formView" class="max-w-4xl mx-auto px-4 py-6 space-y-6 block">
         
-        <!-- Section 1: Selection Dropdowns -->
+        <!-- Selection Dropdowns -->
         <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
             <h2 class="text-lg font-bold text-gray-700 mb-4 flex items-center gap-2">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
@@ -98,7 +95,7 @@
                     </select>
                 </div>
 
-                <!-- Tower Details Card (Hidden by default) -->
+                <!-- Tower Details Card -->
                 <div id="towerDetails" class="hidden bg-blue-50 rounded-lg p-4 border border-blue-100 text-sm relative">
                     <div class="grid grid-cols-2 gap-y-2">
                         <div class="text-gray-500">พิกัด Lat:</div>
@@ -120,7 +117,7 @@
                     </div>
                 </div>
 
-                <!-- ผู้ตรวจสอบ / ผู้ส่งงาน -->
+                <!-- ผู้ตรวจสอบ -->
                 <div class="pt-2">
                     <label for="inspectorName" class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้ปฏิบัติงาน / ผู้รับเหมาส่งงาน</label>
                     <input type="text" id="inspectorName" placeholder="ระบุชื่อผู้ส่งงาน / ทีมงาน" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base p-3 border bg-gray-50">
@@ -245,9 +242,9 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
-                    รายการงานตรวจรับทั้งหมด (Dashboard กลาง)
+                    รายการงานตรวจรับทั้งหมด (Firebase Cloud)
                 </h2>
-                <p class="text-xs text-gray-500 mt-1">ข้อมูลจากมือถือผู้รับเหมาจะซิงค์มาแสดงที่นี่โดยอัตโนมัติ</p>
+                <p class="text-xs text-gray-500 mt-1">ข้อมูลและรูปภาพจากผู้รับเหมาจะซิงค์มาแสดงที่นี่โดยอัตโนมัติ</p>
             </div>
             <button onclick="syncCloudData()" class="bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -278,6 +275,7 @@
         </div>
     </div>
 
+    <!-- Status Modal -->
     <div id="statusModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
         <div class="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl transform scale-95 transition-transform duration-300" id="modalContent">
             <div id="modalIconBg" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-gray-100">
@@ -292,6 +290,7 @@
         </div>
     </div>
 
+    <!-- Image Modal Viewer -->
     <div id="imageModal" class="fixed inset-0 bg-black bg-opacity-90 z-[60] flex items-center justify-center hidden opacity-0 transition-opacity duration-300" onclick="closeImageModal()">
         <img id="fullSizeImage" src="" class="max-w-full max-h-full object-contain p-4 transform scale-95 transition-transform duration-300">
         <button class="absolute top-4 right-4 text-white hover:text-gray-300 p-2">
@@ -301,7 +300,30 @@
         </button>
     </div>
 
-    <script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_SWCXmlSUb4GbE5vWxMTZLQaznPX2VEc",
+            authDomain: "weed-srod3.firebaseapp.com",
+            projectId: "weed-srod3",
+            storageBucket: "weed-srod3.firebasestorage.app",
+            messagingSenderId: "1024562203345",
+            appId: "1:1024562203345:web:3e6282dd955c7b17ca53f0",
+            measurementId: "G-W7W1JRVGPF"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // Safely sign in anonymously without crashing if Auth is not yet fully toggled in console
+        signInAnonymously(auth).catch((error) => {
+            console.warn("Anonymous auth info:", error.message);
+        });
+
         // Towers Database for 115 kV YL2-NW (Narathiwat)
         const narathiwatYL2NW = [
             { tower: "032/2", lat: "6.543750432", lng: "101.523595", tambon: "เกะรอ", amphoe: "รามัน", province: "ยะลา" },
@@ -454,7 +476,7 @@
             { tower: "077/2", lat: "6.420230625", lng: "101.7884665", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" }
         ];
 
-        // Organization Structure (Updated based on user screenshots)
+        // Organization Structure
         const organizationStructure = {
             "บสส.พัทลุง": [
                 { lineName: "115 kV HY1-PU", totalTowers: 283 },
@@ -501,10 +523,6 @@
         let activeLineTowers = [];
         let uploadedPhotosCount = 0;
         let currentViewMode = 'form';
-
-        // Using a robust public bin endpoint for cross-device syncing
-        const SYNC_BIN_URL = 'https://api.jsonbin.io/v3/b/65f8a02c66874043b8b15d2a';
-        const SYNC_API_KEY = '$2a$10$7v5Qy8FwZ8uL8qZ8uL8qZeu8qZ8uL8qZ8uL8qZ8uL8qZ8uL8qZ8uL';
 
         window.onload = function() {
             syncCloudData();
@@ -618,7 +636,7 @@
             updateSaveButton();
         });
 
-        function previewImage(event, id) {
+        window.previewImage = function(event, id) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
@@ -640,7 +658,7 @@
             }
         }
 
-        function clearImage(id) {
+        window.clearImage = function(id) {
             document.getElementById(id).value = '';
             document.getElementById('preview-' + id).classList.add('hidden');
             document.getElementById('preview-' + id).src = '';
@@ -672,7 +690,7 @@
             saveBtn.disabled = !(towerSelected && uploadedPhotosCount > 0);
         }
 
-        function toggleView() {
+        window.toggleView = function() {
             const formView = document.getElementById('formView');
             const historyView = document.getElementById('historyView');
             const bottomBar = document.getElementById('bottomActionBar');
@@ -712,7 +730,7 @@
             }
         }
 
-        function compressImage(file, maxWidth = 600, maxHeight = 600, quality = 0.4) {
+        function compressImage(file, maxWidth = 500, maxHeight = 500, quality = 0.35) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
@@ -745,7 +763,7 @@
             });
         }
 
-        async function saveData() {
+        window.saveData = async function() {
             const department = document.getElementById('departmentSelect').value;
             const lineName = document.getElementById('lineSelect').value;
             const tower = document.getElementById('towerSelect').value;
@@ -754,7 +772,7 @@
             const originalBtnText = saveBtn.innerText;
             
             saveBtn.disabled = true;
-            saveBtn.innerText = 'กำลังบีบอัดและส่งข้อมูลขึ้นคลาวด์...';
+            saveBtn.innerText = 'กำลังบีบอัดและส่งข้อมูลขึ้น Firebase...';
 
             try {
                 let photosData = {};
@@ -762,13 +780,12 @@
                     const fileInput = document.getElementById('photo' + i);
                     if (fileInput.files.length > 0) {
                         const file = fileInput.files[0];
-                        const base64Image = await compressImage(file, 600, 600, 0.4);
+                        const base64Image = await compressImage(file, 500, 500, 0.35);
                         photosData['photo' + i] = base64Image;
                     }
                 }
 
                 const newRecord = {
-                    id: 'record_' + Date.now(),
                     department: department,
                     lineName: lineName,
                     tower: tower,
@@ -777,93 +794,36 @@
                     timestamp: new Date().toISOString()
                 };
 
-                // Fetch existing records from cloud first
-                let existingHistory = [];
-                try {
-                    const response = await fetch(SYNC_BIN_URL, {
-                        method: 'GET',
-                        headers: { 'X-Master-Key': SYNC_API_KEY }
-                    });
-                    if (response.ok) {
-                        const data = await response.json();
-                        if (data && data.record && Array.isArray(data.record.records)) {
-                            existingHistory = data.record.records;
-                        }
-                    }
-                } catch (e) {
-                    console.log("Could not fetch remote before save, using local fallback.");
-                }
+                await addDoc(collection(db, "inspections"), newRecord);
 
-                existingHistory.unshift(newRecord);
-                if (existingHistory.length > 50) existingHistory = existingHistory.slice(0, 50);
-
-                // Save back to cloud
-                const updateRes = await fetch(SYNC_BIN_URL, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': SYNC_API_KEY
-                    },
-                    body: JSON.stringify({ records: existingHistory })
-                });
-
-                if (!updateRes.ok) {
-                    throw new Error("Failed to sync with cloud bin");
-                }
-
-                localStorage.setItem('weed_inspection_history', JSON.stringify(existingHistory));
-                updateHistoryBadge();
-                showModal('success', 'ส่งงานสำเร็จ!', `ส่งข้อมูล Tower ${tower} (${department}) ขึ้นคลาวด์กลางเรียบร้อยแล้ว`);
+                showModal('success', 'ส่งงานสำเร็จ!', `ส่งข้อมูล Tower ${tower} (${department}) ขึ้น Firebase Cloud เรียบร้อยแล้ว`);
                 
             } catch (error) {
-                console.error("Error saving document: ", error);
-                // Fallback to local storage if API restricted by CORS or network
-                let existingHistory = JSON.parse(localStorage.getItem('weed_inspection_history') || '[]');
-                let photosData = {};
-                for (let i = 1; i <= 5; i++) {
-                    const fileInput = document.getElementById('photo' + i);
-                    if (fileInput.files.length > 0) {
-                        photosData['photo' + i] = "https://placehold.co/400x400/2563eb/ffffff?text=Saved+Offline";
-                    }
-                }
-                const newRecord = {
-                    id: 'record_' + Date.now(),
-                    department: department,
-                    lineName: lineName,
-                    tower: tower,
-                    inspector: inspectorName,
-                    photos: photosData,
-                    timestamp: new Date().toISOString()
-                };
-                existingHistory.unshift(newRecord);
-                localStorage.setItem('weed_inspection_history', JSON.stringify(existingHistory));
-                updateHistoryBadge();
-                showModal('success', 'บันทึกสำเร็จ (โหมดสำรองออฟไลน์)!', 'ข้อมูลถูกบันทึกในเครื่องเรียบร้อยแล้ว');
+                console.error("Error saving document to Firebase: ", error);
+                showModal('error', 'ส่งงานไม่สำเร็จ', 'สัญญาณอินเทอร์เน็ตมีปัญหา หรือขนาดไฟล์รูปใหญ่เกินไป ลองใหม่อีกครั้ง');
             } finally {
                 saveBtn.innerText = originalBtnText;
                 saveBtn.disabled = false;
             }
         }
 
-        async function syncCloudData() {
+        window.syncCloudData = async function() {
             try {
-                const response = await fetch(SYNC_BIN_URL, {
-                    method: 'GET',
-                    headers: {
-                        'X-Master-Key': SYNC_API_KEY
-                    }
+                const querySnapshot = await getDocs(collection(db, "inspections"));
+                let records = [];
+                querySnapshot.forEach((docSnap) => {
+                    records.push({ id: docSnap.id, ...docSnap.data() });
                 });
-                if (response.ok) {
-                    const data = await response.json();
-                    if (data && data.record && Array.isArray(data.record.records)) {
-                        localStorage.setItem('weed_inspection_history', JSON.stringify(data.record.records));
-                    }
-                }
+
+                records.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                localStorage.setItem('weed_inspection_firebase_cache', JSON.stringify(records));
+                loadHistoryData();
+                updateHistoryBadge();
             } catch (e) {
-                console.log("Using local offline cache.");
+                console.log("Using cached offline records due to fetch error.");
+                loadHistoryData();
+                updateHistoryBadge();
             }
-            loadHistoryData();
-            updateHistoryBadge();
         }
 
         function loadHistoryData() {
@@ -871,7 +831,7 @@
             const empty = document.getElementById('emptyHistory');
             
             container.innerHTML = '';
-            let records = JSON.parse(localStorage.getItem('weed_inspection_history') || '[]');
+            let records = JSON.parse(localStorage.getItem('weed_inspection_firebase_cache') || '[]');
 
             if (records.length === 0) {
                 empty.classList.remove('hidden');
@@ -892,7 +852,7 @@
                                      onclick="openImageModal('${record.photos['photo' + i]}')"
                                      class="h-24 w-24 object-cover rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition shadow-sm" 
                                      alt="รูปที่ ${i}">
-                                <span class="absolute bottom-1 right-1 bg-black bg-opacity-60 text-white text-[10px] px-1.5 py-0.5 rounded">มุม ${i}</span>
+                                <span class="absolute bottom-1 right-1 bg-black bg-opacity-65 text-white text-[10px] px-1.5 py-0.5 rounded">มุม ${i}</span>
                             </div>
                         `;
                     }
@@ -927,38 +887,32 @@
         }
 
         function updateHistoryBadge() {
-            let records = JSON.parse(localStorage.getItem('weed_inspection_history') || '[]');
+            let records = JSON.parse(localStorage.getItem('weed_inspection_firebase_cache') || '[]');
             const badgeEl = document.getElementById('historyBadgeCount');
             if (badgeEl) {
                 badgeEl.textContent = records.length;
             }
         }
 
-        async function deleteRecord(id) {
-            if (confirm('คุณต้องการลบรายการตรวจรับนี้ออกจากระบบคลาวด์ใช่หรือไม่?')) {
-                let records = JSON.parse(localStorage.getItem('weed_inspection_history') || '[]');
-                records = records.filter(r => r.id !== id);
-                localStorage.setItem('weed_inspection_history', JSON.stringify(records));
-                
+        window.deleteRecord = async function(id) {
+            if (confirm('คุณต้องการลบรายการตรวจรับนี้ออกจากฐานข้อมูล Firebase ใช่หรือไม่?')) {
                 try {
-                    await fetch(SYNC_BIN_URL, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Master-Key': SYNC_API_KEY
-                        },
-                        body: JSON.stringify({ records: records })
-                    });
+                    await deleteDoc(doc(db, "inspections", id));
                 } catch (e) {
-                    console.log("Delete sync error.");
+                    console.log("Error deleting from Firebase:", e);
                 }
 
+                let records = JSON.parse(localStorage.getItem('weed_inspection_firebase_cache') || '[]');
+                records = records.filter(r => r.id !== id);
+                localStorage.setItem('weed_inspection_firebase_cache', JSON.stringify(records));
+                
                 loadHistoryData();
                 updateHistoryBadge();
             }
         }
 
         function formatDateToThai(isoString) {
+            if (!isoString) return '-';
             const date = new Date(isoString);
             const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
             const d = date.getDate();
@@ -969,7 +923,7 @@
             return `${d} ${m} ${y} เวลา ${h}:${min} น.`;
         }
 
-        function openImageModal(imgSrc) {
+        window.openImageModal = function(imgSrc) {
             const modal = document.getElementById('imageModal');
             const img = document.getElementById('fullSizeImage');
             img.src = imgSrc;
@@ -980,7 +934,7 @@
             }, 10);
         }
 
-        function closeImageModal() {
+        window.closeImageModal = function() {
             const modal = document.getElementById('imageModal');
             const img = document.getElementById('fullSizeImage');
             modal.classList.add('opacity-0');
@@ -991,7 +945,7 @@
             }, 300);
         }
 
-        function resetForm() {
+        window.resetForm = function() {
             document.getElementById('departmentSelect').value = '';
             document.getElementById('inspectorName').value = '';
             
@@ -1044,7 +998,7 @@
             }, 10);
         }
 
-        function closeModal() {
+        window.closeModal = function() {
             const modal = document.getElementById('statusModal');
             const content = document.getElementById('modalContent');
             const iconSuccess = document.getElementById('modalIconSuccess');
