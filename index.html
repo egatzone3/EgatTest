@@ -32,9 +32,11 @@
     <header class="bg-blue-700 text-white shadow-md sticky top-0 z-50">
         <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
-                </svg>
+                <button onclick="goHome()" class="bg-blue-800 hover:bg-blue-900 text-white p-2 rounded-lg transition flex items-center justify-center shadow-sm" title="กลับหน้าแรก">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                    </svg>
+                </button>
                 <div>
                     <h1 class="text-xl font-bold leading-tight">ระบบตรวจงานถางวัชพืช</h1>
                     <p id="headerSubtitle" class="text-xs text-blue-200">กรุณาเลือกหน่วยงานและแนวสาย</p>
@@ -44,6 +46,18 @@
                 <div id="photoCountBadge" class="text-sm bg-blue-800 px-3 py-1 rounded-full border border-blue-600 shadow-inner hidden md:block">
                     <span id="photoCount">0</span>/5 รูป
                 </div>
+                <button onclick="toggleCorrectionView()" id="correctionToggleBtn" class="text-sm bg-amber-500 text-white font-semibold px-3 py-1.5 rounded-lg shadow-sm hover:bg-amber-600 transition flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    <span>แจ้งแก้ไขงาน</span>
+                </button>
+                <button onclick="toggleCorrectionHistoryView()" id="corrHistoryToggleBtn" class="text-sm bg-amber-700 text-white font-semibold px-3 py-1.5 rounded-lg shadow-sm hover:bg-amber-800 transition flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    <span>ประวัติแจ้งแก้ไข (<span id="corrHistoryBadgeCount">0</span>)</span>
+                </button>
                 <button onclick="toggleView()" id="viewToggleBtn" class="text-sm bg-white text-blue-700 font-semibold px-3 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition flex items-center gap-1">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -235,6 +249,86 @@
 
     </main>
 
+    <main id="correctionView" class="max-w-4xl mx-auto px-4 py-6 space-y-6 hidden">
+        <div class="bg-amber-50 border border-amber-200 p-5 rounded-xl shadow-sm">
+            <h2 class="text-xl font-bold text-amber-800 flex items-center gap-2 mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+                บันทึกรูปภาพและรายการที่ต้องการแก้ไขงาน
+            </h2>
+            <p class="text-xs text-amber-700">สำหรับผู้ตรวจงานบันทึกระบุจุดที่ต้องแก้ไข พร้อมแนบรูปตัวอย่างและรายละเอียดคำสั่งแก้ไข</p>
+        </div>
+
+        <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">1. รูปที่ต้องการให้แก้ไข (ถ่ายหรืออัปโหลดรูปที่พบปัญหา)</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <label for="corrPhoto" class="upload-area flex flex-col items-center justify-center w-full h-48 border-2 border-amber-300 border-dashed rounded-lg cursor-pointer bg-amber-50/50 relative overflow-hidden">
+                        <div id="placeholder-corrPhoto" class="flex flex-col items-center justify-center pt-5 pb-6 text-amber-500">
+                            <svg aria-hidden="true" class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            <p class="mb-2 text-sm font-semibold">อัปโหลดรูปจุดที่ต้องแก้ไข</p>
+                        </div>
+                        <img id="preview-corrPhoto" class="absolute inset-0 w-full h-full object-cover hidden" alt="preview correction" />
+                        <input id="corrPhoto" type="file" class="hidden" accept="image/*" onchange="previewCorrectionImage(event)" />
+                    </label>
+                    <div class="flex flex-col justify-between">
+                        <div class="space-y-3">
+                            <div>
+                                <label for="corrTowerInfo" class="block text-xs font-medium text-gray-600 mb-1">ระบุแนวสาย / Tower / จุดที่พบปัญหา</label>
+                                <input type="text" id="corrTowerInfo" placeholder="เช่น แนวสาย 115 kV HY2-PTN / Tower 015/2" class="w-full border-gray-300 rounded-lg text-sm p-2.5 border bg-gray-50">
+                            </div>
+                            <div>
+                                <label for="corrAutoDate" class="block text-xs font-medium text-gray-600 mb-1">3. วันที่ตรวจพบ / แจ้งแก้ไข (อัตโนมัติ)</label>
+                                <input type="text" id="corrAutoDate" readonly class="w-full border-gray-200 rounded-lg text-sm p-2.5 bg-gray-100 text-gray-600 font-semibold cursor-not-allowed">
+                            </div>
+                        </div>
+                        <button type="button" onclick="clearCorrectionImage()" class="mt-2 py-1.5 text-xs text-red-500 border border-red-200 rounded-md hover:bg-red-50 hidden" id="clear-corrPhoto">ลบรูปภาพนี้</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. ข้อความรายละเอียด -->
+            <div>
+                <label for="corrDetails" class="block text-sm font-medium text-gray-700 mb-1">2. ข้อความรายละเอียด (สิ่งที่ผู้รับเหมาต้องแก้ไขเพิ่มเติม)</label>
+                <textarea id="corrDetails" rows="4" placeholder="ระบุรายละเอียด เช่น ถางวัชพืชรอบขาเสาไม่เรียบร้อย, มีกิ่งไม้พาดสาย หรือต้องเก็บงานบริเวณรอบเขตเดินสายเพิ่ม..." class="w-full border-gray-300 rounded-lg p-3 text-sm border bg-gray-50 focus:border-amber-500 focus:ring-amber-500"></textarea>
+            </div>
+
+            <button type="button" onclick="saveCorrectionRecord()" id="saveCorrBtn" class="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-lg shadow-md transition flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                บันทึกและส่งคำสั่งแก้ไขงาน
+            </button>
+        </section>
+    </main>
+
+    <!-- New Dedicated Page for Correction History -->
+    <main id="correctionHistoryView" class="max-w-4xl mx-auto px-4 py-6 space-y-6 hidden">
+        <div class="flex justify-between items-center bg-amber-50 p-4 rounded-xl shadow-sm border border-amber-200">
+            <div>
+                <h2 class="text-xl font-bold text-amber-900 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-amber-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    ประวัติแจ้งแก้ไขงานทั้งหมด (<span id="corrPageBadgeCount">0</span>)
+                </h2>
+                <p class="text-xs text-amber-700 mt-1">รายการและรูปภาพคำสั่งแก้ไขงานทั้งหมดที่บันทึกไว้</p>
+            </div>
+            <button onclick="toggleCorrectionHistoryView()" class="bg-white text-amber-800 border border-amber-300 hover:bg-amber-100 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1 shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                กลับหน้าแจ้งแก้ไข
+            </button>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <div id="emptyCorrection" class="text-center py-12 text-gray-400 text-sm italic hidden">ยังไม่มีรายการแจ้งแก้ไขงาน</div>
+            <div id="correctionContainer" class="space-y-4"></div>
+        </div>
+    </main>
+
     <main id="historyView" class="max-w-4xl mx-auto px-4 py-6 space-y-6 hidden">
         <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-200">
             <div>
@@ -313,7 +407,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyB_SWCXmlSUb4GbE5vWxMTZLQaznPX2VEc",
@@ -333,9 +427,10 @@
             console.warn("Anonymous auth info:", error.message);
         });
 
-        // Discord Webhook URLs
         const DISCORD_WEBHOOK_CREATE = "https://discord.com/api/webhooks/1551514471153926205/HKFoA9kpF6RNIJjDYcnfwGTZ5PAzNMptNC6ghmzpBaROn5n9zw6r3eRa-0yUM_TUp-fz";
         const DISCORD_WEBHOOK_DELETE = "https://discord.com/api/webhooks/1551515240217313350/IN8_w_qEuXy0LLc1CH5pSK6LobUlMuYpmBR0s2Uuts6ngGxliZsTa4k5f6zt1cZ4WRjS";
+        const DISCORD_WEBHOOK_CORRECTION = "https://discord.com/api/webhooks/1551852094154215424/RJfXZuDtFmxZ17a52Jh_xclrpDNNuwf6azn0yZ9MH1ZoB1kiuZS4rCtYAVgGCB9JbQNg";
+        const DISCORD_WEBHOOK_UPDATE = "https://discord.com/api/webhooks/1551849290983538708/cyxkBX0Ye_kGEouw7o_yADRokNgNzCJjspzNlhHGBf54bhSZSgsV11OtgAueXUEO4HRg";
 
         async function sendDiscordNotification(webhookUrl, message) {
             try {
@@ -1128,9 +1223,504 @@
         let uploadedPhotosCount = 0;
         let currentViewMode = 'form';
 
+        function updateCorrectionAutoDate() {
+            const dateInput = document.getElementById('corrAutoDate');
+            if (dateInput) {
+                const now = new Date();
+                const isoString = now.toISOString();
+                dateInput.dataset.iso = isoString;
+                dateInput.value = formatDateToThai(isoString);
+            }
+        }
+
         window.onload = function() {
             syncCloudData();
+            updateCorrectionAutoDate();
+            initCorrectionRealtimeListener();
+            console.log("ระบบพร้อมใช้งาน ตรวจสอบสถานะสมบูรณ์");
         };
+
+        function initCorrectionRealtimeListener() {
+            try {
+                onSnapshot(collection(db, "corrections"), (snapshot) => {
+                    let corrList = [];
+                    snapshot.forEach((docSnap) => {
+                        corrList.push({ docId: docSnap.id, ...docSnap.data() });
+                    });
+                    corrList.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                    localStorage.setItem('weed_correction_records_cloud', JSON.stringify(corrList));
+                    renderCorrectionRecords();
+                    updateCorrectionBadges();
+                }, (error) => {
+                    console.warn("Firestore correction snapshot error, fallback to local:", error);
+                    renderCorrectionRecords();
+                    updateCorrectionBadges();
+                });
+            } catch (e) {
+                console.warn("Could not attach correction listener:", e);
+                renderCorrectionRecords();
+                updateCorrectionBadges();
+            }
+        }
+
+        function updateCorrectionBadges() {
+            let corrList = JSON.parse(localStorage.getItem('weed_correction_records_cloud') || localStorage.getItem('weed_correction_records') || '[]');
+            const count = corrList.length;
+            const badge1 = document.getElementById('corrHistoryBadgeCount');
+            const badge2 = document.getElementById('corrPageBadgeCount');
+            if (badge1) badge1.textContent = count;
+            if (badge2) badge2.textContent = count;
+        }
+
+        window.toggleCorrectionView = function() {
+            const formView = document.getElementById('formView');
+            const correctionView = document.getElementById('correctionView');
+            const correctionHistoryView = document.getElementById('correctionHistoryView');
+            const historyView = document.getElementById('historyView');
+            const bottomBar = document.getElementById('bottomActionBar');
+            const photoCountBadge = document.getElementById('photoCountBadge');
+            const corrBtn = document.getElementById('correctionToggleBtn');
+            const corrHistoryBtn = document.getElementById('corrHistoryToggleBtn');
+            const historyBtn = document.getElementById('viewToggleBtn');
+
+            if (currentViewMode !== 'correction') {
+                currentViewMode = 'correction';
+                formView.classList.replace('block', 'hidden');
+                historyView.classList.replace('block', 'hidden');
+                correctionHistoryView.classList.replace('block', 'hidden');
+                correctionView.classList.replace('hidden', 'block');
+                bottomBar.classList.replace('block', 'hidden');
+                photoCountBadge.classList.add('hidden');
+
+                corrBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                    <span>กลับหน้าส่งงานปกติ</span>
+                `;
+                corrBtn.classList.replace('bg-amber-500', 'bg-gray-600');
+                corrHistoryBtn.classList.remove('hidden');
+                historyBtn.classList.add('hidden');
+                updateCorrectionAutoDate();
+            } else {
+                goHome();
+            }
+        }
+
+        window.goHome = function() {
+            const formView = document.getElementById('formView');
+            const correctionView = document.getElementById('correctionView');
+            const correctionHistoryView = document.getElementById('correctionHistoryView');
+            const historyView = document.getElementById('historyView');
+            const bottomBar = document.getElementById('bottomActionBar');
+            const photoCountBadge = document.getElementById('photoCountBadge');
+            const corrBtn = document.getElementById('correctionToggleBtn');
+            const corrHistoryBtn = document.getElementById('corrHistoryToggleBtn');
+            const historyBtn = document.getElementById('viewToggleBtn');
+            const toggleBtn = document.getElementById('viewToggleBtn');
+
+            currentViewMode = 'form';
+            correctionView.classList.replace('block', 'hidden');
+            correctionHistoryView.classList.replace('block', 'hidden');
+            historyView.classList.replace('block', 'hidden');
+            formView.classList.replace('hidden', 'block');
+            bottomBar.classList.replace('hidden', 'block');
+            photoCountBadge.classList.remove('hidden');
+            historyBtn.classList.remove('hidden');
+            corrHistoryBtn.classList.remove('hidden');
+            corrBtn.classList.remove('hidden');
+
+            corrBtn.innerHTML = `
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                </svg>
+                <span>แจ้งแก้ไขงาน</span>
+            `;
+            corrBtn.classList.replace('bg-gray-600', 'bg-amber-500');
+
+            if (toggleBtn) {
+                toggleBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>ประวัติกลาง (<span id="historyBadgeCount">0</span>)</span>
+                `;
+                toggleBtn.classList.replace('text-gray-700', 'text-blue-700');
+            }
+            syncCloudData();
+        }
+
+        window.toggleCorrectionHistoryView = function() {
+            const formView = document.getElementById('formView');
+            const correctionView = document.getElementById('correctionView');
+            const correctionHistoryView = document.getElementById('correctionHistoryView');
+            const historyView = document.getElementById('historyView');
+            const bottomBar = document.getElementById('bottomActionBar');
+            const photoCountBadge = document.getElementById('photoCountBadge');
+            const corrBtn = document.getElementById('correctionToggleBtn');
+            const corrHistoryBtn = document.getElementById('corrHistoryToggleBtn');
+            const historyBtn = document.getElementById('viewToggleBtn');
+
+            if (currentViewMode !== 'correction_history') {
+                currentViewMode = 'correction_history';
+                formView.classList.replace('block', 'hidden');
+                correctionView.classList.replace('block', 'hidden');
+                historyView.classList.replace('block', 'hidden');
+                correctionHistoryView.classList.replace('hidden', 'block');
+                bottomBar.classList.replace('block', 'hidden');
+                photoCountBadge.classList.add('hidden');
+                corrBtn.classList.add('hidden');
+                corrHistoryBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    <span>กลับหน้าแจ้งแก้ไข</span>
+                `;
+                historyBtn.classList.add('hidden');
+                renderCorrectionRecords();
+            } else {
+                currentViewMode = 'correction';
+                correctionHistoryView.classList.replace('block', 'hidden');
+                correctionView.classList.replace('hidden', 'block');
+                bottomBar.classList.replace('block', 'hidden');
+                corrBtn.classList.remove('hidden');
+                corrHistoryBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    <span>ประวัติแจ้งแก้ไข (<span id="corrHistoryBadgeCount">0</span>)</span>
+                `;
+                historyBtn.classList.add('hidden');
+                updateCorrectionBadges();
+            }
+        }
+
+        window.previewCorrectionImage = function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('placeholder-corrPhoto').classList.add('hidden');
+                    const img = document.getElementById('preview-corrPhoto');
+                    img.src = e.target.result;
+                    img.classList.remove('hidden');
+                    document.getElementById('clear-corrPhoto').classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        window.clearCorrectionImage = function() {
+            document.getElementById('corrPhoto').value = '';
+            document.getElementById('preview-corrPhoto').classList.add('hidden');
+            document.getElementById('preview-corrPhoto').src = '';
+            document.getElementById('placeholder-corrPhoto').classList.remove('hidden');
+            document.getElementById('clear-corrPhoto').classList.add('hidden');
+        }
+
+        window.saveCorrectionRecord = async function() {
+            const fileInput = document.getElementById('corrPhoto');
+            const towerInfo = document.getElementById('corrTowerInfo').value.trim() || 'ไม่ระบุแนวสาย/เสา';
+            const details = document.getElementById('corrDetails').value.trim();
+            const dateIso = document.getElementById('corrAutoDate').dataset.iso || new Date().toISOString();
+            const saveBtn = document.getElementById('saveCorrBtn');
+
+            if (fileInput.files.length === 0) {
+                showModal('error', 'กรุณาแนบรูปภาพ', 'โปรดถ่ายหรือเลือกรูปภาพจุดที่ต้องการให้แก้ไขก่อนบันทึก');
+                return;
+            }
+            if (!details) {
+                showModal('error', 'กรุณาระบุรายละเอียด', 'โปรดระบุข้อความรายละเอียดสิ่งที่ต้องแก้ไข');
+                return;
+            }
+
+            saveBtn.disabled = true;
+            saveBtn.innerText = 'กำลังบันทึกและส่งข้อมูลขึ้น Firebase...';
+
+            try {
+                const base64Img = await compressImage(fileInput.files[0], 500, 500, 0.4);
+                
+                const correctionDoc = {
+                    id: 'corr_' + Date.now(),
+                    towerInfo: towerInfo,
+                    details: details,
+                    photos: [base64Img],
+                    timestamp: dateIso,
+                    lastUpdated: null
+                };
+
+                // Save to Firestore
+                await addDoc(collection(db, "corrections"), correctionDoc);
+
+                const discordMsg = `⚠️ **แจ้งแก้ไขงานถางวัชพืช!**\n📍 จุด/แนวสาย: **${towerInfo}**\n📝 รายละเอียด: **${details}**\n🕒 วันที่แจ้ง: ${formatDateToThai(dateIso)}`;
+                await sendDiscordNotification(DISCORD_WEBHOOK_CORRECTION, discordMsg);
+
+                showModal('success', 'บันทึกสำเร็จ', 'บันทึกและส่งคำสั่งแจ้งแก้ไขงานขึ้น Firebase เรียบร้อยแล้ว');
+                
+                clearCorrectionImage();
+                document.getElementById('corrTowerInfo').value = '';
+                document.getElementById('corrDetails').value = '';
+                updateCorrectionAutoDate();
+
+            } catch (err) {
+                console.error(err);
+                showModal('error', 'บันทึกไม่สำเร็จ', 'เกิดข้อผิดพลาดในการเชื่อมต่อ Firebase');
+            } finally {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    บันทึกและส่งคำสั่งแก้ไขงาน
+                `;
+            }
+        }
+
+        function renderCorrectionRecords() {
+            const container = document.getElementById('correctionContainer');
+            const empty = document.getElementById('emptyCorrection');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            let corrList = JSON.parse(localStorage.getItem('weed_correction_records_cloud') || localStorage.getItem('weed_correction_records') || '[]');
+            updateCorrectionBadges();
+
+            if (corrList.length === 0) {
+                if (empty) empty.classList.remove('hidden');
+                return;
+            }
+            if (empty) empty.classList.add('hidden');
+
+            corrList.forEach(item => {
+                let photos = item.photos || (item.photo ? [item.photo] : []);
+                
+                let photosHtml = '';
+                photos.forEach((p, idx) => {
+                    photosHtml += `
+                        <div class="relative group">
+                            <img src="${p}" onclick="openImageModal('${p}')" class="w-20 h-20 object-cover rounded-lg border border-amber-200 cursor-pointer shadow-sm" alt="photo ${idx+1}">
+                            <button onclick="removeCorrectionPhoto('${item.id}', ${idx})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-[10px] shadow hover:bg-red-600" title="ลบรูปนี้">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                });
+
+                const createdText = formatDateToThai(item.timestamp);
+                const updatedText = item.lastUpdated ? formatDateToThai(item.lastUpdated) : '-';
+
+                const card = document.createElement('div');
+                card.className = "bg-amber-50/40 p-4 rounded-xl border border-amber-200 flex flex-col gap-3";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="w-full space-y-2">
+                            <div class="flex justify-between items-center">
+                                <input type="text" id="corr-tower-${item.id}" value="${item.towerInfo || ''}" class="font-bold text-amber-900 text-base bg-white border border-amber-200 rounded px-2 py-1 w-full max-w-xs focus:ring-amber-500 focus:border-amber-500" placeholder="ระบุแนวสาย/เสา">
+                                <div class="text-right text-[11px] text-gray-500 whitespace-nowrap ml-2">
+                                    <div>วันที่แจ้ง: ${createdText}</div>
+                                    <div id="corr-time-text-${item.id}" class="${item.lastUpdated ? '' : 'hidden'} text-amber-700 font-medium">วันที่แก้ไข: ${updatedText}</div>
+                                </div>
+                            </div>
+                            <textarea id="corr-details-${item.id}" rows="2" class="w-full text-xs text-gray-700 bg-white border border-amber-200 rounded p-2 focus:ring-amber-500 focus:border-amber-500" placeholder="ระบุรายละเอียดการแก้ไข...">${item.details || ''}</textarea>
+                        </div>
+                        <button onclick="deleteCorrectionRecord('${item.id}')" class="text-gray-400 hover:text-red-500 p-2 ml-2" title="ลบรายการนี้">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-3 pt-2 border-t border-amber-100">
+                        <div class="flex flex-wrap items-center gap-3 w-full">
+                            <div class="flex flex-wrap gap-2 items-center">
+                                ${photosHtml}
+                            </div>
+                            <label class="cursor-pointer bg-amber-500 hover:bg-amber-600 text-white text-xs px-3 py-2 rounded-lg shadow-sm flex items-center gap-1 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                เพิ่มรูปภาพ
+                                <input type="file" accept="image/*" class="hidden" onchange="addCorrectionPhoto(event, '${item.id}')">
+                            </label>
+                        </div>
+                        <button type="button" onclick="saveCorrectionItem('${item.id}')" class="w-full sm:w-auto px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg shadow transition whitespace-nowrap flex items-center justify-center gap-1">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                            บันทึกการแก้ไข
+                        </button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        window.saveCorrectionItem = async function(id) {
+            const towerInput = document.getElementById(`corr-tower-${id}`);
+            const detailsInput = document.getElementById(`corr-details-${id}`);
+            const newTimestamp = new Date().toISOString();
+            
+            let corrList = JSON.parse(localStorage.getItem('weed_correction_records_cloud') || '[]');
+            const item = corrList.find(i => i.id === id);
+            
+            if (item) {
+                item.towerInfo = towerInput.value.trim();
+                item.details = detailsInput.value.trim();
+                item.lastUpdated = newTimestamp;
+
+                try {
+                    const querySnapshot = await getDocs(collection(db, "corrections"));
+                    let isUpdated = false;
+                    for (const docSnap of querySnapshot.docs) {
+                        const data = docSnap.data();
+                        if (docSnap.id === id || data.id === id) {
+                            await updateDoc(docSnap.ref, {
+                                towerInfo: item.towerInfo,
+                                details: item.details,
+                                photos: item.photos || [],
+                                lastUpdated: newTimestamp
+                            });
+                            isUpdated = true;
+                            break;
+                        }
+                    }
+
+                    if (!isUpdated && id) {
+                         try {
+                            await updateDoc(doc(db, "corrections", id), {
+                                towerInfo: item.towerInfo,
+                                details: item.details,
+                                photos: item.photos || [],
+                                lastUpdated: newTimestamp
+                            });
+                         } catch (e) {
+                             console.warn("Direct doc update fallback error:", e);
+                         }
+                    }
+
+                    localStorage.setItem('weed_correction_records_cloud', JSON.stringify(corrList));
+                    renderCorrectionRecords();
+                    
+                    const updateMsg = `🔄 **อัปเดตรายละเอียดแจ้งแก้ไขงาน!**\n📍 จุด/แนวสาย: **${item.towerInfo}**\n📝 รายละเอียดที่แก้ไข: **${item.details}**\n🕒 เวลาอัปเดต: ${formatDateToThai(newTimestamp)}`;
+                    await sendDiscordNotification(DISCORD_WEBHOOK_UPDATE, updateMsg);
+                    
+                    showModal('success', 'บันทึกสำเร็จ', 'อัปเดตข้อมูลการแก้ไขและบันทึกเวลาบน Firebase เรียบร้อยแล้ว');
+                } catch (e) {
+                    console.error("Error updating correction in Firestore:", e);
+                    showModal('error', 'บันทึกไม่สำเร็จ', 'เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล');
+                }
+            }
+        }
+
+        window.addCorrectionPhoto = async function(event, id) {
+            const file = event.target.files[0];
+            if (file) {
+                try {
+                    const base64Img = await compressImage(file, 500, 500, 0.4);
+                    let corrList = JSON.parse(localStorage.getItem('weed_correction_records_cloud') || '[]');
+                    const item = corrList.find(i => i.id === id);
+                    if (item) {
+                        if (!item.photos) {
+                            item.photos = item.photo ? [item.photo] : [];
+                        }
+                        item.photos.push(base64Img);
+                        
+                        const querySnapshot = await getDocs(collection(db, "corrections"));
+                        let isUpdated = false;
+                        for (const docSnap of querySnapshot.docs) {
+                             const data = docSnap.data();
+                            if (docSnap.id === id || data.id === id) {
+                                await updateDoc(docSnap.ref, {
+                                    photos: item.photos
+                                });
+                                isUpdated = true;
+                                break;
+                            }
+                        }
+
+                        if (!isUpdated && id) {
+                             try {
+                                await updateDoc(doc(db, "corrections", id), {
+                                    photos: item.photos
+                                });
+                             } catch (e) {
+                                 console.warn("Direct doc update fallback error:", e);
+                             }
+                        }
+
+                        localStorage.setItem('weed_correction_records_cloud', JSON.stringify(corrList));
+                        renderCorrectionRecords();
+                    }
+                } catch (err) {
+                    console.error(err);
+                    showModal('error', 'เพิ่มรูปไม่สำเร็จ', 'เกิดข้อผิดพลาดในการอัปโหลดรูปภาพ');
+                }
+            }
+        }
+
+        window.removeCorrectionPhoto = async function(id, photoIdx) {
+            let corrList = JSON.parse(localStorage.getItem('weed_correction_records_cloud') || '[]');
+            const item = corrList.find(i => i.id === id);
+            if (item) {
+                if (!item.photos) {
+                    item.photos = item.photo ? [item.photo] : [];
+                }
+                item.photos.splice(photoIdx, 1);
+
+                try {
+                    const querySnapshot = await getDocs(collection(db, "corrections"));
+                    let isUpdated = false;
+                    for (const docSnap of querySnapshot.docs) {
+                        const data = docSnap.data();
+                        if (docSnap.id === id || data.id === id) {
+                            await updateDoc(docSnap.ref, {
+                                photos: item.photos
+                            });
+                            isUpdated = true;
+                            break;
+                        }
+                    }
+
+                    if (!isUpdated && id) {
+                        try {
+                           await updateDoc(doc(db, "corrections", id), {
+                               photos: item.photos
+                           });
+                        } catch (e) {
+                            console.warn("Direct doc update fallback error:", e);
+                        }
+                    }
+
+                    localStorage.setItem('weed_correction_records_cloud', JSON.stringify(corrList));
+                    renderCorrectionRecords();
+                } catch (e) {
+                    console.error("Error removing correction photo:", e);
+                }
+            }
+        }
+
+        window.deleteCorrectionRecord = function(id) {
+            const modalHtml = `
+                <div id="deleteAuthModal" class="fixed inset-0 bg-black bg-opacity-50 z-[70] flex items-center justify-center">
+                    <div class="bg-white rounded-xl p-6 max-w-sm w-full mx-4 shadow-2xl">
+                        <h3 class="text-lg font-bold text-gray-800 mb-2">ยืนยันการลบรายการแจ้งแก้ไข</h3>
+                        <p class="text-xs text-gray-500 mb-4">กรุณากรอกรหัสพนักงาน 6 หลัก เพื่อยืนยันสิทธิ์ในการลบข้อมูลคำสั่งแก้ไขนี้</p>
+                        <input type="password" id="employeeIdInputCorr" maxlength="6" placeholder="รหัสพนักงาน 6 หลัก" class="w-full border border-gray-300 rounded-lg p-3 text-center text-lg tracking-widest mb-4 focus:border-amber-500 focus:ring-amber-500">
+                        <div class="flex gap-2">
+                            <button onclick="closeDeleteModal()" class="flex-1 py-2 bg-gray-100 text-gray-700 font-semibold rounded-lg hover:bg-gray-200">ยกเลิก</button>
+                            <button onclick="confirmDeleteCorrectionRecord('${id}')" class="flex-1 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700">ยืนยันลบ</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            const div = document.createElement('div');
+            div.id = 'deleteModalWrapper';
+            div.innerHTML = modalHtml;
+            document.body.appendChild(div);
+            const inputField = document.getElementById('employeeIdInputCorr');
+            if (inputField) inputField.focus();
+        }
 
         document.getElementById('departmentSelect').addEventListener('change', function(e) {
             const dept = e.target.value;
@@ -1193,75 +1783,82 @@
                 towerSelect.classList.add('bg-gray-50');
 
                 activeLineTowers.forEach(t => {
-                    const opt = document.createElement('option');
-                    opt.value = t.tower;
-                    opt.textContent = `Tower ${t.tower} (อ.${t.amphoe})`;
-                    towerSelect.appendChild(opt);
-                });
-            } else {
-                towerSelect.disabled = false;
-                towerSelect.classList.remove('bg-gray-100');
-                towerSelect.classList.add('bg-gray-50');
-
                 const opt = document.createElement('option');
-                opt.value = "GENERIC-TOWER";
-                opt.textContent = `แนวสาย ${lineName} (บันทึกทั่วไป / ระบุเสาอิสระ)`;
+                opt.value = t.tower;
+                opt.textContent = `Tower ${t.tower} (${t.tambon}, ${t.amphoe})`;
                 towerSelect.appendChild(opt);
-                activeLineTowers = [];
-            }
+            });
+        } else {
+            activeLineTowers = [];
+            towerSelect.disabled = false;
+            towerSelect.classList.remove('bg-gray-100');
+            towerSelect.classList.add('bg-gray-50');
+
+            const opt = document.createElement('option');
+            opt.value = "GENERIC-TOWER";
+            opt.textContent = "--- บันทึกงานทั่วไป (ไม่ระบุหมายเลขเสา) ---";
+            towerSelect.appendChild(opt);
+        }
+        updateSaveButton();
+    });
+
+    document.getElementById('towerSelect').addEventListener('change', function(e) {
+        const val = e.target.value;
+        const detailsDiv = document.getElementById('towerDetails');
+
+        if (!val || val === "GENERIC-TOWER") {
+            detailsDiv.classList.add('hidden');
             updateSaveButton();
-        });
-
-        document.getElementById('towerSelect').addEventListener('change', function(e) {
-            const towerNo = e.target.value;
-            const detailsDiv = document.getElementById('towerDetails');
-            
-            if (!towerNo || towerNo === "GENERIC-TOWER") {
-                detailsDiv.classList.add('hidden');
-                updateSaveButton();
-                return;
-            }
-
-            const towerInfo = activeLineTowers.find(t => t.tower === towerNo);
-            if (towerInfo) {
-                document.getElementById('detailLat').textContent = towerInfo.lat;
-                document.getElementById('detailLng').textContent = towerInfo.lng;
-                document.getElementById('detailLocation').textContent = `ต.${towerInfo.tambon} อ.${towerInfo.amphoe} จ.${towerInfo.province}`;
-                
-                const navButton = document.getElementById('navButton');
-                navButton.href = `https://www.google.com/maps/dir/?api=1&destination=${towerInfo.lat},${towerInfo.lng}`;
-                detailsDiv.classList.remove('hidden');
-            } else {
-                detailsDiv.classList.add('hidden');
-            }
-            updateSaveButton();
-        });
-
-        window.previewImage = function(event, id) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('placeholder-' + id).classList.add('hidden');
-                    const img = document.getElementById('preview-' + id);
-                    img.src = e.target.result;
-                    img.classList.remove('hidden');
-                    document.getElementById('clear-' + id).classList.remove('hidden');
-                    
-                    const badge = document.getElementById('badge-' + id);
-                    badge.textContent = 'มีรูปภาพแล้ว';
-                    badge.classList.remove('bg-gray-300', 'text-gray-600');
-                    badge.classList.add('bg-blue-500', 'text-white');
-
-                    countUploadedPhotos();
-                }
-                reader.readAsDataURL(file);
-            }
+            return;
         }
 
-        window.clearImage = function(id) {
-            document.getElementById(id).value = '';
-            document.getElementById('preview-' + id).classList.add('hidden');
+        const found = activeLineTowers.find(t => t.tower === val);
+        if (found) {
+            document.getElementById('detailLat').textContent = found.lat || '-';
+            document.getElementById('detailLng').textContent = found.lng || '-';
+            document.getElementById('detailLocation').textContent = `${found.tambon || ''} อ.${found.amphoe || ''} จ.${found.province || ''}`;
+            
+            const navBtn = document.getElementById('navButton');
+            if (found.lat && found.lng) {
+                navBtn.href = `https://www.google.com/maps/search/?api=1&query=${found.lat},${found.lng}`;
+                navBtn.classList.remove('hidden');
+            } else {
+                navBtn.classList.add('hidden');
+            }
+            detailsDiv.classList.remove('hidden');
+        } else {
+            detailsDiv.classList.add('hidden');
+        }
+        updateSaveButton();
+    });
+
+    window.previewImage = async function(event, id) {
+        const file = event.target.files[0];
+        if (file) {
+            try {
+                const base64Img = await compressImage(file, 600, 600, 0.4);
+                document.getElementById('placeholder-' + id).classList.add('hidden');
+                const img = document.getElementById('preview-' + id);
+                img.src = base64Img;
+                img.classList.remove('hidden');
+                document.getElementById('clear-' + id).classList.remove('hidden');
+
+                const badge = document.getElementById('badge-' + id);
+                badge.textContent = 'ถ่ายแล้ว';
+                badge.classList.remove('bg-gray-300', 'text-gray-600');
+                badge.classList.add('bg-blue-500', 'text-white');
+
+                countUploadedPhotos();
+            } catch (err) {
+                console.error(err);
+                showModal('error', 'โหลดรูปภาพไม่สำเร็จ', 'เกิดข้อผิดพลาดในการประมวลผลรูปภาพ');
+            }
+        }
+    }
+
+    window.clearImage = function(id) {
+        document.getElementById(id).value = '';
+        document.getElementById('preview-' + id).classList.add('hidden');
             document.getElementById('preview-' + id).src = '';
             document.getElementById('placeholder-' + id).classList.remove('hidden');
             document.getElementById('clear-' + id).classList.add('hidden');
@@ -1294,16 +1891,22 @@
         window.toggleView = function() {
             const formView = document.getElementById('formView');
             const historyView = document.getElementById('historyView');
+            const correctionHistoryView = document.getElementById('correctionHistoryView');
             const bottomBar = document.getElementById('bottomActionBar');
             const toggleBtn = document.getElementById('viewToggleBtn');
             const photoCountBadge = document.getElementById('photoCountBadge');
+            const corrBtn = document.getElementById('correctionToggleBtn');
+            const corrHistoryBtn = document.getElementById('corrHistoryToggleBtn');
 
             if (currentViewMode === 'form') {
                 currentViewMode = 'history';
                 formView.classList.replace('block', 'hidden');
+                correctionHistoryView.classList.replace('block', 'hidden');
                 historyView.classList.replace('hidden', 'block');
                 bottomBar.classList.replace('block', 'hidden');
                 photoCountBadge.classList.add('hidden');
+                corrBtn.classList.add('hidden');
+                corrHistoryBtn.classList.add('hidden');
 
                 toggleBtn.innerHTML = `
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1319,6 +1922,8 @@
                 formView.classList.replace('hidden', 'block');
                 bottomBar.classList.replace('hidden', 'block');
                 photoCountBadge.classList.remove('hidden');
+                corrBtn.classList.remove('hidden');
+                corrHistoryBtn.classList.remove('hidden');
 
                 toggleBtn.innerHTML = `
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1397,7 +2002,6 @@
 
                 await addDoc(collection(db, "inspections"), newRecord);
 
-                // Send Discord Notification for Creation
                 const discordMsg = `📢 **มีรายงานการส่งงานใหม่!**\n🏢 หน่วยงาน: **${department}**\n⚡ แนวสาย: **${lineName}**\n🗼 เสา: **${tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + tower}**\n👷 ผู้ปฏิบัติงาน: **${inspectorName}**\n🕒 เวลา: ${formatDateToThai(newRecord.timestamp)}`;
                 await sendDiscordNotification(DISCORD_WEBHOOK_CREATE, discordMsg);
 
@@ -1443,7 +2047,6 @@
             container.innerHTML = '';
             let records = JSON.parse(localStorage.getItem('weed_inspection_firebase_cache') || '[]');
 
-            // Filter records based on search term
             if (searchTerm) {
                 records = records.filter(r => {
                     const towerStr = (r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + r.tower).toLowerCase();
@@ -1559,7 +2162,7 @@
             try {
                 await deleteDoc(doc(db, "inspections", id));
             } catch (e) {
-                console.log("Error deleting from Firebase:", e);
+                console.log("Error deleting from Firebase (might be local id):", e);
             }
 
             records = records.filter(r => r.id !== id);
@@ -1568,13 +2171,62 @@
             loadHistoryData();
             updateHistoryBadge();
 
-            // Send Discord Notification for Deletion
             if (recordToDelete) {
                 const deleteMsg = `🗑️ **มีการลบข้อมูลรายงานตรวจงาน!**\n🏢 หน่วยงาน: **${recordToDelete.department}**\n⚡ แนวสาย: **${recordToDelete.lineName}**\n🗼 เสา: **${recordToDelete.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + recordToDelete.tower}**\n👤 ผู้ดำเนินการลบ (รหัสพนักงาน): **${empId}**`;
                 await sendDiscordNotification(DISCORD_WEBHOOK_DELETE, deleteMsg);
             }
 
             showModal('success', 'ลบสำเร็จ', `ลบรายการเรียบร้อยแล้ว (โดยรหัสพนักงาน: ${empId})`);
+        }
+
+        window.confirmDeleteCorrectionRecord = async function(id) {
+            const empId = document.getElementById('employeeIdInputCorr').value.trim();
+            if (empId.length !== 6 || isNaN(empId)) {
+                showModal('error', 'รหัสพนักงานไม่ถูกต้อง', 'กรุณากรอกรหัสพนักงานเป็นตัวเลข 6 หลักให้ครบถ้วน');
+                return;
+            }
+
+            let corrList = JSON.parse(localStorage.getItem('weed_correction_records_cloud') || localStorage.getItem('weed_correction_records') || '[]');
+            const recordToDelete = corrList.find(i => i.id === id);
+
+            closeDeleteModal();
+
+            try {
+                const querySnapshot = await getDocs(collection(db, "corrections"));
+                let foundMatch = false;
+                for (const docSnap of querySnapshot.docs) {
+                    const data = docSnap.data();
+                    // ตรวจสอบทั้ง document ID ของ Firebase และ field 'id' ที่เราตั้งขึ้น
+                    if (docSnap.id === id || data.id === id) {
+                        foundMatch = true;
+                        await deleteDoc(docSnap.ref);
+                        break;
+                    }
+                }
+                
+                if (!foundMatch && id) {
+                    try {
+                        await deleteDoc(doc(db, "corrections", id));
+                    } catch(err) {
+                        console.log("Direct doc delete fallback error:", err);
+                    }
+                }
+            } catch (e) {
+                console.error("Error deleting correction from Firestore:", e);
+            }
+
+            corrList = corrList.filter(i => i.id !== id);
+            localStorage.setItem('weed_correction_records_cloud', JSON.stringify(corrList));
+            localStorage.setItem('weed_correction_records', JSON.stringify(corrList));
+            renderCorrectionRecords();
+            updateCorrectionBadges();
+
+            if (recordToDelete) {
+                const deleteMsg = `🗑️ **มีการลบข้อมูลแจ้งแก้ไขงาน!**\n📍 จุด/แนวสาย: **${recordToDelete.towerInfo}**\n📝 รายละเอียด: **${recordToDelete.details}**\n👤 ผู้ดำเนินการลบ (รหัสพนักงาน): **${empId}**`;
+                await sendDiscordNotification(DISCORD_WEBHOOK_DELETE, deleteMsg);
+            }
+
+            showModal('success', 'ลบสำเร็จ', `ลบรายการแจ้งแก้ไขเรียบร้อยแล้ว (โดยรหัสพนักงาน: ${empId})`);
         }
 
         function formatDateToThai(isoString) {
