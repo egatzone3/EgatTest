@@ -254,9 +254,21 @@
             </button>
         </div>
 
+        <!-- Search & Filter Toolbar -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                </span>
+                <input type="text" id="searchInput" oninput="filterHistory()" placeholder="ค้นหาด้วย Tower, แนวสาย, ผู้ส่งงาน หรือ บสส. ..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm bg-gray-50">
+            </div>
+        </div>
+
         <div id="emptyHistory" class="text-center py-12 bg-white rounded-xl border border-gray-200 border-dashed hidden">
-            <p class="text-gray-500 font-medium">ยังไม่มีรายการส่งตรวจงานจากผู้รับเหมา</p>
-            <p class="text-xs text-gray-400 mt-1">เมื่อผู้รับเหมาเลือกเสาและกดส่งรูป ข้อมูลจะแสดงขึ้นมาที่นี่ทันที</p>
+            <p class="text-gray-500 font-medium">ยังไม่มีรายการส่งตรวจงานจากผู้รับเหมา หรือไม่พบผลการค้นหา</p>
+            <p class="text-xs text-gray-400 mt-1">ลองเปลี่ยนคำค้นหา หรือเมื่อผู้รับเหมาส่งรูป ข้อมูลจะแสดงขึ้นมาที่นี่ทันที</p>
         </div>
 
         <div id="historyContainer" class="space-y-4">
@@ -557,7 +569,7 @@
             { tower: "060/2", lat: "6.494185568", lng: "101.6968103", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
             { tower: "060/3", lat: "6.491620146", lng: "101.6972002", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
             { tower: "061/1", lat: "6.489124139", lng: "101.6975795", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
-            { tower: "061/2", lng: "101.6979614", lat: "6.486611166", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
+            { tower: "061/2", lat: "6.486611166", lng: "101.6979614", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
             { tower: "061/3", lat: "6.484102018", lng: "101.6983427", tambon: "ลุโบะสาวอ", amphoe: "บาเจาะ", province: "นราธิวาส" },
             { tower: "061/4", lat: "6.481440982", lng: "101.6987471", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
             { tower: "062/1", lat: "6.478638105", lng: "101.6991731", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
@@ -575,7 +587,7 @@
             { tower: "065/3", lat: "6.447684597", lng: "101.7083083", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
             { tower: "066/1", lat: "6.445285474", lng: "101.7092012", tambon: "ตะปอเยาะ", amphoe: "ยี่งอ", province: "นราธิวาส" },
             { tower: "066/2", lat: "6.442912453", lng: "101.7100844", tambon: "ลุโบบือซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
-            { tower: "066/3", lat: "6.440381829", lng: "101.7110262", tambon: "ลุโบบือซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
+            { tower: "066/3", lng: "101.7110262", lat: "6.440381829", tambon: "ลุโบบือซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
             { tower: "067/1", lat: "6.439113161", lng: "101.7138235", tambon: "ลุโบบือซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
             { tower: "067/2", lat: "6.438068545", lng: "101.7161268", tambon: "ลุโบะอซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
             { tower: "067/3", lat: "6.434988813", lng: "101.7166379", tambon: "ลุโบะอซา", amphoe: "ยี่งอ", province: "นราธิวาส" },
@@ -611,6 +623,166 @@
             { tower: "076/4", lat: "6.418101719", lng: "101.7843324", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
             { tower: "077/1", lat: "6.419365249", lng: "101.786786", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
             { tower: "077/2", lat: "6.420230625", lng: "101.7884665", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" }
+        ];
+
+        const narathiwatNWSUK = [
+            { tower: "000/1", lat: "6.42006538", lng: "101.788944", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "000/2", lat: "6.41821996", lng: "101.787679", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "000/3", lat: "6.41605029", lng: "101.786222", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "000/4", lat: "6.41485315", lng: "101.785375", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "001/1", lat: "6.41257181", lng: "101.786176", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "001/2", lat: "6.41046817", lng: "101.785866", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "001/3", lat: "6.40909543", lng: "101.787403", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "001/4", lat: "6.40720315", lng: "101.788107", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "002/1", lat: "6.40449636", lng: "101.789049", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "002/2", lat: "6.4021699", lng: "101.789841", tambon: "มะนังดายอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "002/3", lat: "6.39993354", lng: "101.790677", tambon: "มะนังดายอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "002/4", lat: "6.3988238", lng: "101.793697", tambon: "มะนังตายอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "003/1", lat: "6.39766864", lng: "101.796762", tambon: "มะนังตายอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "003/2", lat: "6.39654999", lng: "101.799754", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "003/3", lat: "6.39548653", lng: "101.802567", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "004/1", lat: "6.39435858", lng: "101.805604", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "004/2", lat: "6.39139892", lng: "101.806527", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "004/3", lat: "6.38870167", lng: "101.80738", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "005/1", lat: "6.38559701", lng: "101.808383", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "005/2", lat: "6.38301753", lng: "101.809182", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "005/3", lat: "6.37989499", lng: "101.81015", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "006/1", lat: "6.37853744", lng: "101.810558", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "006/2", lat: "6.37686287", lng: "101.811109", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "006/3", lat: "6.3738581", lng: "101.812022", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "007/1", lat: "6.37108834", lng: "101.81292", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "007/2", lat: "6.36833432", lng: "101.812588", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "007/3", lat: "6.36558035", lng: "101.812248", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "007/4", lat: "6.36379637", lng: "101.812979", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "008/1", lat: "6.36109802", lng: "101.814039", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "008/2", lat: "6.35827283", lng: "101.815162", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "008/3", lat: "6.35542074", lng: "101.816248", tambon: "ลำภู", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "009/1", lat: "6.35252328", lng: "101.81737", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "009/2", lat: "6.34968013", lng: "101.818475", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "009/3", lat: "6.34665578", lng: "101.819668", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "010/1", lat: "6.34424688", lng: "101.819014", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "010/2", lat: "6.34153103", lng: "101.818313", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "010/3", lat: "6.33885111", lng: "101.817648", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "011/1", lat: "6.33593691", lng: "101.816865", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "011/2", lat: "6.33315789", lng: "101.816145", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "011/3", lat: "6.33039709", lng: "101.815399", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "012/1", lat: "6.3275638", lng: "101.814688", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "012/2", lat: "6.3244782", lng: "101.813849", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "012/3", lat: "6.32151875", lng: "101.813075", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "013/1", lat: "6.3186225", lng: "101.81231", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "013/2", lat: "6.31557273", lng: "101.811526", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "013/3", lat: "6.3135401", lng: "101.813131", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "014/1", lat: "6.31115353", lng: "101.815024", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "014/2", lat: "6.30893003", lng: "101.816836", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "014/3", lat: "6.30653438", lng: "101.818737", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "015/1", lat: "6.30514529", lng: "101.821638", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "015/2", lat: "6.30393909", lng: "101.824132", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "015/3", lat: "6.30271463", lng: "101.826663", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "015/4", lat: "6.3014988", lng: "101.829266", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "016/1", lat: "6.30030181", lng: "101.831725", tambon: "บางปอ", amphoe: "เมืองนราธิวาส", province: "นราธิวาส" },
+            { tower: "016/2", lat: "6.29905925", lng: "101.834256", tambon: "เจาะไอร้อง", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "016/3", lat: "6.29781634", lng: "101.83685", tambon: "เจาะไอร้อง", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "017/1", lat: "6.29665573", lng: "101.839264", tambon: "เจาะไอร้อง", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "017/2", lat: "6.29550428", lng: "101.84165", tambon: "เจาะไอร้อง", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "017/3", lat: "6.29242864", lng: "101.84232", tambon: "เจาะไอร้อง", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "018/1", lat: "6.28933512", lng: "101.842953", tambon: "เจาะไอร้อง", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "018/2", lat: "6.286223", lng: "101.843686", tambon: "เจาะไอร้อง", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "018/3", lat: "6.28314736", lng: "101.844355", tambon: "เจาะไอร้อง", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "019/1", lat: "6.28019827", lng: "101.845016", tambon: "เจาะไอร้อง", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "019/2", lat: "6.27816298", lng: "101.847109", tambon: "เจาะไอร้อง", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "019/3", lat: "6.27618171", lng: "101.849238", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "020/1", lat: "6.27411018", lng: "101.851349", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "020/2", lat: "6.27213873", lng: "101.853334", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "020/3", lat: "6.26985582", lng: "101.854441", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "021/1", lat: "6.26714705", lng: "101.855772", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "021/2", lat: "6.26432077", lng: "101.857111", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "021/3", lat: "6.26182025", lng: "101.858361", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "022/1", lat: "6.259275", lng: "101.85953", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "022/2", lat: "6.25664765", lng: "101.860843", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "022/3", lat: "6.25347212", lng: "101.861612", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "023/1", lat: "6.25038705", lng: "101.862362", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "023/2", lat: "6.24723858", lng: "101.86314", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "023/3", lat: "6.24523902", lng: "101.863652", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "024/1", lat: "6.24233505", lng: "101.864332", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "024/2", lat: "6.23918649", lng: "101.865127", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "024/3", lat: "6.23611042", lng: "101.865887", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "025/1", lat: "6.23296192", lng: "101.866674", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "025/2", lat: "6.22983173", lng: "101.867415", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "025/3", lat: "6.22668319", lng: "101.868211", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "026/1", lat: "6.2235347", lng: "101.868997", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "026/2", lat: "6.22048569", lng: "101.869766", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "026/3", lat: "6.21735547", lng: "101.870516", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "027/1", lat: "6.21424313", lng: "101.871303", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "027/2", lat: "6.21108561", lng: "101.872089", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "027/3", lat: "6.20827152", lng: "101.87286", tambon: "มะรือโบออก", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "028/1", lat: "6.20519561", lng: "101.873592", tambon: "บูกิต", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "028/2", lat: "6.20222803", lng: "101.874344", tambon: "บูกิต", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "028/3", lat: "6.19912469", lng: "101.875139", tambon: "บูกิต", amphoe: "เจาะไอร้อง", province: "นราธิวาส" },
+            { tower: "029/1", lat: "6.19618417", lng: "101.8759", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "029/2", lat: "6.19307189", lng: "101.876677", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "030/1", lat: "6.19019457", lng: "101.877447", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "030/2", lat: "6.18715473", lng: "101.878198", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "030/3", lat: "6.18409657", lng: "101.878994", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "031/1", lat: "6.18103851", lng: "101.879772", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "031/2", lat: "6.17795321", lng: "101.880577", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "031/3", lat: "6.17497652", lng: "101.881346", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "032/1", lat: "6.17199983", lng: "101.882115", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "032/2", lat: "6.16909547", lng: "101.882876", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "032/3", lat: "6.16612773", lng: "101.883663", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "033/1", lat: "6.16350404", lng: "101.884317", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "033/2", lat: "6.16097055", lng: "101.884999", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "033/3", lat: "6.15860926", lng: "101.883912", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "033/4", lat: "6.15645494", lng: "101.882979", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "034/1", lat: "6.15348987", lng: "101.8816", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "034/2", lat: "6.15113726", lng: "101.880576", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "034/3", lat: "6.1485538", lng: "101.880472", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "035/1", lat: "6.14595218", lng: "101.880386", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "035/2", lat: "6.14308869", lng: "101.880271", tambon: "สุไหงปาดี", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "035/3", lat: "6.13987294", lng: "101.880137", tambon: "โต๊ะเด็ง", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "036/1", lat: "6.13719914", lng: "101.880032", tambon: "โต๊ะเด็ง", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "036/2", lat: "6.1341279", lng: "101.879907", tambon: "โต๊ะเด็ง", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "036/3", lat: "6.1310296", lng: "101.879773", tambon: "โต๊ะเด็ง", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "037/1", lat: "6.12837376", lng: "101.879687", tambon: "โต๊ะเด็ง", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "037/2", lat: "6.12609758", lng: "101.879566", tambon: "โต๊ะเด็ง", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "037/3", lat: "6.12367749", lng: "101.881006", tambon: "โต๊ะเด็ง", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "037/4", lat: "6.12161087", lng: "101.882241", tambon: "โต๊ะเด็ง", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "038/1", lat: "6.11879218", lng: "101.883878", tambon: "โต๊ะเด็ง", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "038/2", lat: "6.11607307", lng: "101.885479", tambon: "โต๊ะเด็ง", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "038/3", lat: "6.11348988", lng: "101.887009", tambon: "โต๊ะเด็ง", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "039/1", lat: "6.11076184", lng: "101.888592", tambon: "โต๊ะเด็ง", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "039/2", lat: "6.10802472", lng: "101.890184", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "039/3", lat: "6.10525107", lng: "101.891848", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "040/1", lat: "6.10263184", lng: "101.893359", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "040/2", lat: "6.09997633", lng: "101.894897", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "040/3", lat: "6.09741113", lng: "101.896445", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "041/1", lat: "6.0950185", lng: "101.897822", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "041/2", lat: "6.09229009", lng: "101.899478", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "042/1", lat: "6.08948052", lng: "101.901105", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "042/2", lat: "6.08674312", lng: "101.902751", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "042/3", lat: "6.08393356", lng: "101.904379", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "043/1", lat: "6.08112385", lng: "101.906034", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "043/2", lat: "6.07857697", lng: "101.907536", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "043/3", lat: "6.0758307", lng: "101.909155", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "044/1", lat: "6.07305718", lng: "101.910801", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "044/2", lat: "6.07061901", lng: "101.91225", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "044/3", lat: "6.0678185", lng: "101.913878", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "045/1", lat: "6.0652353", lng: "101.915416", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "045/2", lat: "6.06249798", lng: "101.917053", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "045/3", lat: "6.06034067", lng: "101.918359", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "046/1", lat: "6.05733879", lng: "101.918794", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "046/2", lat: "6.05476158", lng: "101.919223", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "046/3", lat: "6.05232023", lng: "101.919589", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "046/4", lat: "6.04962562", lng: "101.920007", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "047/1", lat: "6.04662355", lng: "101.920479", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "047/2", lat: "6.04382034", lng: "101.920933", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "047/3", lat: "6.04080943", lng: "101.921368", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "048/1", lat: "6.0375903", lng: "101.921883", tambon: "ปะลุรู", amphoe: "สุไหงปาดี", province: "นราธิวาส" },
+            { tower: "048/2", lat: "6.03447064", lng: "101.922381", tambon: "ปาเสมัส", amphoe: "สุไหงโก-ลก", province: "นราธิวาส" },
+            { tower: "048/3", lat: "6.03185745", lng: "101.922782", tambon: "ปาเสมัส", amphoe: "สุไหงโก-ลก", province: "นราธิวาส" },
+            { tower: "049/1", lat: "6.03050085", lng: "101.921358", tambon: "ปาเสมัส", amphoe: "สุไหงโก-ลก", province: "นราธิวาส" },
+            { tower: "049/2", lat: "6.02853305", lng: "101.919344", tambon: "ปาเสมัส", amphoe: "สุไหงโก-ลก", province: "นราธิวาส" },
+            { tower: "049/3", lat: "6.02696062", lng: "101.917729", tambon: "ปาเสมัส", amphoe: "สุไหงโก-ลก", province: "นราธิวาส" },
+            { tower: "050/1", lat: "6.0247591", lng: "101.915488", tambon: "สุไหงโกลก", amphoe: "สุไหงโก-ลก", province: "นราธิวาส" }
         ];
 
         const organizationStructure = {
@@ -651,7 +823,7 @@
             ],
             "บสส.นราธิวาส": [
                 { lineName: "115 kV YL1-NW", totalTowers: 197, hasData: true, towers: narathiwatYL1NW },
-                { lineName: "115 kV NW-SUK", totalTowers: 157 },
+                { lineName: "115 kV NW-SUK", totalTowers: 157, hasData: true, towers: narathiwatNWSUK },
                 { lineName: "115 kV YL2-NW", totalTowers: 258, hasData: true, towers: narathiwatYL2NW }
             ]
         };
@@ -963,12 +1135,31 @@
             }
         }
 
+        window.filterHistory = function() {
+            loadHistoryData();
+        }
+
         function loadHistoryData() {
             const container = document.getElementById('historyContainer');
             const empty = document.getElementById('emptyHistory');
+            const searchTerm = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
             
             container.innerHTML = '';
             let records = JSON.parse(localStorage.getItem('weed_inspection_firebase_cache') || '[]');
+
+            // Filter records based on search term
+            if (searchTerm) {
+                records = records.filter(r => {
+                    const towerStr = (r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + r.tower).toLowerCase();
+                    const lineStr = (r.lineName || '').toLowerCase();
+                    const inspectorStr = (r.inspector || '').toLowerCase();
+                    const deptStr = (r.department || '').toLowerCase();
+                    return towerStr.includes(searchTerm) || 
+                           lineStr.includes(searchTerm) || 
+                           inspectorStr.includes(searchTerm) || 
+                           deptStr.includes(searchTerm);
+                });
+            }
 
             if (records.length === 0) {
                 empty.classList.remove('hidden');
