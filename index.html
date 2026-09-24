@@ -25,6 +25,36 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+
+        /* Natural green theme */
+        body { background-color: #eef6ef; }
+        .bg-blue-700 { background-color: #2f6f4e !important; }
+        .bg-blue-800 { background-color: #24583e !important; }
+        .bg-blue-50 { background-color: #eef8f0 !important; }
+        .bg-blue-100 { background-color: #dcefe0 !important; }
+        .text-blue-700, .text-blue-600, .text-blue-500 { color: #2f6f4e !important; }
+        .text-blue-200 { color: #cce6d2 !important; }
+        .border-blue-600, .border-blue-200, .border-blue-100 { border-color: #a9d0b1 !important; }
+        .hover\:bg-blue-900:hover { background-color: #1d4933 !important; }
+        .hover\:bg-blue-700:hover { background-color: #255c41 !important; }
+        .hover\:bg-blue-50:hover { background-color: #e4f3e7 !important; }
+        .bg-amber-700 { background-color: #5f713f !important; }
+        .bg-amber-600, .bg-amber-500 { background-color: #718b49 !important; }
+        .bg-amber-50 { background-color: #f2f7e9 !important; }
+        .bg-amber-100 { background-color: #e4efd0 !important; }
+        .text-amber-900, .text-amber-800, .text-amber-700, .text-amber-600 { color: #526735 !important; }
+        .border-amber-300, .border-amber-200, .border-amber-100 { border-color: #c5d69f !important; }
+        .hover\:bg-amber-800:hover, .hover\:bg-amber-700:hover, .hover\:bg-amber-600:hover { background-color: #5f713f !important; }
+        .bg-indigo-50 { background-color: #e9f4ed !important; }
+        .bg-indigo-500 { background-color: #3f8060 !important; }
+        .text-indigo-900, .text-indigo-700, .text-indigo-600 { color: #2d6648 !important; }
+        .border-indigo-300, .border-indigo-200 { border-color: #afd1b9 !important; }
+        .hover\:bg-indigo-100:hover, .hover\:bg-indigo-600:hover { background-color: #dcefe0 !important; }
+        .bg-purple-600 { background-color: #477b59 !important; }
+        .hover\:bg-purple-700:hover { background-color: #356344 !important; }
+        .bg-green-500, .bg-green-600 { background-color: #4d8b5d !important; }
+        .text-green-500, .text-green-600, .text-green-700 { color: #397248 !important; }
+        .border-green-100, .border-green-200 { border-color: #b7d8bd !important; }
     </style>
 </head>
 <body class="text-gray-800 pb-24">
@@ -395,6 +425,14 @@
             </div>
         </div>
         <div id="dashboardSummaryCards" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
+        <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <h3 class="font-bold text-gray-800 mb-3">สรุปสถานะงานตรวจ</h3>
+            <div id="dashboardStatusSummary" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2"></div>
+        </section>
+        <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <h3 class="font-bold text-gray-800 mb-3">สรุปสถานะงานแจ้งแก้ไข</h3>
+            <div id="dashboardCorrectionStatusSummary" class="grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
+        </section>
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
                 <h3 class="font-bold text-gray-800 mb-3">สรุปตามหน่วยงาน</h3>
@@ -506,6 +544,13 @@
             <!-- Dynamic History Cards -->
         </div>
     </main>
+
+    <footer class="max-w-4xl mx-auto px-4 py-5 text-center text-xs text-gray-500">
+        <div class="border-t border-gray-200 pt-4">
+            <p class="font-semibold text-gray-600">ผู้สร้าง SAFAREE LABAISOR</p>
+            <p class="mt-1">ใช้ในงานตรวจจ้างถาง กฟผ.</p>
+        </div>
+    </footer>
 
     <div id="bottomActionBar" class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] z-40 block">
         <div class="max-w-4xl mx-auto flex gap-3">
@@ -4761,6 +4806,22 @@
             return `<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4"><div class="text-xs text-gray-500">${title}</div><div class="text-2xl font-bold ${color} mt-1">${value}</div></div>`;
         }
 
+        const inspectionStatuses = ['รอตรวจสอบ', 'ผ่าน', 'ไม่ผ่าน', 'แจ้งแก้ไข', 'แก้ไขแล้ว', 'ปิดงาน'];
+        const correctionStatuses = ['แจ้งแก้ไข', 'แก้ไขแล้ว', 'ปิดงาน'];
+        const correctionStatusColors = {
+            'แจ้งแก้ไข': 'bg-yellow-100 text-yellow-700',
+            'แก้ไขแล้ว': 'bg-blue-100 text-blue-700',
+            'ปิดงาน': 'bg-green-100 text-green-700'
+        };
+        const inspectionStatusColors = {
+            'รอตรวจสอบ': 'bg-gray-100 text-gray-700',
+            'ผ่าน': 'bg-green-100 text-green-700',
+            'ไม่ผ่าน': 'bg-red-100 text-red-700',
+            'แจ้งแก้ไข': 'bg-yellow-100 text-yellow-700',
+            'แก้ไขแล้ว': 'bg-blue-100 text-blue-700',
+            'ปิดงาน': 'bg-indigo-100 text-indigo-700'
+        };
+
         window.refreshDashboard = function() {
             const inspections = dashboardRecords('weed_inspection_firebase_cache');
             const corrections = dashboardRecords('weed_correction_records_cloud').length
@@ -4776,6 +4837,14 @@
                 dashboardCard('รูปภาพที่บันทึก', totalPhotos, 'text-green-600'),
                 dashboardCard('รูปภาพมี GPS', gpsRate, 'text-indigo-600')
             ].join('');
+            const statusCounts = Object.fromEntries(inspectionStatuses.map(status => [status, 0]));
+            inspections.forEach(r => { const status = inspectionStatuses.includes(r.status) ? r.status : 'รอตรวจสอบ'; statusCounts[status]++; });
+            const statusBox = document.getElementById('dashboardStatusSummary');
+            if (statusBox) statusBox.innerHTML = inspectionStatuses.map(status => `<div class="rounded-lg p-3 text-center ${inspectionStatusColors[status]}"><div class="text-xs">${status}</div><div class="text-xl font-bold mt-1">${statusCounts[status]}</div></div>`).join('');
+            const correctionStatusCounts = Object.fromEntries(correctionStatuses.map(status => [status, 0]));
+            corrections.forEach(r => { const status = correctionStatuses.includes(r.status) ? r.status : 'แจ้งแก้ไข'; correctionStatusCounts[status]++; });
+            const correctionStatusBox = document.getElementById('dashboardCorrectionStatusSummary');
+            if (correctionStatusBox) correctionStatusBox.innerHTML = correctionStatuses.map(status => `<div class="rounded-lg p-3 text-center ${correctionStatusColors[status]}"><div class="text-xs">${status}</div><div class="text-xl font-bold mt-1">${correctionStatusCounts[status]}</div></div>`).join('');
 
             const departments = {};
             inspections.forEach(r => { const d = r.department || 'ไม่ระบุหน่วยงาน'; departments[d] = departments[d] || { inspections: 0, corrections: 0 }; departments[d].inspections++; });
@@ -4796,10 +4865,10 @@
                 showModal('error', 'ไม่มีข้อมูลสำหรับส่งออก', 'ยังไม่มีข้อมูลประวัติงานในระบบ');
                 return;
             }
-            const headers = ['ประเภทข้อมูล', 'วันที่', 'หน่วยงาน', 'แนวสาย', 'หมายเลขเสา/จุด', 'ผู้ส่งงาน', 'รายละเอียด', 'จำนวนรูปภาพ', 'รูปภาพมี GPS'];
+            const headers = ['ประเภทข้อมูล', 'วันที่', 'หน่วยงาน', 'แนวสาย', 'หมายเลขเสา/จุด', 'สถานะงาน', 'ผู้ส่งงาน', 'รายละเอียด', 'จำนวนรูปภาพ', 'รูปภาพมี GPS'];
             const rows = [
-                ...inspections.map(r => ['งานตรวจรับ', formatDateToThai(r.timestamp), r.department || '', r.lineName || '', r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : `Tower ${r.tower || ''}`, r.inspector || '', '', Object.keys(r.photos || {}).length, Object.values(r.photoMetadata || {}).filter(m => m?.gpsAvailable).length]),
-                ...corrections.map(r => ['แจ้งแก้ไข', formatDateToThai(r.timestamp), r.department || '', r.lineName || '', r.towerInfo || r.tower || '', '', `${r.details || ''}${r.updateNote ? ` | ${r.updateNote}` : ''}`, (r.photos || (r.photo ? [r.photo] : [])).length, (r.photoMetadata || []).filter(m => m?.gpsAvailable).length])
+                ...inspections.map(r => ['งานตรวจรับ', formatDateToThai(r.timestamp), r.department || '', r.lineName || '', r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : `Tower ${r.tower || ''}`, r.status || 'รอตรวจสอบ', r.inspector || '', '', Object.keys(r.photos || {}).length, Object.values(r.photoMetadata || {}).filter(m => m?.gpsAvailable).length]),
+                ...corrections.map(r => ['แจ้งแก้ไข', formatDateToThai(r.timestamp), r.department || '', r.lineName || '', r.towerInfo || r.tower || '', r.status || 'แจ้งแก้ไข', '', `${r.details || ''}${r.updateNote ? ` | ${r.updateNote}` : ''}`, (r.photos || (r.photo ? [r.photo] : [])).length, (r.photoMetadata || []).filter(m => m?.gpsAvailable).length])
             ];
             const cell = value => '"' + String(value ?? '').replace(/\r?\n|\r/g, ' ').replace(/"/g, '""') + '"';
             const csv = '\ufeff' + [headers, ...rows].map(row => row.map(cell).join(',')).join('\r\n');
@@ -4820,11 +4889,11 @@
             const totalPhotos = inspections.reduce((sum, r) => sum + Object.keys(r.photos || {}).length, 0);
             const inspectionRows = inspections.map((r, index) => {
                 const photos = Object.entries(r.photos || {}).filter(([, src]) => src).map(([key, src]) => `<figure><img src="${src}" alt="${key}"><figcaption>${key}</figcaption></figure>`).join('');
-                return `<article class="record blue"><h2>${index + 1}. งานตรวจ ${reportEscape(r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + (r.tower || ''))}</h2><p><b>หน่วยงาน:</b> ${reportEscape(r.department || '-')} | <b>แนวสาย:</b> ${reportEscape(r.lineName || '-')} | <b>ผู้ส่งงาน:</b> ${reportEscape(r.inspector || '-')}</p><p><b>วันที่:</b> ${reportEscape(formatDateToThai(r.timestamp))}</p><div class="photos">${photos || '<p>ไม่มีรูปภาพ</p>'}</div></article>`;
+                return `<article class="record blue"><h2>${index + 1}. งานตรวจ ${reportEscape(r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + (r.tower || ''))}</h2><p><b>หน่วยงาน:</b> ${reportEscape(r.department || '-')} | <b>แนวสาย:</b> ${reportEscape(r.lineName || '-')} | <b>ผู้ส่งงาน:</b> ${reportEscape(r.inspector || '-')}</p><p><b>วันที่:</b> ${reportEscape(formatDateToThai(r.timestamp))} | <b>สถานะ:</b> ${reportEscape(r.status || 'รอตรวจสอบ')}</p><div class="photos">${photos || '<p>ไม่มีรูปภาพ</p>'}</div></article>`;
             }).join('');
             const correctionRows = corrections.map((r, index) => {
                 const photos = (r.photos || (r.photo ? [r.photo] : [])).filter(Boolean).map((src, idx) => `<figure><img src="${src}" alt="รูปที่ ${idx + 1}"><figcaption>รูปที่ ${idx + 1}</figcaption></figure>`).join('');
-                return `<article class="record amber"><h2>${index + 1}. แจ้งแก้ไข ${reportEscape(r.towerInfo || r.tower || '-')}</h2><p><b>หน่วยงาน:</b> ${reportEscape(r.department || '-')} | <b>แนวสาย:</b> ${reportEscape(r.lineName || '-')}</p><p><b>วันที่:</b> ${reportEscape(formatDateToThai(r.timestamp))}</p><p><b>รายละเอียด:</b> ${reportEscape(r.details || '-')}</p>${r.updateNote ? `<p><b>ข้อความเพิ่มเติม:</b> ${reportEscape(r.updateNote)}</p>` : ''}<div class="photos">${photos || '<p>ไม่มีรูปภาพ</p>'}</div></article>`;
+                return `<article class="record amber"><h2>${index + 1}. แจ้งแก้ไข ${reportEscape(r.towerInfo || r.tower || '-')}</h2><p><b>หน่วยงาน:</b> ${reportEscape(r.department || '-')} | <b>แนวสาย:</b> ${reportEscape(r.lineName || '-')}</p><p><b>วันที่:</b> ${reportEscape(formatDateToThai(r.timestamp))} | <b>สถานะ:</b> ${reportEscape(r.status || 'แจ้งแก้ไข')}</p><p><b>รายละเอียด:</b> ${reportEscape(r.details || '-')}</p>${r.updateNote ? `<p><b>ข้อความเพิ่มเติม:</b> ${reportEscape(r.updateNote)}</p>` : ''}<div class="photos">${photos || '<p>ไม่มีรูปภาพ</p>'}</div></article>`;
             }).join('');
             const report = `<!doctype html><html lang="th"><head><meta charset="utf-8"><title>แดชบอร์ดสรุปงาน</title><style>@page{size:A4;margin:14mm}body{font-family:Arial,'Sarabun',sans-serif;color:#172033;font-size:12px}h1{text-align:center;font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:0 0 7px}.summary{text-align:center;color:#555;margin-bottom:18px}.record{break-inside:avoid;border:1px solid #d1d5db;border-radius:8px;padding:10px;margin:0 0 14px}.blue h2{color:#1d4ed8}.amber{border-color:#f3c77a}.amber h2{color:#92400e}.record p{margin:4px 0}.photos{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}figure{width:30%;margin:0;text-align:center}figure img{width:100%;height:125px;object-fit:cover;border:1px solid #d1d5db;border-radius:4px}figcaption{font-size:10px;margin-top:2px}.section-title{border-bottom:2px solid #6366f1;padding-bottom:5px;margin:22px 0 10px}@media print{.record{break-inside:avoid}}</style></head><body><header><h1>แดชบอร์ดสรุปงานตรวจถางวัชพืช</h1><div class="summary">สร้างเมื่อ ${reportEscape(formatDateToThai(new Date().toISOString()))}<br>งานตรวจรับ ${inspections.length} รายการ | งานแจ้งแก้ไข ${corrections.length} รายการ | รูปภาพงานตรวจ ${totalPhotos} รูป</div></header><h2 class="section-title">รายละเอียดงานตรวจรับ</h2>${inspectionRows || '<p>ไม่มีรายการ</p>'}<h2 class="section-title">รายละเอียดงานแจ้งแก้ไข</h2>${correctionRows || '<p>ไม่มีรายการ</p>'}</body></html>`;
             const win = window.open('', '_blank');
@@ -5275,6 +5344,7 @@
                     photoMetadata,
                     photoStampVersion: 2,
                     timestamp: dateIso,
+                    status: 'แจ้งแก้ไข',
                     lastUpdated: null
                 };
 
@@ -5420,6 +5490,9 @@ ${gpsText}`;
                                 </div>
                             </div>
                     <textarea id="corr-details-${item.id}" rows="2" class="w-full text-xs text-gray-700 bg-white border border-amber-200 rounded p-2 focus:ring-amber-500 focus:border-amber-500" placeholder="ระบุรายละเอียดการแก้ไข...">${item.details || ''}</textarea>
+                            <select onchange="updateCorrectionStatus('${item.id}', this.value)" class="w-full text-xs font-semibold text-gray-700 bg-green-50 border border-green-200 rounded p-2 focus:ring-green-500 focus:border-green-500" title="สถานะการแก้ไข">
+                                ${correctionStatuses.map(status => `<option value="${status}" ${((item.status || 'แจ้งแก้ไข') === status) ? 'selected' : ''}>สถานะ: ${status}</option>`).join('')}
+                            </select>
                             <textarea id="corr-update-note-${item.id}" rows="2" class="w-full text-xs text-gray-700 bg-yellow-50 border border-amber-200 rounded p-2 focus:ring-amber-500 focus:border-amber-500" placeholder="เพิ่มข้อความก่อนบันทึกการแก้ไข...">${item.updateNote || ''}</textarea>
                         </div>
                         <button onclick="deleteCorrectionRecord('${item.id}')" class="text-gray-400 hover:text-red-500 p-2 ml-2" title="ลบรายการนี้">
@@ -5459,9 +5532,9 @@ ${gpsText}`;
                 showModal('error', 'ไม่มีข้อมูลสำหรับส่งออก', 'กรุณาปรับตัวกรองหรือรอให้มีรายการแจ้งแก้ไขก่อน');
                 return;
             }
-            const headers = ['วันที่แจ้ง', 'หน่วยงาน', 'แนวสาย', 'หมายเลขเสา', 'จุด/แนวสาย', 'รายละเอียด', 'ข้อความเพิ่มเติมก่อนบันทึก', 'จำนวนรูปภาพ', 'วันที่แก้ไขล่าสุด'];
+            const headers = ['วันที่แจ้ง', 'หน่วยงาน', 'แนวสาย', 'หมายเลขเสา', 'สถานะงาน', 'จุด/แนวสาย', 'รายละเอียด', 'ข้อความเพิ่มเติมก่อนบันทึก', 'จำนวนรูปภาพ', 'วันที่แก้ไขล่าสุด'];
             const rows = records.map(item => [
-                formatDateToThai(item.timestamp), item.department || '', item.lineName || '', item.tower || '', item.towerInfo || '', item.details || '',
+                formatDateToThai(item.timestamp), item.department || '', item.lineName || '', item.tower || '', item.status || 'แจ้งแก้ไข', item.towerInfo || '', item.details || '',
                 item.updateNote || '', (item.photos || (item.photo ? [item.photo] : [])).length, item.lastUpdated ? formatDateToThai(item.lastUpdated) : ''
             ]);
             const csvCell = value => '"' + String(value ?? '').replace(/\r?\n|\r/g, ' ').replace(/"/g, '""') + '"';
@@ -5509,6 +5582,39 @@ ${gpsText}`;
             setTimeout(() => win.print(), 700);
         }
 
+        window.updateCorrectionStatus = async function(id, status) {
+            if (!correctionStatuses.includes(status)) return;
+            const corrList = getCorrectionHistoryRecords();
+            const item = corrList.find(i => i.id === id || i.docId === id);
+            if (!item) return;
+            const previousStatus = item.status || 'แจ้งแก้ไข';
+            item.status = status;
+            localStorage.setItem('weed_correction_records_cloud', JSON.stringify(corrList));
+            localStorage.setItem('weed_correction_records', JSON.stringify(corrList));
+            try {
+                const querySnapshot = await getDocs(collection(db, 'corrections'));
+                let updated = false;
+                for (const docSnap of querySnapshot.docs) {
+                    const data = docSnap.data();
+                    if (docSnap.id === id || data.id === id || docSnap.id === item.docId) {
+                        await updateDoc(docSnap.ref, { status });
+                        updated = true;
+                        break;
+                    }
+                }
+                if (!updated && id) await updateDoc(doc(db, 'corrections', id), { status });
+                renderCorrectionRecords();
+                refreshDashboard();
+            } catch (error) {
+                item.status = previousStatus;
+                localStorage.setItem('weed_correction_records_cloud', JSON.stringify(corrList));
+                localStorage.setItem('weed_correction_records', JSON.stringify(corrList));
+                renderCorrectionRecords();
+                showModal('error', 'บันทึกสถานะไม่สำเร็จ', 'ไม่สามารถบันทึกสถานะการแก้ไขลง Firebase ได้');
+                console.error('Error updating correction status:', error);
+            }
+        }
+
         window.saveCorrectionItem = async function(id) {
             const towerInput = document.getElementById(`corr-tower-${id}`);
             const detailsInput = document.getElementById(`corr-details-${id}`);
@@ -5534,6 +5640,7 @@ ${gpsText}`;
                                 towerInfo: item.towerInfo,
                                 details: item.details,
                                 updateNote: item.updateNote,
+                                status: item.status || 'แจ้งแก้ไข',
                                 photos: item.photos || [],
                                 lastUpdated: newTimestamp
                             });
@@ -5548,6 +5655,7 @@ ${gpsText}`;
                                 towerInfo: item.towerInfo,
                                 details: item.details,
                                 updateNote: item.updateNote,
+                                status: item.status || 'แจ้งแก้ไข',
                                 photos: item.photos || [],
                                 lastUpdated: newTimestamp
                             });
@@ -6277,7 +6385,8 @@ ${gpsText}`;
                         : (Object.values(photoMetaData).some(meta => meta.gpsAvailable)
                             ? 'เวลา + GPS บางรูป (บางรูปไม่มี GPS)'
                             : 'เวลา + ข้อมูลสนาม (GPS ไม่พร้อม)'),
-                    timestamp: new Date().toISOString()
+                    timestamp: new Date().toISOString(),
+                    status: 'รอตรวจสอบ'
                 };
 
                 await addDoc(collection(db, "inspections"), newRecord);
@@ -6398,6 +6507,9 @@ ${gpsText}`;
                             <p class="text-xs text-gray-500 mt-1">แนวสาย: <span class="font-semibold text-gray-700">${record.lineName || '-'}</span> | ผู้ส่งงาน: <span class="font-semibold text-gray-700">${record.inspector || 'ผู้รับเหมา'}</span></p>
                         </div>
                         <div class="flex items-center gap-3">
+                            <select onchange="updateInspectionStatus('${record.id}', this.value)" class="text-xs font-semibold rounded-lg border border-gray-300 px-2 py-1.5 bg-white focus:ring-green-500 focus:border-green-500" title="เปลี่ยนสถานะงาน">
+                                ${inspectionStatuses.map(status => `<option value="${status}" ${((record.status || 'รอตรวจสอบ') === status) ? 'selected' : ''}>${status}</option>`).join('')}
+                            </select>
                             <span class="text-xs bg-gray-100 text-gray-600 px-2.5 py-1 rounded-full whitespace-nowrap">
                                 ${formatDateToThai(record.timestamp)}
                             </span>
@@ -6414,6 +6526,27 @@ ${gpsText}`;
                 `;
                 container.appendChild(card);
             });
+        }
+
+        window.updateInspectionStatus = async function(id, status) {
+            if (!inspectionStatuses.includes(status)) return;
+            const records = getHistoryRecords();
+            const record = records.find(r => r.id === id);
+            if (!record) return;
+            const previousStatus = record.status || 'รอตรวจสอบ';
+            record.status = status;
+            localStorage.setItem('weed_inspection_firebase_cache', JSON.stringify(records));
+            try {
+                await updateDoc(doc(db, 'inspections', id), { status });
+                loadHistoryData();
+                refreshDashboard();
+            } catch (error) {
+                record.status = previousStatus;
+                localStorage.setItem('weed_inspection_firebase_cache', JSON.stringify(records));
+                loadHistoryData();
+                showModal('error', 'บันทึกสถานะไม่สำเร็จ', 'ไม่สามารถบันทึกสถานะลง Firebase ได้ กรุณาลองใหม่อีกครั้ง');
+                console.error('Error updating inspection status:', error);
+            }
         }
 
         window.clearHistoryFilters = function() {
@@ -6437,10 +6570,10 @@ ${gpsText}`;
                 showModal('error', 'ไม่มีข้อมูลสำหรับส่งออก', 'กรุณาปรับตัวกรองหรือรอให้มีรายการประวัติก่อน');
                 return;
             }
-            const headers = ['วันที่ส่งงาน', 'หน่วยงาน', 'แนวสาย', 'หมายเลขเสา', 'ผู้ส่งงาน', 'จำนวนรูปภาพ', 'พิกัด GPS ของรูป'];
+            const headers = ['วันที่ส่งงาน', 'หน่วยงาน', 'แนวสาย', 'หมายเลขเสา', 'สถานะงาน', 'ผู้ส่งงาน', 'จำนวนรูปภาพ', 'พิกัด GPS ของรูป'];
             const rows = records.map(r => {
                 const gps = Object.values(r.photoMetadata || {}).filter(m => m?.lat && m?.lng).map(m => `${m.lat}, ${m.lng}`).join(' | ');
-                return [formatDateToThai(r.timestamp), r.department || '', r.lineName || '', r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : `Tower ${r.tower || ''}`, r.inspector || '', Object.keys(r.photos || {}).length, gps];
+                return [formatDateToThai(r.timestamp), r.department || '', r.lineName || '', r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : `Tower ${r.tower || ''}`, r.status || 'รอตรวจสอบ', r.inspector || '', Object.keys(r.photos || {}).length, gps];
             });
             const csv = '\ufeff' + [headers, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n');
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -6466,7 +6599,7 @@ ${gpsText}`;
             }
             const rows = records.map((r, index) => {
                 const photos = Object.entries(r.photos || {}).filter(([, src]) => src).map(([key, src]) => `<figure><img src="${src}" alt="${reportEscape(key)}"><figcaption>${reportEscape(key.replace('photo', 'มุมที่ '))}</figcaption></figure>`).join('');
-                return `<article class="record"><h2>${index + 1}. ${reportEscape(r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + (r.tower || ''))}</h2><p><b>หน่วยงาน:</b> ${reportEscape(r.department || '-')} &nbsp; <b>แนวสาย:</b> ${reportEscape(r.lineName || '-')}</p><p><b>ผู้ส่งงาน:</b> ${reportEscape(r.inspector || '-')} &nbsp; <b>วันที่:</b> ${reportEscape(formatDateToThai(r.timestamp))}</p><div class="photos">${photos || '<p>ไม่มีรูปภาพ</p>'}</div></article>`;
+                return `<article class="record"><h2>${index + 1}. ${reportEscape(r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + (r.tower || ''))}</h2><p><b>หน่วยงาน:</b> ${reportEscape(r.department || '-')} &nbsp; <b>แนวสาย:</b> ${reportEscape(r.lineName || '-')}</p><p><b>ผู้ส่งงาน:</b> ${reportEscape(r.inspector || '-')} &nbsp; <b>วันที่:</b> ${reportEscape(formatDateToThai(r.timestamp))} &nbsp; <b>สถานะ:</b> ${reportEscape(r.status || 'รอตรวจสอบ')}</p><div class="photos">${photos || '<p>ไม่มีรูปภาพ</p>'}</div></article>`;
             }).join('');
             // เปิดหน้าต่างจาก event ของปุ่มโดยตรง หลีกเลี่ยง noopener/noreferrer
             // ซึ่งบางเบราว์เซอร์จะคืนค่า null และทำให้เข้าใจว่าเปิดป๊อปอัปไม่ได้
