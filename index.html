@@ -64,6 +64,9 @@
                     </svg>
                     <span>ประวัติกลาง (<span id="historyBadgeCount">0</span>)</span>
                 </button>
+                <button onclick="toggleDashboardView()" id="dashboardToggleBtn" class="text-sm bg-indigo-500 text-white font-semibold px-3 py-1.5 rounded-lg shadow-sm hover:bg-indigo-600 transition flex items-center gap-1">
+                    <span>แดชบอร์ด</span>
+                </button>
             </div>
         </div>
     </header>
@@ -145,7 +148,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
                     </svg>
-                    บันทึกรูปภาพ (5 มุมมอง) <!-- Photo 2: After - Front  – ประทับวันเวลาและ GPS อัตโนมัติ (GPS ไม่ได้ก็ยังบันทึกรูปได้)-->
+                    บันทึกรูปภาพ (5 มุมมอง) <!-- Photo 2: After - Front  – ะ GPS อัตโนมัติ (GPS ไม่ได้ก็ยังบันทึกรูปได้)-->
                 </h2>
                 <div class="flex items-center gap-2">
                     <span id="gpsStatusBadge" class="text-xs bg-gray-100 text-gray-500 px-3 py-2 rounded-lg border border-gray-200">ยังไม่ได้ตรวจ GPS</span>
@@ -379,6 +382,31 @@
         </section>
     </main>
 
+    <main id="dashboardView" class="max-w-4xl mx-auto px-4 py-6 space-y-6 hidden">
+        <div class="flex justify-between items-center bg-indigo-50 p-4 rounded-xl shadow-sm border border-indigo-200">
+            <div>
+                <h2 class="text-xl font-bold text-indigo-900">แดชบอร์ดสรุปงาน</h2>
+                <p class="text-xs text-indigo-700 mt-1">ภาพรวมงานตรวจรับและงานแจ้งแก้ไขจากข้อมูลที่บันทึกไว้</p>
+            </div>
+            <div class="flex flex-wrap gap-2 justify-end">
+                <button type="button" onclick="refreshDashboard()" class="bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-100 px-3 py-2 rounded-lg text-sm font-semibold">รีเฟรช</button>
+                <button type="button" onclick="exportDashboardCSV()" class="bg-emerald-600 text-white hover:bg-emerald-700 px-3 py-2 rounded-lg text-sm font-semibold">ส่งออก Excel/CSV</button>
+                <button type="button" onclick="printDashboardReport()" class="bg-purple-600 text-white hover:bg-purple-700 px-3 py-2 rounded-lg text-sm font-semibold">สร้างรายงาน PDF</button>
+            </div>
+        </div>
+        <div id="dashboardSummaryCards" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <h3 class="font-bold text-gray-800 mb-3">สรุปตามหน่วยงาน</h3>
+                <div id="dashboardDepartmentSummary" class="space-y-3"></div>
+            </section>
+            <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+                <h3 class="font-bold text-gray-800 mb-3">สถานะข้อมูลล่าสุด</h3>
+                <div id="dashboardRecentSummary" class="space-y-3 text-sm"></div>
+            </section>
+        </div>
+    </main>
+
     <!-- New Dedicated Page for Correction History -->
     <main id="correctionHistoryView" class="max-w-4xl mx-auto px-4 py-6 space-y-6 hidden">
         <div class="flex justify-between items-center bg-amber-50 p-4 rounded-xl shadow-sm border border-amber-200">
@@ -397,6 +425,26 @@
                 </svg>
                 กลับหน้าแจ้งแก้ไข
             </button>
+        </div>
+
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-3">
+            <div class="relative">
+                <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">🔎</span>
+                <input type="text" id="correctionSearchInput" oninput="filterCorrectionHistory()" placeholder="ค้นหาหน่วยงาน แนวสาย Tower หรือรายละเอียด..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500 text-sm bg-gray-50">
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <select id="correctionDepartmentFilter" onchange="filterCorrectionHistory()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50">
+                    <option value="">ทุกหน่วยงาน</option>
+                </select>
+                <input type="date" id="correctionDateFrom" onchange="filterCorrectionHistory()" title="ตั้งแต่วันที่" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50">
+                <input type="date" id="correctionDateTo" onchange="filterCorrectionHistory()" title="ถึงวันที่" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50">
+            </div>
+            <div class="flex flex-wrap gap-2 pt-1 border-t border-gray-100">
+                <button type="button" onclick="clearCorrectionHistoryFilters()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100">ล้างตัวกรอง</button>
+                <button type="button" onclick="exportCorrectionHistoryCSV()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold">ส่งออก Excel/CSV</button>
+                <button type="button" onclick="printCorrectionHistoryReport()" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-semibold">สร้างรายงาน PDF</button>
+                <span id="correctionResultCount" class="text-xs text-gray-500 self-center ml-auto"></span>
+            </div>
         </div>
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
@@ -425,7 +473,7 @@
         </div>
 
         <!-- Search & Filter Toolbar -->
-        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 space-y-3">
             <div class="relative">
                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -433,6 +481,19 @@
                     </svg>
                 </span>
                 <input type="text" id="searchInput" oninput="filterHistory()" placeholder="ค้นหาด้วย Tower, แนวสาย, ผู้ส่งงาน หรือ บสส. ..." class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm bg-gray-50">
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                <select id="historyDepartmentFilter" onchange="filterHistory()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50">
+                    <option value="">ทุกหน่วยงาน</option>
+                </select>
+                <input type="date" id="historyDateFrom" onchange="filterHistory()" title="ตั้งแต่วันที่" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50">
+                <input type="date" id="historyDateTo" onchange="filterHistory()" title="ถึงวันที่" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50">
+                <button type="button" onclick="clearHistoryFilters()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100">ล้างตัวกรอง</button>
+            </div>
+            <div class="flex flex-wrap gap-2 pt-1 border-t border-gray-100">
+                <button type="button" onclick="exportHistoryCSV()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold">ส่งออก Excel/CSV</button>
+                <button type="button" onclick="printHistoryReport()" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-semibold">สร้างรายงาน PDF</button>
+                <span id="historyResultCount" class="text-xs text-gray-500 self-center ml-auto"></span>
             </div>
         </div>
 
@@ -4691,11 +4752,108 @@
             }
         };
 
+        function dashboardRecords(key) {
+            try { return JSON.parse(localStorage.getItem(key) || '[]'); }
+            catch (_) { return []; }
+        }
+
+        function dashboardCard(title, value, color) {
+            return `<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4"><div class="text-xs text-gray-500">${title}</div><div class="text-2xl font-bold ${color} mt-1">${value}</div></div>`;
+        }
+
+        window.refreshDashboard = function() {
+            const inspections = dashboardRecords('weed_inspection_firebase_cache');
+            const corrections = dashboardRecords('weed_correction_records_cloud').length
+                ? dashboardRecords('weed_correction_records_cloud')
+                : dashboardRecords('weed_correction_records');
+            const totalPhotos = inspections.reduce((sum, r) => sum + Object.keys(r.photos || {}).length, 0);
+            const gpsPhotos = inspections.reduce((sum, r) => sum + Object.values(r.photoMetadata || {}).filter(m => m?.gpsAvailable).length, 0);
+            const gpsRate = totalPhotos ? `${Math.round((gpsPhotos / totalPhotos) * 100)}%` : '0%';
+            const cards = document.getElementById('dashboardSummaryCards');
+            if (cards) cards.innerHTML = [
+                dashboardCard('งานตรวจรับทั้งหมด', inspections.length, 'text-blue-700'),
+                dashboardCard('งานแจ้งแก้ไข', corrections.length, 'text-amber-600'),
+                dashboardCard('รูปภาพที่บันทึก', totalPhotos, 'text-green-600'),
+                dashboardCard('รูปภาพมี GPS', gpsRate, 'text-indigo-600')
+            ].join('');
+
+            const departments = {};
+            inspections.forEach(r => { const d = r.department || 'ไม่ระบุหน่วยงาน'; departments[d] = departments[d] || { inspections: 0, corrections: 0 }; departments[d].inspections++; });
+            corrections.forEach(r => { const d = r.department || 'ไม่ระบุหน่วยงาน'; departments[d] = departments[d] || { inspections: 0, corrections: 0 }; departments[d].corrections++; });
+            const deptBox = document.getElementById('dashboardDepartmentSummary');
+            const deptRows = Object.entries(departments).sort((a, b) => (b[1].inspections + b[1].corrections) - (a[1].inspections + a[1].corrections));
+            if (deptBox) deptBox.innerHTML = deptRows.length ? deptRows.map(([name, stat]) => `<div><div class="flex justify-between text-sm"><span class="font-medium">${reportEscape(name)}</span><span class="text-gray-500">ตรวจ ${stat.inspections} | แก้ไข ${stat.corrections}</span></div><div class="h-2 bg-gray-100 rounded-full mt-1"><div class="h-2 bg-indigo-500 rounded-full" style="width:${Math.min(100, Math.max(8, (stat.inspections + stat.corrections) / Math.max(1, inspections.length + corrections.length) * 100))}%"></div></div></div>`).join('') : '<p class="text-sm text-gray-400">ยังไม่มีข้อมูล</p>';
+
+            const recent = [...inspections.map(r => ({ date: r.timestamp, label: `ส่งงานตรวจ ${r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + (r.tower || '')}`, type: 'ตรวจรับ' })), ...corrections.map(r => ({ date: r.timestamp, label: `แจ้งแก้ไข ${r.towerInfo || r.tower || ''}`, type: 'แก้ไข' }))].filter(r => r.date).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
+            const recentBox = document.getElementById('dashboardRecentSummary');
+            if (recentBox) recentBox.innerHTML = recent.length ? recent.map(r => `<div class="flex justify-between gap-2 border-b border-gray-100 pb-2"><span>${reportEscape(r.label)}</span><span class="text-xs text-gray-500 whitespace-nowrap">${formatDateToThai(r.date)}</span></div>`).join('') : '<p class="text-gray-400">ยังไม่มีข้อมูลล่าสุด</p>';
+        }
+
+        window.exportDashboardCSV = function() {
+            const inspections = dashboardRecords('weed_inspection_firebase_cache');
+            const corrections = dashboardRecords('weed_correction_records_cloud').length ? dashboardRecords('weed_correction_records_cloud') : dashboardRecords('weed_correction_records');
+            if (!inspections.length && !corrections.length) {
+                showModal('error', 'ไม่มีข้อมูลสำหรับส่งออก', 'ยังไม่มีข้อมูลประวัติงานในระบบ');
+                return;
+            }
+            const headers = ['ประเภทข้อมูล', 'วันที่', 'หน่วยงาน', 'แนวสาย', 'หมายเลขเสา/จุด', 'ผู้ส่งงาน', 'รายละเอียด', 'จำนวนรูปภาพ', 'รูปภาพมี GPS'];
+            const rows = [
+                ...inspections.map(r => ['งานตรวจรับ', formatDateToThai(r.timestamp), r.department || '', r.lineName || '', r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : `Tower ${r.tower || ''}`, r.inspector || '', '', Object.keys(r.photos || {}).length, Object.values(r.photoMetadata || {}).filter(m => m?.gpsAvailable).length]),
+                ...corrections.map(r => ['แจ้งแก้ไข', formatDateToThai(r.timestamp), r.department || '', r.lineName || '', r.towerInfo || r.tower || '', '', `${r.details || ''}${r.updateNote ? ` | ${r.updateNote}` : ''}`, (r.photos || (r.photo ? [r.photo] : [])).length, (r.photoMetadata || []).filter(m => m?.gpsAvailable).length])
+            ];
+            const cell = value => '"' + String(value ?? '').replace(/\r?\n|\r/g, ' ').replace(/"/g, '""') + '"';
+            const csv = '\ufeff' + [headers, ...rows].map(row => row.map(cell).join(',')).join('\r\n');
+            const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `แดชบอร์ดสรุปงาน_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+        }
+
+        window.printDashboardReport = function() {
+            const inspections = dashboardRecords('weed_inspection_firebase_cache');
+            const corrections = dashboardRecords('weed_correction_records_cloud').length ? dashboardRecords('weed_correction_records_cloud') : dashboardRecords('weed_correction_records');
+            if (!inspections.length && !corrections.length) {
+                showModal('error', 'ไม่มีข้อมูลสำหรับสร้างรายงาน', 'ยังไม่มีข้อมูลประวัติงานในระบบ');
+                return;
+            }
+            const totalPhotos = inspections.reduce((sum, r) => sum + Object.keys(r.photos || {}).length, 0);
+            const inspectionRows = inspections.map((r, index) => {
+                const photos = Object.entries(r.photos || {}).filter(([, src]) => src).map(([key, src]) => `<figure><img src="${src}" alt="${key}"><figcaption>${key}</figcaption></figure>`).join('');
+                return `<article class="record blue"><h2>${index + 1}. งานตรวจ ${reportEscape(r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + (r.tower || ''))}</h2><p><b>หน่วยงาน:</b> ${reportEscape(r.department || '-')} | <b>แนวสาย:</b> ${reportEscape(r.lineName || '-')} | <b>ผู้ส่งงาน:</b> ${reportEscape(r.inspector || '-')}</p><p><b>วันที่:</b> ${reportEscape(formatDateToThai(r.timestamp))}</p><div class="photos">${photos || '<p>ไม่มีรูปภาพ</p>'}</div></article>`;
+            }).join('');
+            const correctionRows = corrections.map((r, index) => {
+                const photos = (r.photos || (r.photo ? [r.photo] : [])).filter(Boolean).map((src, idx) => `<figure><img src="${src}" alt="รูปที่ ${idx + 1}"><figcaption>รูปที่ ${idx + 1}</figcaption></figure>`).join('');
+                return `<article class="record amber"><h2>${index + 1}. แจ้งแก้ไข ${reportEscape(r.towerInfo || r.tower || '-')}</h2><p><b>หน่วยงาน:</b> ${reportEscape(r.department || '-')} | <b>แนวสาย:</b> ${reportEscape(r.lineName || '-')}</p><p><b>วันที่:</b> ${reportEscape(formatDateToThai(r.timestamp))}</p><p><b>รายละเอียด:</b> ${reportEscape(r.details || '-')}</p>${r.updateNote ? `<p><b>ข้อความเพิ่มเติม:</b> ${reportEscape(r.updateNote)}</p>` : ''}<div class="photos">${photos || '<p>ไม่มีรูปภาพ</p>'}</div></article>`;
+            }).join('');
+            const report = `<!doctype html><html lang="th"><head><meta charset="utf-8"><title>แดชบอร์ดสรุปงาน</title><style>@page{size:A4;margin:14mm}body{font-family:Arial,'Sarabun',sans-serif;color:#172033;font-size:12px}h1{text-align:center;font-size:20px;margin:0 0 4px}h2{font-size:15px;margin:0 0 7px}.summary{text-align:center;color:#555;margin-bottom:18px}.record{break-inside:avoid;border:1px solid #d1d5db;border-radius:8px;padding:10px;margin:0 0 14px}.blue h2{color:#1d4ed8}.amber{border-color:#f3c77a}.amber h2{color:#92400e}.record p{margin:4px 0}.photos{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}figure{width:30%;margin:0;text-align:center}figure img{width:100%;height:125px;object-fit:cover;border:1px solid #d1d5db;border-radius:4px}figcaption{font-size:10px;margin-top:2px}.section-title{border-bottom:2px solid #6366f1;padding-bottom:5px;margin:22px 0 10px}@media print{.record{break-inside:avoid}}</style></head><body><header><h1>แดชบอร์ดสรุปงานตรวจถางวัชพืช</h1><div class="summary">สร้างเมื่อ ${reportEscape(formatDateToThai(new Date().toISOString()))}<br>งานตรวจรับ ${inspections.length} รายการ | งานแจ้งแก้ไข ${corrections.length} รายการ | รูปภาพงานตรวจ ${totalPhotos} รูป</div></header><h2 class="section-title">รายละเอียดงานตรวจรับ</h2>${inspectionRows || '<p>ไม่มีรายการ</p>'}<h2 class="section-title">รายละเอียดงานแจ้งแก้ไข</h2>${correctionRows || '<p>ไม่มีรายการ</p>'}</body></html>`;
+            const win = window.open('', '_blank');
+            if (!win) {
+                const url = URL.createObjectURL(new Blob([report], { type: 'text/html;charset=utf-8' }));
+                const a = document.createElement('a'); a.href = url; a.target = '_blank'; a.download = `แดชบอร์ดสรุปงาน_${new Date().toISOString().slice(0, 10)}.html`; a.textContent = 'เปิดรายงานแดชบอร์ด'; a.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[80] bg-purple-600 text-white px-5 py-3 rounded-lg shadow-lg font-semibold'; document.body.appendChild(a); a.click();
+                setTimeout(() => { a.remove(); URL.revokeObjectURL(url); }, 3000);
+                showModal('error', 'เบราว์เซอร์บล็อกป๊อปอัป', 'กดลิงก์ “เปิดรายงานแดชบอร์ด” ที่ปรากฏด้านล่าง หรืออนุญาตป๊อปอัปแล้วลองใหม่');
+                return;
+            }
+            win.document.write(report); win.document.close(); win.focus(); setTimeout(() => win.print(), 700);
+        }
+
+        window.toggleDashboardView = function() {
+            if (currentViewMode === 'dashboard') { goHome(); return; }
+            currentViewMode = 'dashboard';
+            ['formView', 'correctionView', 'correctionHistoryView', 'historyView'].forEach(id => document.getElementById(id)?.classList.replace('block', 'hidden'));
+            document.getElementById('dashboardView')?.classList.replace('hidden', 'block');
+            document.getElementById('bottomActionBar')?.classList.replace('block', 'hidden');
+            ['photoCountBadge', 'correctionToggleBtn', 'corrHistoryToggleBtn', 'viewToggleBtn'].forEach(id => document.getElementById(id)?.classList.add('hidden'));
+            refreshDashboard();
+        }
+
         window.toggleCorrectionView = function() {
             const formView = document.getElementById('formView');
             const correctionView = document.getElementById('correctionView');
             const correctionHistoryView = document.getElementById('correctionHistoryView');
             const historyView = document.getElementById('historyView');
+            const dashboardView = document.getElementById('dashboardView');
             const bottomBar = document.getElementById('bottomActionBar');
             const photoCountBadge = document.getElementById('photoCountBadge');
             const corrBtn = document.getElementById('correctionToggleBtn');
@@ -4707,6 +4865,7 @@
                 formView.classList.replace('block', 'hidden');
                 historyView.classList.replace('block', 'hidden');
                 correctionHistoryView.classList.replace('block', 'hidden');
+                dashboardView.classList.replace('block', 'hidden');
                 correctionView.classList.replace('hidden', 'block');
                 bottomBar.classList.replace('block', 'hidden');
                 photoCountBadge.classList.add('hidden');
@@ -4732,6 +4891,7 @@
             const correctionView = document.getElementById('correctionView');
             const correctionHistoryView = document.getElementById('correctionHistoryView');
             const historyView = document.getElementById('historyView');
+            const dashboardView = document.getElementById('dashboardView');
             const bottomBar = document.getElementById('bottomActionBar');
             const photoCountBadge = document.getElementById('photoCountBadge');
             const corrBtn = document.getElementById('correctionToggleBtn');
@@ -4743,6 +4903,7 @@
             correctionView.classList.replace('block', 'hidden');
             correctionHistoryView.classList.replace('block', 'hidden');
             historyView.classList.replace('block', 'hidden');
+            dashboardView.classList.replace('block', 'hidden');
             formView.classList.replace('hidden', 'block');
             bottomBar.classList.replace('hidden', 'block');
             photoCountBadge.classList.remove('hidden');
@@ -4775,6 +4936,7 @@
             const correctionView = document.getElementById('correctionView');
             const correctionHistoryView = document.getElementById('correctionHistoryView');
             const historyView = document.getElementById('historyView');
+            const dashboardView = document.getElementById('dashboardView');
             const bottomBar = document.getElementById('bottomActionBar');
             const photoCountBadge = document.getElementById('photoCountBadge');
             const corrBtn = document.getElementById('correctionToggleBtn');
@@ -4786,6 +4948,7 @@
                 formView.classList.replace('block', 'hidden');
                 correctionView.classList.replace('block', 'hidden');
                 historyView.classList.replace('block', 'hidden');
+                dashboardView.classList.replace('block', 'hidden');
                 correctionHistoryView.classList.replace('hidden', 'block');
                 bottomBar.classList.replace('block', 'hidden');
                 photoCountBadge.classList.add('hidden');
@@ -5158,13 +5321,64 @@ ${gpsText}`;
             }
         }
 
+        function getCorrectionHistoryRecords() {
+            try {
+                return JSON.parse(localStorage.getItem('weed_correction_records_cloud') || localStorage.getItem('weed_correction_records') || '[]');
+            } catch (_) {
+                return [];
+            }
+        }
+
+        function getFilteredCorrectionRecords() {
+            const search = (document.getElementById('correctionSearchInput')?.value || '').toLowerCase().trim();
+            const department = document.getElementById('correctionDepartmentFilter')?.value || '';
+            const from = document.getElementById('correctionDateFrom')?.value || '';
+            const to = document.getElementById('correctionDateTo')?.value || '';
+            return getCorrectionHistoryRecords().filter(item => {
+                const haystack = [item.department, item.lineName, item.tower, item.towerInfo, item.details].map(v => String(v || '').toLowerCase()).join(' ');
+                const date = item.timestamp ? new Date(item.timestamp) : null;
+                const dateKey = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '';
+                return (!search || haystack.includes(search)) &&
+                    (!department || item.department === department) &&
+                    (!from || (dateKey && dateKey >= from)) &&
+                    (!to || (dateKey && dateKey <= to));
+            });
+        }
+
+        function populateCorrectionDepartmentFilter(records) {
+            const select = document.getElementById('correctionDepartmentFilter');
+            if (!select) return;
+            const current = select.value;
+            const departments = [...new Set(records.map(r => r.department).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'th'));
+            select.innerHTML = '<option value="">ทุกหน่วยงาน</option>' + departments.map(d => `<option value="${String(d).replace(/"/g, '&quot;')}">${d}</option>`).join('');
+            if (departments.includes(current)) select.value = current;
+        }
+
+        window.filterCorrectionHistory = function() {
+            renderCorrectionRecords();
+        }
+
+        window.clearCorrectionHistoryFilters = function() {
+            ['correctionSearchInput', 'correctionDateFrom', 'correctionDateTo'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            const department = document.getElementById('correctionDepartmentFilter');
+            if (department) department.value = '';
+            renderCorrectionRecords();
+        }
+
         function renderCorrectionRecords() {
             const container = document.getElementById('correctionContainer');
             const empty = document.getElementById('emptyCorrection');
             if (!container) return;
             
             container.innerHTML = '';
-            let corrList = JSON.parse(localStorage.getItem('weed_correction_records_cloud') || localStorage.getItem('weed_correction_records') || '[]');
+            const allCorrectionRecords = getCorrectionHistoryRecords();
+            populateCorrectionDepartmentFilter(allCorrectionRecords);
+            let corrList = getFilteredCorrectionRecords();
+            const countEl = document.getElementById('correctionResultCount');
+            if (countEl) countEl.textContent = `แสดง ${corrList.length} จาก ${allCorrectionRecords.length} รายการ`;
             updateCorrectionBadges();
 
             if (corrList.length === 0) {
@@ -5181,11 +5395,11 @@ ${gpsText}`;
                     photosHtml += `
                         <div class="relative group">
                             <img src="${p}" onclick="openImageModal('${p}')" class="w-20 h-20 object-cover rounded-lg border border-amber-200 cursor-pointer shadow-sm" alt="photo ${idx+1}">
-                            <button onclick="removeCorrectionPhoto('${item.id}', ${idx})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-[10px] shadow hover:bg-red-600" title="ลบรูปนี้">
+                            ${idx > 0 ? `<button onclick="removeCorrectionPhoto('${item.id}', ${idx})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-[10px] shadow hover:bg-red-600" title="ลบรูปนี้">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
-                            </button>
+                            </button>` : ''}
                         </div>
                     `;
                 });
@@ -5205,7 +5419,8 @@ ${gpsText}`;
                                     <div id="corr-time-text-${item.id}" class="${item.lastUpdated ? '' : 'hidden'} text-amber-700 font-medium">วันที่แก้ไข: ${updatedText}</div>
                                 </div>
                             </div>
-                            <textarea id="corr-details-${item.id}" rows="2" class="w-full text-xs text-gray-700 bg-white border border-amber-200 rounded p-2 focus:ring-amber-500 focus:border-amber-500" placeholder="ระบุรายละเอียดการแก้ไข...">${item.details || ''}</textarea>
+                    <textarea id="corr-details-${item.id}" rows="2" class="w-full text-xs text-gray-700 bg-white border border-amber-200 rounded p-2 focus:ring-amber-500 focus:border-amber-500" placeholder="ระบุรายละเอียดการแก้ไข...">${item.details || ''}</textarea>
+                            <textarea id="corr-update-note-${item.id}" rows="2" class="w-full text-xs text-gray-700 bg-yellow-50 border border-amber-200 rounded p-2 focus:ring-amber-500 focus:border-amber-500" placeholder="เพิ่มข้อความก่อนบันทึกการแก้ไข...">${item.updateNote || ''}</textarea>
                         </div>
                         <button onclick="deleteCorrectionRecord('${item.id}')" class="text-gray-400 hover:text-red-500 p-2 ml-2" title="ลบรายการนี้">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -5238,9 +5453,66 @@ ${gpsText}`;
             });
         }
 
+        window.exportCorrectionHistoryCSV = function() {
+            const records = getFilteredCorrectionRecords();
+            if (!records.length) {
+                showModal('error', 'ไม่มีข้อมูลสำหรับส่งออก', 'กรุณาปรับตัวกรองหรือรอให้มีรายการแจ้งแก้ไขก่อน');
+                return;
+            }
+            const headers = ['วันที่แจ้ง', 'หน่วยงาน', 'แนวสาย', 'หมายเลขเสา', 'จุด/แนวสาย', 'รายละเอียด', 'ข้อความเพิ่มเติมก่อนบันทึก', 'จำนวนรูปภาพ', 'วันที่แก้ไขล่าสุด'];
+            const rows = records.map(item => [
+                formatDateToThai(item.timestamp), item.department || '', item.lineName || '', item.tower || '', item.towerInfo || '', item.details || '',
+                item.updateNote || '', (item.photos || (item.photo ? [item.photo] : [])).length, item.lastUpdated ? formatDateToThai(item.lastUpdated) : ''
+            ]);
+            const csvCell = value => '"' + String(value ?? '').replace(/\r?\n|\r/g, ' ').replace(/"/g, '""') + '"';
+            const csv = '\ufeff' + [headers, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n');
+            const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ประวัติแจ้งแก้ไข_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        window.printCorrectionHistoryReport = function() {
+            const records = getFilteredCorrectionRecords();
+            if (!records.length) {
+                showModal('error', 'ไม่มีข้อมูลสำหรับสร้างรายงาน', 'กรุณาปรับตัวกรองหรือรอให้มีรายการแจ้งแก้ไขก่อน');
+                return;
+            }
+            const rows = records.map((item, index) => {
+                const photos = (item.photos || (item.photo ? [item.photo] : [])).filter(Boolean).map((src, idx) => `<figure><img src="${src}" alt="รูปที่ ${idx + 1}"><figcaption>รูปที่ ${idx + 1}</figcaption></figure>`).join('');
+                return `<article class="record"><h2>${index + 1}. ${reportEscape(item.towerInfo || item.tower || 'รายการแจ้งแก้ไข')}</h2><p><b>หน่วยงาน:</b> ${reportEscape(item.department || '-')} &nbsp; <b>แนวสาย:</b> ${reportEscape(item.lineName || '-')}</p><p><b>วันที่แจ้ง:</b> ${reportEscape(formatDateToThai(item.timestamp))} &nbsp; <b>วันที่แก้ไขล่าสุด:</b> ${reportEscape(item.lastUpdated ? formatDateToThai(item.lastUpdated) : '-')}</p><p><b>รายละเอียด:</b> ${reportEscape(item.details || '-')}</p><p><b>ข้อความเพิ่มเติมก่อนบันทึก:</b> ${reportEscape(item.updateNote || '-')}</p><div class="photos">${photos || '<p>ไม่มีรูปภาพ</p>'}</div></article>`;
+            }).join('');
+            const win = window.open('', '_blank');
+            if (!win) {
+                const reportBlob = new Blob([`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>ประวัติแจ้งแก้ไขงาน</title></head><body>${rows}</body></html>`], { type: 'text/html;charset=utf-8' });
+                const reportUrl = URL.createObjectURL(reportBlob);
+                const fallbackLink = document.createElement('a');
+                fallbackLink.href = reportUrl;
+                fallbackLink.target = '_blank';
+                fallbackLink.rel = 'noopener';
+                fallbackLink.download = `ประวัติแจ้งแก้ไข_${new Date().toISOString().slice(0, 10)}.html`;
+                fallbackLink.textContent = 'เปิดรายงานแจ้งแก้ไข';
+                fallbackLink.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[80] bg-purple-600 text-white px-5 py-3 rounded-lg shadow-lg font-semibold';
+                document.body.appendChild(fallbackLink);
+                fallbackLink.click();
+                setTimeout(() => { fallbackLink.remove(); URL.revokeObjectURL(reportUrl); }, 3000);
+                showModal('error', 'เบราว์เซอร์บล็อกป๊อปอัป', 'กดลิงก์ “เปิดรายงานแจ้งแก้ไข” ที่ปรากฏด้านล่าง หรืออนุญาตป๊อปอัปแล้วลองใหม่');
+                return;
+            }
+            win.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>ประวัติแจ้งแก้ไขงาน</title><style>@page{size:A4;margin:14mm}body{font-family:Arial,'Sarabun',sans-serif;color:#172033;font-size:12px}h1{text-align:center;font-size:20px;margin:0 0 4px}header{text-align:center;border-bottom:2px solid #d97706;padding-bottom:10px;margin-bottom:16px}.summary{text-align:center;color:#555;margin-bottom:18px}.record{break-inside:avoid;border:1px solid #f3c77a;border-radius:8px;padding:10px;margin:0 0 14px}.record h2{font-size:15px;color:#92400e;margin:0 0 7px}.record p{margin:4px 0}.photos{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}figure{width:30%;margin:0;text-align:center}figure img{width:100%;height:125px;object-fit:cover;border:1px solid #d1d5db;border-radius:4px}figcaption{font-size:10px;margin-top:2px}@media print{.record{break-inside:avoid}}</style></head><body><header><h1>รายงานประวัติแจ้งแก้ไขงาน</h1><div class="summary">สร้างเมื่อ ${reportEscape(formatDateToThai(new Date().toISOString()))} | จำนวน ${records.length} รายการ</div></header>${rows}</body></html>`);
+            win.document.close();
+            win.focus();
+            setTimeout(() => win.print(), 700);
+        }
+
         window.saveCorrectionItem = async function(id) {
             const towerInput = document.getElementById(`corr-tower-${id}`);
             const detailsInput = document.getElementById(`corr-details-${id}`);
+            const updateNoteInput = document.getElementById(`corr-update-note-${id}`);
             const newTimestamp = new Date().toISOString();
             
             let corrList = JSON.parse(localStorage.getItem('weed_correction_records_cloud') || '[]');
@@ -5249,6 +5521,7 @@ ${gpsText}`;
             if (item) {
                 item.towerInfo = towerInput.value.trim();
                 item.details = detailsInput.value.trim();
+                item.updateNote = updateNoteInput ? updateNoteInput.value.trim() : '';
                 item.lastUpdated = newTimestamp;
 
                 try {
@@ -5260,6 +5533,7 @@ ${gpsText}`;
                             await updateDoc(docSnap.ref, {
                                 towerInfo: item.towerInfo,
                                 details: item.details,
+                                updateNote: item.updateNote,
                                 photos: item.photos || [],
                                 lastUpdated: newTimestamp
                             });
@@ -5273,6 +5547,7 @@ ${gpsText}`;
                             await updateDoc(doc(db, "corrections", id), {
                                 towerInfo: item.towerInfo,
                                 details: item.details,
+                                updateNote: item.updateNote,
                                 photos: item.photos || [],
                                 lastUpdated: newTimestamp
                             });
@@ -5694,6 +5969,7 @@ ${gpsText}`;
             const formView = document.getElementById('formView');
             const historyView = document.getElementById('historyView');
             const correctionHistoryView = document.getElementById('correctionHistoryView');
+            const dashboardView = document.getElementById('dashboardView');
             const bottomBar = document.getElementById('bottomActionBar');
             const toggleBtn = document.getElementById('viewToggleBtn');
             const photoCountBadge = document.getElementById('photoCountBadge');
@@ -5704,6 +5980,7 @@ ${gpsText}`;
                 currentViewMode = 'history';
                 formView.classList.replace('block', 'hidden');
                 correctionHistoryView.classList.replace('block', 'hidden');
+                dashboardView.classList.replace('block', 'hidden');
                 historyView.classList.replace('hidden', 'block');
                 bottomBar.classList.replace('block', 'hidden');
                 photoCountBadge.classList.add('hidden');
@@ -5721,6 +5998,7 @@ ${gpsText}`;
             } else {
                 currentViewMode = 'form';
                 historyView.classList.replace('block', 'hidden');
+                dashboardView.classList.replace('block', 'hidden');
                 formView.classList.replace('hidden', 'block');
                 bottomBar.classList.replace('hidden', 'block');
                 photoCountBadge.classList.remove('hidden');
@@ -6041,26 +6319,49 @@ ${gpsText}`;
             loadHistoryData();
         }
 
+        function getHistoryRecords() {
+            try {
+                return JSON.parse(localStorage.getItem('weed_inspection_firebase_cache') || '[]');
+            } catch (_) {
+                return [];
+            }
+        }
+
+        function getFilteredHistoryRecords() {
+            const searchTerm = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+            const department = document.getElementById('historyDepartmentFilter')?.value || '';
+            const from = document.getElementById('historyDateFrom')?.value || '';
+            const to = document.getElementById('historyDateTo')?.value || '';
+            return getHistoryRecords().filter(r => {
+                const towerStr = (r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + (r.tower || '')).toLowerCase();
+                const haystack = [towerStr, r.lineName, r.inspector, r.department].map(v => String(v || '').toLowerCase()).join(' ');
+                const date = r.timestamp ? new Date(r.timestamp) : null;
+                const dateKey = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '';
+                return (!searchTerm || haystack.includes(searchTerm)) &&
+                    (!department || r.department === department) &&
+                    (!from || (dateKey && dateKey >= from)) &&
+                    (!to || (dateKey && dateKey <= to));
+            });
+        }
+
+        function populateHistoryDepartmentFilter(records) {
+            const select = document.getElementById('historyDepartmentFilter');
+            if (!select) return;
+            const current = select.value;
+            const departments = [...new Set(records.map(r => r.department).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'th'));
+            select.innerHTML = '<option value="">ทุกหน่วยงาน</option>' + departments.map(d => `<option value="${String(d).replace(/"/g, '&quot;')}">${d}</option>`).join('');
+            if (departments.includes(current)) select.value = current;
+        }
+
         function loadHistoryData() {
             const container = document.getElementById('historyContainer');
             const empty = document.getElementById('emptyHistory');
-            const searchTerm = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
-            
+            const allRecords = getHistoryRecords();
+            populateHistoryDepartmentFilter(allRecords);
             container.innerHTML = '';
-            let records = JSON.parse(localStorage.getItem('weed_inspection_firebase_cache') || '[]');
-
-            if (searchTerm) {
-                records = records.filter(r => {
-                    const towerStr = (r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + r.tower).toLowerCase();
-                    const lineStr = (r.lineName || '').toLowerCase();
-                    const inspectorStr = (r.inspector || '').toLowerCase();
-                    const deptStr = (r.department || '').toLowerCase();
-                    return towerStr.includes(searchTerm) || 
-                           lineStr.includes(searchTerm) || 
-                           inspectorStr.includes(searchTerm) || 
-                           deptStr.includes(searchTerm);
-                });
-            }
+            let records = getFilteredHistoryRecords();
+            const countEl = document.getElementById('historyResultCount');
+            if (countEl) countEl.textContent = `แสดง ${records.length} จาก ${allRecords.length} รายการ`;
 
             if (records.length === 0) {
                 empty.classList.remove('hidden');
@@ -6113,6 +6414,83 @@ ${gpsText}`;
                 `;
                 container.appendChild(card);
             });
+        }
+
+        window.clearHistoryFilters = function() {
+            ['searchInput', 'historyDateFrom', 'historyDateTo'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            const department = document.getElementById('historyDepartmentFilter');
+            if (department) department.value = '';
+            loadHistoryData();
+        }
+
+        function csvCell(value) {
+            const text = String(value ?? '').replace(/\r?\n|\r/g, ' ');
+            return '"' + text.replace(/"/g, '""') + '"';
+        }
+
+        window.exportHistoryCSV = function() {
+            const records = getFilteredHistoryRecords();
+            if (!records.length) {
+                showModal('error', 'ไม่มีข้อมูลสำหรับส่งออก', 'กรุณาปรับตัวกรองหรือรอให้มีรายการประวัติก่อน');
+                return;
+            }
+            const headers = ['วันที่ส่งงาน', 'หน่วยงาน', 'แนวสาย', 'หมายเลขเสา', 'ผู้ส่งงาน', 'จำนวนรูปภาพ', 'พิกัด GPS ของรูป'];
+            const rows = records.map(r => {
+                const gps = Object.values(r.photoMetadata || {}).filter(m => m?.lat && m?.lng).map(m => `${m.lat}, ${m.lng}`).join(' | ');
+                return [formatDateToThai(r.timestamp), r.department || '', r.lineName || '', r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : `Tower ${r.tower || ''}`, r.inspector || '', Object.keys(r.photos || {}).length, gps];
+            });
+            const csv = '\ufeff' + [headers, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `รายงานตรวจงานถางวัชพืช_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            URL.revokeObjectURL(url);
+        }
+
+        function reportEscape(value) {
+            return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+        }
+
+        window.printHistoryReport = function() {
+            const records = getFilteredHistoryRecords();
+            if (!records.length) {
+                showModal('error', 'ไม่มีข้อมูลสำหรับสร้างรายงาน', 'กรุณาปรับตัวกรองหรือรอให้มีรายการประวัติก่อน');
+                return;
+            }
+            const rows = records.map((r, index) => {
+                const photos = Object.entries(r.photos || {}).filter(([, src]) => src).map(([key, src]) => `<figure><img src="${src}" alt="${reportEscape(key)}"><figcaption>${reportEscape(key.replace('photo', 'มุมที่ '))}</figcaption></figure>`).join('');
+                return `<article class="record"><h2>${index + 1}. ${reportEscape(r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + (r.tower || ''))}</h2><p><b>หน่วยงาน:</b> ${reportEscape(r.department || '-')} &nbsp; <b>แนวสาย:</b> ${reportEscape(r.lineName || '-')}</p><p><b>ผู้ส่งงาน:</b> ${reportEscape(r.inspector || '-')} &nbsp; <b>วันที่:</b> ${reportEscape(formatDateToThai(r.timestamp))}</p><div class="photos">${photos || '<p>ไม่มีรูปภาพ</p>'}</div></article>`;
+            }).join('');
+            // เปิดหน้าต่างจาก event ของปุ่มโดยตรง หลีกเลี่ยง noopener/noreferrer
+            // ซึ่งบางเบราว์เซอร์จะคืนค่า null และทำให้เข้าใจว่าเปิดป๊อปอัปไม่ได้
+            const win = window.open('', '_blank');
+            if (!win) {
+                const reportBlob = new Blob([`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>รายงานตรวจงานถางวัชพืช</title></head><body>${rows}</body></html>`], { type: 'text/html;charset=utf-8' });
+                const reportUrl = URL.createObjectURL(reportBlob);
+                const fallbackLink = document.createElement('a');
+                fallbackLink.href = reportUrl;
+                fallbackLink.target = '_blank';
+                fallbackLink.rel = 'noopener';
+                fallbackLink.download = `รายงานตรวจงานถางวัชพืช_${new Date().toISOString().slice(0, 10)}.html`;
+                fallbackLink.textContent = 'เปิดรายงาน';
+                fallbackLink.className = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-[80] bg-purple-600 text-white px-5 py-3 rounded-lg shadow-lg font-semibold';
+                document.body.appendChild(fallbackLink);
+                fallbackLink.click();
+                setTimeout(() => { fallbackLink.remove(); URL.revokeObjectURL(reportUrl); }, 3000);
+                showModal('error', 'เบราว์เซอร์บล็อกป๊อปอัป', 'กดลิงก์ “เปิดรายงาน” ที่ปรากฏด้านล่าง หรืออนุญาตป๊อปอัปของเว็บไซต์แล้วลองใหม่');
+                return;
+            }
+            win.document.write(`<!doctype html><html lang="th"><head><meta charset="utf-8"><title>รายงานตรวจงานถางวัชพืช</title><style>@page{size:A4;margin:14mm}body{font-family:Arial,'Sarabun',sans-serif;color:#172033;font-size:12px}h1{text-align:center;font-size:20px;margin:0 0 4px}header{text-align:center;border-bottom:2px solid #1d4ed8;padding-bottom:10px;margin-bottom:16px}.summary{text-align:center;color:#555;margin-bottom:18px}.record{break-inside:avoid;border:1px solid #d1d5db;border-radius:8px;padding:10px;margin:0 0 14px}.record h2{font-size:15px;color:#1d4ed8;margin:0 0 7px}.record p{margin:4px 0}.photos{display:flex;flex-wrap:wrap;gap:8px;margin-top:9px}figure{width:30%;margin:0;text-align:center}figure img{width:100%;height:125px;object-fit:cover;border:1px solid #d1d5db;border-radius:4px}figcaption{font-size:10px;margin-top:2px}@media print{.record{break-inside:avoid}}</style></head><body><header><h1>รายงานตรวจงานถางวัชพืช</h1><div class="summary">สร้างเมื่อ ${reportEscape(formatDateToThai(new Date().toISOString()))} | จำนวน ${records.length} รายการ</div></header>${rows}</body></html>`);
+            win.document.close();
+            win.focus();
+            setTimeout(() => win.print(), 700);
         }
 
         function updateHistoryBadge() {
