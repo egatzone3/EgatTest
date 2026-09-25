@@ -501,11 +501,12 @@
                 <textarea id="poDescription" rows="2" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600" placeholder="รายละเอียดหน่วยงาน ปีสัญญา หรือหมายเหตุ"></textarea>
             </div>
             <div class="mt-4 space-y-3">
-                <p class="block text-sm font-medium text-gray-700">ไฟล์แนบของงาน <span class="text-xs text-red-600">ต้องแนบ TOR ส่วน PO และใบแจ้งเข้าทำงานแนบได้ถ้ามี</span></p>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <p class="block text-sm font-medium text-gray-700">ไฟล์แนบของงาน <span class="text-xs text-red-600">ต้องแนบ TOR ส่วน PO, ใบแจ้งเข้าทำงาน และขออนุมัติจ้าง แนบได้ถ้ามี</span></p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                     <div><label for="poFileTOR" class="block text-xs font-medium text-gray-600 mb-1">TOR <span class="text-red-600">*</span></label><input id="poFileTOR" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" class="w-full border border-gray-300 rounded-lg p-2 text-xs bg-gray-50"></div>
                     <div><label for="poFilePO" class="block text-xs font-medium text-gray-600 mb-1">PO (ถ้ามี)</label><input id="poFilePO" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" class="w-full border border-gray-300 rounded-lg p-2 text-xs bg-gray-50"></div>
                     <div><label for="poFileNotice" class="block text-xs font-medium text-gray-600 mb-1">ใบแจ้งเข้าทำงาน (ถ้ามี)</label><input id="poFileNotice" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" class="w-full border border-gray-300 rounded-lg p-2 text-xs bg-gray-50"></div>
+                    <div><label for="poFileApproval" class="block text-xs font-medium text-gray-600 mb-1">ขออนุมัติจ้าง (ถ้ามี)</label><input id="poFileApproval" type="file" accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png" class="w-full border border-gray-300 rounded-lg p-2 text-xs bg-gray-50"></div>
                 </div>
                 <p class="text-xs text-gray-500">รองรับไฟล์ PDF, Word, Excel และรูปภาพ รวมไม่เกิน 20 MB ต่อไฟล์</p>
             </div>
@@ -5271,7 +5272,8 @@
             const files = [
                 { type: 'TOR', file: document.getElementById('poFileTOR')?.files?.[0] },
                 { type: 'PO', file: document.getElementById('poFilePO')?.files?.[0] },
-                { type: 'ใบแจ้งเข้าทำงาน', file: document.getElementById('poFileNotice')?.files?.[0] }
+                { type: 'ใบแจ้งเข้าทำงาน', file: document.getElementById('poFileNotice')?.files?.[0] },
+                { type: 'ขออนุมัติจ้าง', file: document.getElementById('poFileApproval')?.files?.[0] }
             ].filter(item => item.file);
             const tor = files.find(item => item.type === 'TOR');
             if (!tor) { showModal('error', 'ยังไม่ได้แนบ TOR', 'กรุณาแนบไฟล์ TOR ก่อนบันทึกงาน'); return; }
@@ -5288,7 +5290,7 @@
                 await poApiPost({ action: 'upload', title, category, year, department, description, attachments, user });
                 sendPODiscordNotification('upload', { title, category, year, department, fileName: tor.file.name, fileSize: tor.file.size, attachments: files.map(item => item.type) });
                 titleInput.value = ''; document.getElementById('poDescription').value = ''; document.getElementById('poYear').value = '2569'; document.getElementById('poDepartment').value = '';
-                ['poFileTOR', 'poFilePO', 'poFileNotice'].forEach(id => { const input = document.getElementById(id); if (input) input.value = ''; });
+                ['poFileTOR', 'poFilePO', 'poFileNotice', 'poFileApproval'].forEach(id => { const input = document.getElementById(id); if (input) input.value = ''; });
                 status.textContent = 'ส่งไฟล์แล้ว กำลังอัปเดตรายการ...';
                 setTimeout(async () => { await loadPODocuments(); status.textContent = 'อัปโหลดสำเร็จ'; }, 1800);
                 showModal('success', 'ส่งเอกสารสำเร็จ', `บันทึกไฟล์แนบ ${files.length} รายการลง Google Drive แล้ว`);
@@ -5303,8 +5305,8 @@
             input.onchange = async () => {
                 const file = input.files?.[0]; if (!file) return;
                 if (file.size > 20 * 1024 * 1024) { showModal('error', 'ไฟล์มีขนาดใหญ่เกินไป', 'รองรับไฟล์ไม่เกิน 20 MB ต่อไฟล์'); return; }
-                const type = prompt('ประเภทไฟล์: PO หรือ ใบแจ้งเข้าทำงาน', 'PO');
-                if (!['PO', 'ใบแจ้งเข้าทำงาน'].includes(type || '')) { showModal('error', 'ประเภทไฟล์ไม่ถูกต้อง', 'กรุณาระบุ PO หรือ ใบแจ้งเข้าทำงาน'); return; }
+                const type = prompt('ประเภทไฟล์: PO, ใบแจ้งเข้าทำงาน หรือ ขออนุมัติจ้าง', 'PO');
+                if (!['PO', 'ใบแจ้งเข้าทำงาน', 'ขออนุมัติจ้าง'].includes(type || '')) { showModal('error', 'ประเภทไฟล์ไม่ถูกต้อง', 'กรุณาระบุ PO, ใบแจ้งเข้าทำงาน หรือ ขออนุมัติจ้าง'); return; }
                 try {
                     await poApiPost({ action: 'addAttachment', fileId, attachment: { type, fileName: file.name, mimeType: file.type || 'application/octet-stream', fileSize: file.size, base64: await fileToBase64(file) }, user: getCurrentLoginUser() });
                     sendPODiscordNotification('update', { title: item.title, fileName: file.name, fileId, status: `แนบไฟล์เพิ่ม: ${type}` });
