@@ -5100,7 +5100,7 @@
             const item = poDocuments.find(document => document.fileId === fileId);
             if (!item || !confirm(`ต้องการลบเอกสาร “${item.title || item.fileName}” ใช่หรือไม่?`)) return;
             try {
-                await poApiPost({ action: 'delete', fileId });
+                await poApiPost({ action: 'delete', fileId, title: item.title || item.fileName || '', user: getCurrentLoginUser() });
                 setTimeout(loadPODocuments, 1500);
             } catch (error) { console.error('Delete PO document error:', error); showModal('error', 'ลบเอกสารไม่สำเร็จ', 'ไม่สามารถเชื่อมต่อ Google Apps Script ได้'); }
         };
