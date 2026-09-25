@@ -728,39 +728,6 @@
             console.warn("Anonymous auth info:", error.message);
         });
 
-        const LOGIN_USERS = [
-            { code: "574902", name: "นายสุรศักดิ์ หนูสุก", unit: "สก.หสต3" },
-            { code: "592200", name: "นายธวรรธน์ รัตนะ", unit: "สก.หสต3" },
-            { code: "531138", name: "นายวิชิต กาลสงค์", unit: "สก.หสต3" },
-            { code: "545082", name: "นายณรงค์ แก้วเนียม", unit: "บสส.หาดใหญ่1" },
-            { code: "549266", name: "นายแวบือราเฮง มะมิง", unit: "บสส.ยะลา" },
-            { code: "559393", name: "นายกูฮูเซ็ง กูมะ", unit: "บสส.ยะลา" },
-            { code: "563218", name: "นายอาซิ เวาะเนาะ", unit: "บสส.หาดใหญ่2" },
-            { code: "563226", name: "นายมูฮามัดรอซาลี โต๊ะเก็ง", unit: "บสส.ยะลา" },
-            { code: "563234", name: "นายแวหะมะซามูดิง โตะแปเราะ", unit: "บสส.นราธิวาส" },
-            { code: "489468", name: "นายศิโรตม์ อุ่นเสียม", unit: "บสส.พัทลุง" },
-            { code: "523992", name: "นายโอภาส วชิรอนันต์", unit: "บสส.หาดใหญ่2" },
-            { code: "530131", name: "นายพินิต เส้งวุ่น", unit: "สก.หสต3" },
-            { code: "563250", name: "นายสาเหาะ มะ", unit: "บสส.นราธิวาส" },
-            { code: "591309", name: "นายพิชญ์ แก้วสม", unit: "บสส.หาดใหญ่1" },
-            { code: "573264", name: "นายอนันต์ มะดีเยาะ", unit: "บสส.นราธิวาส" },
-            { code: "573396", name: "นายนราธร เทพรักษ์", unit: "บสส.นราธิวาส" },
-            { code: "590368", name: "ว่าที่ ร.ต.ทินกร อรุณรัตน์", unit: "บสส.พัทลุง" },
-            { code: "563242", name: "นายดนัย ดือราแม", unit: "บสส.ยะลา" },
-            { code: "590730", name: "นายจักรกฤษ จีนเมือง", unit: "บสส.พัทลุง" },
-            { code: "592537", name: "นายวัชระ มากชิต", unit: "บสส.หาดใหญ่1" },
-            { code: "593054", name: "นายนวพงศ์ ขุนพลช่วย", unit: "บสส.พัทลุง" },
-            { code: "594521", name: "นายซาฟารี ละใบซอ", unit: "สก.หสต3" },
-            { code: "594524", name: "นายสุรศักดิ์ นวลงาม", unit: "บสส.หาดใหญ่2" },
-            { code: "594702", name: "นายวีรพงศ์ สังขกูล", unit: "บสส.หาดใหญ่2" },
-            { code: "595074", name: "นายอาฟานดี วาเต๊ะ", unit: "บสส.หาดใหญ่1" },
-            { code: "595107", name: "นายณัฐนันท์ ธรรมบัญญัติ", unit: "บสส.หาดใหญ่1" },
-            { code: "596495", name: "นายพงศ์พัฒน์ ศานติมารค", unit: "บสส.หาดใหญ่1" },
-            { code: "595628", name: "นายชรินทร์คาน ชาชา", unit: "บสส.หาดใหญ่1" },
-            { code: "596560", name: "นายสหรัฐ รัตนะชัย", unit: "บสส.ยะลา" },
-            { code: "597660", name: "นายจตุพร ยิ่งเสริมทรัพย์", unit: "บสส.ยะลา" },
-            { code: "596498", name: "นางสาวศรุตยา เต็มคงแก้ว", unit: "สก.กสต" }
-        ];
         const DISCORD_WEBHOOK_LOGIN = "https://discord.com/api/webhooks/1552603472015134742/uKnHBSpV6yY8eBaF5C2N42wmHYyXgdLX1pq79aY7wsKbf7UT0qB0PbyZdBA4q1Nwu1j2";
 
         function getDeviceInfo() {
@@ -795,9 +762,8 @@
             form.addEventListener('submit', async (event) => {
                 event.preventDefault();
                 const code = input.value.trim();
-                const user = LOGIN_USERS.find(item => item.code === code);
-                if (!/^\d{6}$/.test(code) || !user) {
-                    error.textContent = 'ไม่พบรหัสผู้ใช้งานนี้ กรุณาตรวจสอบรหัส 6 หลักอีกครั้ง';
+                if (!/^\d{6}$/.test(code)) {
+                    error.textContent = 'กรุณากรอกรหัสผู้ใช้งานเป็นตัวเลข 6 หลัก';
                     error.classList.remove('hidden');
                     input.focus();
                     return;
@@ -805,6 +771,20 @@
                 error.classList.add('hidden');
                 button.disabled = true;
                 button.textContent = 'กำลังตรวจสอบและบันทึกการเข้าใช้...';
+                let user;
+                try {
+                    const response = await fetch(`${PO_APPS_SCRIPT_URL}?action=login&code=${encodeURIComponent(code)}&_=${Date.now()}`, { cache: 'no-store' });
+                    const result = await response.json();
+                    if (!result.ok) throw new Error(result.error || 'ไม่พบรหัสผู้ใช้งานนี้');
+                    user = result.user;
+                } catch (err) {
+                    error.textContent = err.message || 'ไม่สามารถเชื่อมต่อระบบตรวจสอบผู้ใช้งานได้';
+                    error.classList.remove('hidden');
+                    button.disabled = false;
+                    button.textContent = 'เข้าสู่ระบบ';
+                    input.focus();
+                    return;
+                }
                 sessionStorage.setItem('weedLoginUser', JSON.stringify(user));
                 document.body.classList.remove('login-locked');
                 document.getElementById('loginGate').classList.add('hidden');
