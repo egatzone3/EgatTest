@@ -5024,17 +5024,35 @@
             });
         }
 
+        function poSafe(value) {
+            return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+        }
+
+        function poFormatDate(value) {
+            if (!value) return '-';
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) return poSafe(value);
+            return date.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+        }
+
         window.loadPODocuments = async function() {
             const list = document.getElementById('poDocumentList');
             if (list) list.innerHTML = '<p class="text-sm text-gray-400">กำลังโหลดรายการเอกสาร...</p>';
             try {
-                poDocuments = await poApiList(document.getElementById('poSearchInput')?.value || '');
+                const loaded = await poApiList(document.getElementById('poSearchInput')?.value || '');
+                poDocuments = Array.isArray(loaded) ? loaded : [];
                 poDocumentsLoaded = true;
-                renderPODocuments();
             } catch (error) {
                 console.error('Load PO documents error:', error);
                 poDocuments = [];
-                if (list) list.innerHTML = '<p class="text-sm text-red-500">โหลดรายการไม่สำเร็จ กรุณาตรวจสอบ URL หรือสิทธิ์ของ Google Apps Script</p>';
+                if (list) list.innerHTML = `<p class="text-sm text-red-500">โหลดรายการไม่สำเร็จ: ${poSafe(error?.message || 'ไม่ทราบสาเหตุ')}</p>`;
+                return;
+            }
+            try {
+                renderPODocuments();
+            } catch (error) {
+                console.error('Render PO documents error:', error);
+                if (list) list.innerHTML = `<p class="text-sm text-red-500">อ่านข้อมูลสำเร็จ แต่แสดงรายการไม่ได้: ${poSafe(error?.message || 'ไม่ทราบสาเหตุ')}</p>`;
             }
         };
 
@@ -5046,7 +5064,7 @@
             const filtered = poDocuments.filter(item => [item.title, item.category, item.description, item.fileName, item.uploadedByName].some(value => String(value || '').toLowerCase().includes(query)));
             if (count) count.textContent = `แสดง ${filtered.length} จาก ${poDocuments.length} ไฟล์`;
             if (!filtered.length) { list.innerHTML = `<p class="text-sm text-gray-400">${poDocuments.length ? 'ไม่พบเอกสารที่ค้นหา' : 'ยังไม่มีเอกสาร'}</p>`; return; }
-            list.innerHTML = filtered.map(item => `<article class="border border-gray-200 rounded-xl p-4 hover:border-green-300 transition"><div class="flex flex-col sm:flex-row gap-3 sm:items-start sm:justify-between"><div class="flex gap-3 min-w-0"><div class="text-3xl">${poFileIcon(item.fileType || item.fileName || '')}</div><div class="min-w-0"><h4 class="font-bold text-green-800 break-words">${reportEscape(item.title || item.fileName || 'ไม่มีชื่อเอกสาร')}</h4><p class="text-xs text-gray-500 mt-1">${reportEscape(item.category || 'เอกสาร')} | ${formatFileSize(item.fileSize)} | ${reportEscape(item.fileName || '')}</p><p class="text-xs text-gray-600 mt-2">${reportEscape(item.description || 'ไม่มีรายละเอียด')}</p><p class="text-[11px] text-gray-400 mt-2">เพิ่มโดย ${reportEscape(item.uploadedByName || '-')} เมื่อ ${formatDateToThai(item.uploadedAt)}</p></div></div><div class="flex gap-2 shrink-0"><button type="button" onclick="viewPODocument('${item.fileId}')" class="bg-green-700 hover:bg-green-800 text-white px-3 py-2 rounded-lg text-xs font-semibold">เปิดดู</button><button type="button" onclick="deletePODocument('${item.fileId}')" class="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 px-3 py-2 rounded-lg text-xs font-semibold">ลบ</button></div></div></article>`).join('');
+            list.innerHTML = filtered.map(item => `<article class="border border-gray-200 rounded-xl p-4 hover:border-green-300 transition"><div class="flex flex-col sm:flex-row gap-3 sm:items-start sm:justify-between"><div class="flex gap-3 min-w-0"><div class="text-3xl">${poFileIcon(item.fileType || item.fileName || '')}</div><div class="min-w-0"><h4 class="font-bold text-green-800 break-words">${poSafe(item.title || item.fileName || 'ไม่มีชื่อเอกสาร')}</h4><p class="text-xs text-gray-500 mt-1">${poSafe(item.category || 'เอกสาร')} | ${formatFileSize(item.fileSize)} | ${poSafe(item.fileName || '')}</p><p class="text-xs text-gray-600 mt-2">${poSafe(item.description || 'ไม่มีรายละเอียด')}</p><p class="text-[11px] text-gray-400 mt-2">เพิ่มโดย ${poSafe(item.uploadedByName || '-')} เมื่อ ${poFormatDate(item.uploadedAt)}</p></div></div><div class="flex gap-2 shrink-0"><button type="button" onclick="viewPODocument('${item.fileId}')" class="bg-green-700 hover:bg-green-800 text-white px-3 py-2 rounded-lg text-xs font-semibold">เปิดดู</button><button type="button" onclick="deletePODocument('${item.fileId}')" class="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 px-3 py-2 rounded-lg text-xs font-semibold">ลบ</button></div></div></article>`).join('');
         };
 
         window.uploadPODocument = async function() {
