@@ -4997,6 +4997,25 @@
         };
 
         const PO_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvR45TvLX7E5v23kKQDEF2GfHzC55fLLUowL2Pqrg9OwRSZlu4xSlLx0e4ABFlG4bu/exec';
+        const DISCORD_PO_WEBHOOK = 'https://discord.com/api/webhooks/1552877861118152796/eIdEaiuduzIipaoH_EwsDdazudkDpKRgKXdR0oZ31L2823gkHvDhjlg6p0fQTtTdaBQg';
+
+        async function sendPODiscordNotification(event, data) {
+            const isUpload = event === 'upload';
+            const user = getCurrentLoginUser();
+            const message = isUpload
+                ? `📄 **เพิ่มเอกสาร PO**\nชื่อเอกสาร: ${data.title || '-'}\nประเภท: ${data.category || '-'}\nชื่อไฟล์: ${data.fileName || '-'}\nขนาด: ${formatFileSize(data.fileSize)}\nผู้ดำเนินการ: ${user.name || '-'} (${user.code || '-'})\nลิงก์ไฟล์: ${data.fileUrl || 'กำลังบันทึกใน Google Drive'}\nเวลา: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}`
+                : `🗑️ **ลบเอกสาร PO**\nชื่อเอกสาร: ${data.title || data.fileName || '-'}\nชื่อไฟล์: ${data.fileName || '-'}\nรหัสไฟล์ Drive: ${data.fileId || '-'}\nผู้ดำเนินการ: ${user.name || '-'} (${user.code || '-'})\nเวลา: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}`;
+            try {
+                await fetch(DISCORD_PO_WEBHOOK, {
+                    method: 'POST',
+                    mode: 'cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'ระบบเอกสาร PO', content: message })
+                });
+            } catch (error) {
+                console.warn('ส่งแจ้งเตือน Discord ไม่สำเร็จ แต่การทำงานหลักยังดำเนินต่อ:', error);
+            }
+        }
 
         async function poApiList(query = '') {
             const response = await fetch(`${PO_APPS_SCRIPT_URL}?q=${encodeURIComponent(query)}&_=${Date.now()}`, {
@@ -5082,6 +5101,7 @@
             try {
                 const base64 = await fileToBase64(file);
                 await poApiPost({ action: 'upload', title, category, description, fileName: file.name, mimeType: file.type || 'application/octet-stream', base64, user });
+                sendPODiscordNotification('upload', { title, category, fileName: file.name, fileSize: file.size });
                 titleInput.value = ''; document.getElementById('poDescription').value = ''; document.getElementById('poFile').value = '';
                 status.textContent = 'ส่งไฟล์แล้ว กำลังอัปเดตรายการ...';
                 setTimeout(async () => { await loadPODocuments(); status.textContent = 'อัปโหลดสำเร็จ'; }, 1800);
@@ -5101,6 +5121,7 @@
             if (!item || !confirm(`ต้องการลบเอกสาร “${item.title || item.fileName}” ใช่หรือไม่?`)) return;
             try {
                 await poApiPost({ action: 'delete', fileId, title: item.title || item.fileName || '', user: getCurrentLoginUser() });
+                sendPODiscordNotification('delete', { title: item.title, fileName: item.fileName, fileId });
                 setTimeout(loadPODocuments, 1500);
             } catch (error) { console.error('Delete PO document error:', error); showModal('error', 'ลบเอกสารไม่สำเร็จ', 'ไม่สามารถเชื่อมต่อ Google Apps Script ได้'); }
         };
