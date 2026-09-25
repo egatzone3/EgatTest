@@ -716,6 +716,19 @@
         </button>
     </div>
 
+    <div id="poPreviewModal" class="fixed inset-0 bg-black bg-opacity-75 z-[80] hidden items-center justify-center p-3 sm:p-6" onclick="closePOPreview(event)">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-6xl h-[92vh] flex flex-col overflow-hidden" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between gap-3 px-4 py-3 border-b bg-green-50">
+                <h3 id="poPreviewTitle" class="font-bold text-green-900 truncate">ตัวอย่างไฟล์</h3>
+                <div class="flex items-center gap-2 shrink-0">
+                    <a id="poPreviewOpenLink" href="#" target="_blank" rel="noopener" class="text-xs sm:text-sm bg-green-700 hover:bg-green-800 text-white px-3 py-2 rounded-lg">เปิดไฟล์ต้นฉบับ</a>
+                    <button type="button" onclick="closePOPreview()" class="text-gray-600 hover:text-red-600 text-xl px-2" aria-label="ปิดตัวอย่างไฟล์">×</button>
+                </div>
+            </div>
+            <div id="poPreviewBody" class="flex-1 min-h-0 bg-gray-100 flex items-center justify-center p-2"></div>
+        </div>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
@@ -784,12 +797,26 @@
                 button.textContent = 'กำลังตรวจสอบและบันทึกการเข้าใช้...';
                 let user;
                 try {
-                    const response = await fetch(`${PO_APPS_SCRIPT_URL}?action=login&code=${encodeURIComponent(code)}&_=${Date.now()}`, { cache: 'no-store' });
-                    const result = await response.json();
-                    if (!result.ok) throw new Error(result.error || 'ไม่พบรหัสผู้ใช้งานนี้');
-                    user = result.user;
+                    let lastError;
+                    for (let attempt = 0; attempt < 2; attempt++) {
+                        try {
+                            const response = await fetch(`${PO_APPS_SCRIPT_URL}?action=login&code=${encodeURIComponent(code)}&_=${Date.now()}_${attempt}`, { cache: 'no-store', redirect: 'follow' });
+                            const text = await response.text();
+                            if (!response.ok || /^\s*</.test(text)) throw new Error('Google Apps Script ตอบกลับเป็นหน้าเว็บ ไม่ใช่ข้อมูล Login');
+                            const result = JSON.parse(text);
+                            if (!result.ok) throw new Error(result.error || 'ไม่พบรหัสผู้ใช้งานนี้');
+                            user = result.user;
+                            break;
+                        } catch (attemptError) {
+                            lastError = attemptError;
+                            if (attempt === 0) await new Promise(resolve => setTimeout(resolve, 500));
+                        }
+                    }
+                    if (!user) throw lastError || new Error('ไม่สามารถตรวจสอบผู้ใช้งานได้');
                 } catch (err) {
-                    error.textContent = err.message || 'ไม่สามารถเชื่อมต่อระบบตรวจสอบผู้ใช้งานได้';
+                    error.textContent = err.message === 'Google Apps Script ตอบกลับเป็นหน้าเว็บ ไม่ใช่ข้อมูล Login'
+                        ? 'ระบบตรวจสอบผู้ใช้งานตอบกลับไม่สมบูรณ์ กรุณากดเข้าสู่ระบบอีกครั้ง หรือแจ้งผู้ดูแลให้ตรวจ Deployment'
+                        : (err.message || 'ไม่สามารถเชื่อมต่อระบบตรวจสอบผู้ใช้งานได้');
                     error.classList.remove('hidden');
                     button.disabled = false;
                     button.textContent = 'เข้าสู่ระบบ';
@@ -5216,7 +5243,7 @@
             if (count) count.textContent = `แสดง ${filtered.length} จาก ${poDocuments.length} ไฟล์`;
             if (!filtered.length) { list.innerHTML = `<p class="text-sm text-gray-400">${poDocuments.length ? 'ไม่พบเอกสารที่ค้นหา' : 'ยังไม่มีเอกสาร'}</p>`; return; }
             const grouped = filtered.reduce((groups, item) => { const key = String(item.year || 'ไม่ระบุปี'); (groups[key] ||= []).push(item); return groups; }, {});
-            list.innerHTML = Object.keys(grouped).sort((a, b) => Number(b) - Number(a)).map(year => `<div class="pt-2"><h4 class="text-lg font-bold text-green-800 border-b border-green-100 pb-2 mb-3">ปี ${poSafe(year)} <span class="text-xs font-normal text-gray-500">(${grouped[year].length} เอกสาร)</span></h4><div class="space-y-3">${grouped[year].map(item => `<article class="border border-gray-200 rounded-xl p-4 hover:border-green-300 transition"><div class="flex flex-col sm:flex-row gap-3 sm:items-start sm:justify-between"><div class="flex gap-3 min-w-0"><div class="text-3xl">${poFileIcon(item.fileType || item.fileName || '')}</div><div class="min-w-0"><h4 class="font-bold text-green-800 break-words">${poSafe(item.title || item.fileName || 'ไม่มีชื่อเอกสาร')}</h4><p class="text-xs text-gray-500 mt-1">${poSafe(item.category || 'เอกสาร')} | ปี ${poSafe(item.year || '-')} | หน่วยงาน ${poSafe(item.department || '-')} | ${formatFileSize(item.fileSize)} | ${poSafe(item.fileName || '')}</p><p class="text-xs text-gray-600 mt-2">${poSafe(item.description || 'ไม่มีรายละเอียด')}</p>${Array.isArray(item.attachments) && item.attachments.length ? `<div class="mt-2 flex flex-col gap-2"><p class="text-xs font-semibold text-gray-600">ไฟล์แนบ</p>${item.attachments.map(file => `<div class="flex flex-wrap items-center gap-2"><a href="${poSafe(file.fileUrl || '#')}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-green-50 text-green-700 text-xs hover:bg-green-100">${poSafe(file.type || 'ไฟล์')} · ${poSafe(file.fileName || '')}</a><button type="button" onclick="deletePOAttachment('${item.fileId}','${file.fileId}')" class="px-2 py-1 rounded-lg bg-red-50 text-red-600 text-xs font-semibold hover:bg-red-100">ลบไฟล์แนบ</button></div>`).join('')}</div>` : '<p class="text-xs text-gray-400 mt-2">ยังไม่มีไฟล์แนบเพิ่ม</p>'}<p class="text-[11px] text-gray-400 mt-2">เพิ่มโดย ${poSafe(item.uploadedByName || '-')} เมื่อ ${poFormatDate(item.uploadedAt)}</p><span class="inline-block mt-2 px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'อนุมัติ' ? 'bg-green-100 text-green-700' : item.status === 'ยกเลิก' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}">สถานะ: ${poSafe(item.status || 'รอตรวจสอบ')}</span></div></div><div class="flex gap-2 shrink-0 flex-wrap"><button type="button" onclick="viewPODocument('${item.fileId}')" class="bg-green-700 hover:bg-green-800 text-white px-3 py-2 rounded-lg text-xs font-semibold">เปิดดู</button><button type="button" onclick="addPOAttachment('${item.fileId}')" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-xs font-semibold">แนบเพิ่ม</button><button type="button" onclick="editPODocument('${item.fileId}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">แก้ไข</button><button type="button" onclick="deletePODocument('${item.fileId}')" class="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 px-3 py-2 rounded-lg text-xs font-semibold">ลบ</button></div></div></article>`).join('')}</div></div>`).join('');
+            list.innerHTML = Object.keys(grouped).sort((a, b) => Number(b) - Number(a)).map(year => `<div class="pt-2"><h4 class="text-lg font-bold text-green-800 border-b border-green-100 pb-2 mb-3">ปี ${poSafe(year)} <span class="text-xs font-normal text-gray-500">(${grouped[year].length} เอกสาร)</span></h4><div class="space-y-3">${grouped[year].map(item => `<article class="border border-gray-200 rounded-xl p-4 hover:border-green-300 transition"><div class="flex flex-col sm:flex-row gap-3 sm:items-start sm:justify-between"><div class="flex gap-3 min-w-0"><div class="text-3xl">${poFileIcon(item.fileType || item.fileName || '')}</div><div class="min-w-0"><h4 class="font-bold text-green-800 break-words">${poSafe(item.title || item.fileName || 'ไม่มีชื่อเอกสาร')}</h4><p class="text-xs text-gray-500 mt-1">${poSafe(item.category || 'เอกสาร')} | ปี ${poSafe(item.year || '-')} | หน่วยงาน ${poSafe(item.department || '-')} | ${formatFileSize(item.fileSize)} | ${poSafe(item.fileName || '')}</p><p class="text-xs text-gray-600 mt-2">${poSafe(item.description || 'ไม่มีรายละเอียด')}</p>${Array.isArray(item.attachments) && item.attachments.length ? `<div class="mt-2 flex flex-col gap-2"><p class="text-xs font-semibold text-gray-600">ไฟล์แนบ</p>${item.attachments.map(file => `<div class="flex flex-wrap items-center gap-2"><span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-green-50 text-green-700 text-xs">${poSafe(file.type || 'ไฟล์')} · ${poSafe(file.fileName || '')}</span><button type="button" onclick="previewPOFile('${item.fileId}','${file.fileId}')" class="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-semibold hover:bg-blue-100">ดูตัวอย่าง</button><button type="button" onclick="deletePOAttachment('${item.fileId}','${file.fileId}')" class="px-2 py-1 rounded-lg bg-red-50 text-red-600 text-xs font-semibold hover:bg-red-100">ลบไฟล์แนบ</button></div>`).join('')}</div>` : '<p class="text-xs text-gray-400 mt-2">ยังไม่มีไฟล์แนบเพิ่ม</p>'}<p class="text-[11px] text-gray-400 mt-2">เพิ่มโดย ${poSafe(item.uploadedByName || '-')} เมื่อ ${poFormatDate(item.uploadedAt)}</p><span class="inline-block mt-2 px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'อนุมัติ' ? 'bg-green-100 text-green-700' : item.status === 'ยกเลิก' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}">สถานะ: ${poSafe(item.status || 'รอตรวจสอบ')}</span></div></div><div class="flex gap-2 shrink-0 flex-wrap"><button type="button" onclick="previewPOFile('${item.fileId}','${item.fileId}')" class="bg-green-700 hover:bg-green-800 text-white px-3 py-2 rounded-lg text-xs font-semibold">ดูตัวอย่าง</button><button type="button" onclick="addPOAttachment('${item.fileId}')" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-xs font-semibold">แนบเพิ่ม</button><button type="button" onclick="editPODocument('${item.fileId}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">แก้ไข</button><button type="button" onclick="deletePODocument('${item.fileId}')" class="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 px-3 py-2 rounded-lg text-xs font-semibold">ลบ</button></div></div></article>`).join('')}</div></div>`).join('');
         };
 
         window.editPODocument = async function(fileId) {
@@ -5330,8 +5357,45 @@
             } catch (error) { console.error('Delete PO attachment error:', error); showModal('error', 'ลบไฟล์แนบไม่สำเร็จ', error?.message || 'ไม่สามารถเชื่อมต่อ Google Apps Script ได้'); }
         };
 
-        window.viewPODocument = function(fileId) {
+        window.previewPOFile = function(fileId, previewFileId) {
             const item = poDocuments.find(document => document.fileId === fileId);
+            if (!item) return;
+            const file = previewFileId === fileId
+                ? { fileId: item.fileId, fileName: item.fileName, fileUrl: item.downloadURL, mimeType: item.mimeType || '' }
+                : (item.attachments || []).find(entry => entry.fileId === previewFileId);
+            if (!file?.fileId) return;
+            const name = String(file.fileName || 'ไฟล์').trim();
+            const mime = String(file.mimeType || '').toLowerCase();
+            const lowerName = name.toLowerCase();
+            const isPdf = mime === 'application/pdf' || lowerName.endsWith('.pdf');
+            const isImage = mime.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(lowerName);
+            const sourceUrl = file.fileUrl || `https://drive.google.com/file/d/${encodeURIComponent(file.fileId)}/view`;
+            if (!isPdf && !isImage) { window.open(sourceUrl, '_blank', 'noopener'); return; }
+            const modal = document.getElementById('poPreviewModal');
+            const body = document.getElementById('poPreviewBody');
+            const title = document.getElementById('poPreviewTitle');
+            const openLink = document.getElementById('poPreviewOpenLink');
+            if (!modal || !body || !title || !openLink) return;
+            title.textContent = `${item.title || 'เอกสาร'} · ${name}`;
+            openLink.href = sourceUrl;
+            body.innerHTML = isPdf
+                ? `<iframe title="${poSafe(name)}" src="https://drive.google.com/file/d/${encodeURIComponent(file.fileId)}/preview" class="w-full h-full border-0 bg-white"></iframe>`
+                : `<div class="w-full h-full flex items-center justify-center overflow-auto"><img src="https://drive.google.com/uc?export=view&id=${encodeURIComponent(file.fileId)}" alt="${poSafe(name)}" class="max-w-full max-h-full object-contain" onerror="this.onerror=null;this.src='${poSafe(sourceUrl)}';"></div>`;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+
+        window.closePOPreview = function(event) {
+            if (event && event.target !== event.currentTarget) return;
+            const modal = document.getElementById('poPreviewModal');
+            const body = document.getElementById('poPreviewBody');
+            if (body) body.innerHTML = '';
+            modal?.classList.add('hidden');
+            modal?.classList.remove('flex');
+        };
+
+        window.viewPODocument = function(fileId) {
+            const item = poDocuments.find(d => d.fileId === fileId);
             if (item?.downloadURL) window.open(item.downloadURL, '_blank', 'noopener');
             else if (fileId) window.open(`https://drive.google.com/file/d/${encodeURIComponent(fileId)}/view`, '_blank', 'noopener');
         };
