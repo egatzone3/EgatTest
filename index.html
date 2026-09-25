@@ -493,6 +493,24 @@
                         <option value="PO">PO</option><option value="สัญญาจ้าง">สัญญาจ้าง</option><option value="ใบสั่งงาน">ใบสั่งงาน</option><option value="เอกสารอื่น ๆ">เอกสารอื่น ๆ</option>
                     </select>
                 </div>
+                <div>
+                    <label for="poYear" class="block text-sm font-medium text-gray-700 mb-1">ปีเอกสาร</label>
+                    <input id="poYear" type="number" min="2500" max="2700" value="2569" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600" placeholder="เช่น 2569">
+                </div>
+                <div>
+                    <label for="poDepartment" class="block text-sm font-medium text-gray-700 mb-1">หน่วยงาน</label>
+                    <select id="poDepartment" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600">
+                        <option value="">-- เลือกหน่วยงาน --</option>
+                        <option value="สก.หสต3">สก.หสต3</option>
+                        <option value="บสส.หาดใหญ่1">บสส.หาดใหญ่1</option>
+                        <option value="บสส.หาดใหญ่2">บสส.หาดใหญ่2</option>
+                        <option value="บสส.ยะลา">บสส.ยะลา</option>
+                        <option value="บสส.นราธิวาส">บสส.นราธิวาส</option>
+                        <option value="บสส.พัทลุง">บสส.พัทลุง</option>
+                        <option value="สก.กสต">สก.กสต</option>
+                        <option value="อื่น ๆ">อื่น ๆ</option>
+                    </select>
+                </div>
             </div>
             <div class="mt-4">
                 <label for="poDescription" class="block text-sm font-medium text-gray-700 mb-1">รายละเอียดเพิ่มเติม</label>
@@ -515,9 +533,18 @@
                 <span id="poDocumentCount" class="text-xs text-gray-500">ยังไม่มีรายการ</span>
             </div>
             <div class="relative">
-                <input id="poSearchInput" type="search" oninput="renderPODocuments()" class="w-full border border-gray-300 rounded-lg p-3 pl-10 text-sm focus:border-green-600 focus:ring-green-600" placeholder="ค้นหาชื่อเอกสาร ประเภท รายละเอียด หรือชื่อไฟล์...">
-                <span class="absolute left-3 top-3 text-gray-400">⌕</span>
-            </div>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <div class="relative flex-1">
+                        <input id="poSearchInput" type="search" oninput="renderPODocuments()" class="w-full border border-gray-300 rounded-lg p-3 pl-10 text-sm focus:border-green-600 focus:ring-green-600" placeholder="ค้นหาชื่อเอกสาร ประเภท รายละเอียด หรือชื่อไฟล์...">
+                        <span class="absolute left-3 top-3 text-gray-400">⌕</span>
+                    </div>
+                    <select id="poYearFilter" onchange="renderPODocuments()" class="border border-gray-300 rounded-lg p-3 text-sm sm:w-40 focus:border-green-600 focus:ring-green-600">
+                        <option value="">ทุกปี</option>
+                    </select>
+                    <select id="poDepartmentFilter" onchange="renderPODocuments()" class="border border-gray-300 rounded-lg p-3 text-sm sm:w-48 focus:border-green-600 focus:ring-green-600">
+                        <option value="">ทุกหน่วยงาน</option>
+                    </select>
+                </div>
         </section>
 
         <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
@@ -5003,7 +5030,7 @@
             const isUpload = event === 'upload';
             const user = getCurrentLoginUser();
             const message = isUpload
-                ? `📄 **เพิ่มเอกสาร PO**\nชื่อเอกสาร: ${data.title || '-'}\nประเภท: ${data.category || '-'}\nชื่อไฟล์: ${data.fileName || '-'}\nขนาด: ${formatFileSize(data.fileSize)}\nผู้ดำเนินการ: ${user.name || '-'} (${user.code || '-'})\nลิงก์ไฟล์: ${data.fileUrl || 'กำลังบันทึกใน Google Drive'}\nเวลา: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}`
+                ? `📄 **เพิ่มเอกสาร PO**\nชื่อเอกสาร: ${data.title || '-'}\nประเภท: ${data.category || '-'}\nปีเอกสาร: ${data.year || '-'}\nหน่วยงาน: ${data.department || '-'}\nชื่อไฟล์: ${data.fileName || '-'}\nขนาด: ${formatFileSize(data.fileSize)}\nผู้ดำเนินการ: ${user.name || '-'} (${user.code || '-'})\nลิงก์ไฟล์: ${data.fileUrl || 'กำลังบันทึกใน Google Drive'}\nเวลา: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}`
                 : `🗑️ **ลบเอกสาร PO**\nชื่อเอกสาร: ${data.title || data.fileName || '-'}\nชื่อไฟล์: ${data.fileName || '-'}\nรหัสไฟล์ Drive: ${data.fileId || '-'}\nผู้ดำเนินการ: ${user.name || '-'} (${user.code || '-'})\nเวลา: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}`;
             try {
                 await fetch(DISCORD_PO_WEBHOOK, {
@@ -5080,10 +5107,30 @@
             const count = document.getElementById('poDocumentCount');
             if (!list) return;
             const query = (document.getElementById('poSearchInput')?.value || '').trim().toLowerCase();
-            const filtered = poDocuments.filter(item => [item.title, item.category, item.description, item.fileName, item.uploadedByName].some(value => String(value || '').toLowerCase().includes(query)));
+            const yearFilter = document.getElementById('poYearFilter')?.value || '';
+            const departmentFilter = document.getElementById('poDepartmentFilter')?.value || '';
+            const years = [...new Set(poDocuments.map(item => String(item.year || '').trim()).filter(Boolean))].sort((a, b) => Number(b) - Number(a));
+            const yearSelect = document.getElementById('poYearFilter');
+            if (yearSelect) {
+                const current = yearSelect.value;
+                yearSelect.innerHTML = '<option value="">ทุกปี</option>' + years.map(year => `<option value="${poSafe(year)}">ปี ${poSafe(year)}</option>`).join('');
+                yearSelect.value = years.includes(current) ? current : '';
+            }
+            const departments = [...new Set(poDocuments.map(item => String(item.department || '').trim()).filter(Boolean))].sort();
+            const departmentSelect = document.getElementById('poDepartmentFilter');
+            if (departmentSelect) {
+                const currentDepartment = departmentSelect.value;
+                departmentSelect.innerHTML = '<option value="">ทุกหน่วยงาน</option>' + departments.map(department => `<option value="${poSafe(department)}">${poSafe(department)}</option>`).join('');
+                departmentSelect.value = departments.includes(currentDepartment) ? currentDepartment : '';
+            }
+            const filtered = poDocuments.filter(item => {
+                const matchesText = [item.title, item.category, item.description, item.fileName, item.uploadedByName, item.year].some(value => String(value || '').toLowerCase().includes(query));
+                return matchesText && (!yearFilter || String(item.year || '') === yearFilter) && (!departmentFilter || String(item.department || '') === departmentFilter);
+            });
             if (count) count.textContent = `แสดง ${filtered.length} จาก ${poDocuments.length} ไฟล์`;
             if (!filtered.length) { list.innerHTML = `<p class="text-sm text-gray-400">${poDocuments.length ? 'ไม่พบเอกสารที่ค้นหา' : 'ยังไม่มีเอกสาร'}</p>`; return; }
-            list.innerHTML = filtered.map(item => `<article class="border border-gray-200 rounded-xl p-4 hover:border-green-300 transition"><div class="flex flex-col sm:flex-row gap-3 sm:items-start sm:justify-between"><div class="flex gap-3 min-w-0"><div class="text-3xl">${poFileIcon(item.fileType || item.fileName || '')}</div><div class="min-w-0"><h4 class="font-bold text-green-800 break-words">${poSafe(item.title || item.fileName || 'ไม่มีชื่อเอกสาร')}</h4><p class="text-xs text-gray-500 mt-1">${poSafe(item.category || 'เอกสาร')} | ${formatFileSize(item.fileSize)} | ${poSafe(item.fileName || '')}</p><p class="text-xs text-gray-600 mt-2">${poSafe(item.description || 'ไม่มีรายละเอียด')}</p><p class="text-[11px] text-gray-400 mt-2">เพิ่มโดย ${poSafe(item.uploadedByName || '-')} เมื่อ ${poFormatDate(item.uploadedAt)}</p></div></div><div class="flex gap-2 shrink-0"><button type="button" onclick="viewPODocument('${item.fileId}')" class="bg-green-700 hover:bg-green-800 text-white px-3 py-2 rounded-lg text-xs font-semibold">เปิดดู</button><button type="button" onclick="deletePODocument('${item.fileId}')" class="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 px-3 py-2 rounded-lg text-xs font-semibold">ลบ</button></div></div></article>`).join('');
+            const grouped = filtered.reduce((groups, item) => { const key = String(item.year || 'ไม่ระบุปี'); (groups[key] ||= []).push(item); return groups; }, {});
+            list.innerHTML = Object.keys(grouped).sort((a, b) => Number(b) - Number(a)).map(year => `<div class="pt-2"><h4 class="text-lg font-bold text-green-800 border-b border-green-100 pb-2 mb-3">ปี ${poSafe(year)} <span class="text-xs font-normal text-gray-500">(${grouped[year].length} เอกสาร)</span></h4><div class="space-y-3">${grouped[year].map(item => `<article class="border border-gray-200 rounded-xl p-4 hover:border-green-300 transition"><div class="flex flex-col sm:flex-row gap-3 sm:items-start sm:justify-between"><div class="flex gap-3 min-w-0"><div class="text-3xl">${poFileIcon(item.fileType || item.fileName || '')}</div><div class="min-w-0"><h4 class="font-bold text-green-800 break-words">${poSafe(item.title || item.fileName || 'ไม่มีชื่อเอกสาร')}</h4><p class="text-xs text-gray-500 mt-1">${poSafe(item.category || 'เอกสาร')} | ปี ${poSafe(item.year || '-')} | หน่วยงาน ${poSafe(item.department || '-')} | ${formatFileSize(item.fileSize)} | ${poSafe(item.fileName || '')}</p><p class="text-xs text-gray-600 mt-2">${poSafe(item.description || 'ไม่มีรายละเอียด')}</p><p class="text-[11px] text-gray-400 mt-2">เพิ่มโดย ${poSafe(item.uploadedByName || '-')} เมื่อ ${poFormatDate(item.uploadedAt)}</p></div></div><div class="flex gap-2 shrink-0"><button type="button" onclick="viewPODocument('${item.fileId}')" class="bg-green-700 hover:bg-green-800 text-white px-3 py-2 rounded-lg text-xs font-semibold">เปิดดู</button><button type="button" onclick="deletePODocument('${item.fileId}')" class="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 px-3 py-2 rounded-lg text-xs font-semibold">ลบ</button></div></div></article>`).join('')}</div></div>`).join('');
         };
 
         window.uploadPODocument = async function() {
@@ -5091,18 +5138,22 @@
             const titleInput = document.getElementById('poTitle');
             const category = document.getElementById('poCategory')?.value || 'PO';
             const description = document.getElementById('poDescription')?.value.trim() || '';
+            const year = String(document.getElementById('poYear')?.value || '').trim();
+            const department = String(document.getElementById('poDepartment')?.value || '').trim();
             const status = document.getElementById('poUploadStatus');
             const button = document.getElementById('poUploadButton');
             const user = getCurrentLoginUser();
             if (!file) { showModal('error', 'ยังไม่ได้เลือกไฟล์', 'กรุณาเลือกเอกสารที่ต้องการแนบ'); return; }
+            if (!/^(25|26|27)\d{2}$/.test(year)) { showModal('error', 'ปีเอกสารไม่ถูกต้อง', 'กรุณาระบุปี พ.ศ. เช่น 2569'); return; }
+            if (!department) { showModal('error', 'ยังไม่ได้เลือกหน่วยงาน', 'กรุณาเลือกหน่วยงานก่อนอัปโหลดเอกสาร'); return; }
             if (file.size > 20 * 1024 * 1024) { showModal('error', 'ไฟล์มีขนาดใหญ่เกินไป', 'รองรับไฟล์ไม่เกิน 20 MB'); return; }
             const title = titleInput?.value.trim() || file.name;
             button.disabled = true; status.textContent = 'กำลังส่งไฟล์ไป Google Drive...';
             try {
                 const base64 = await fileToBase64(file);
-                await poApiPost({ action: 'upload', title, category, description, fileName: file.name, mimeType: file.type || 'application/octet-stream', base64, user });
-                sendPODiscordNotification('upload', { title, category, fileName: file.name, fileSize: file.size });
-                titleInput.value = ''; document.getElementById('poDescription').value = ''; document.getElementById('poFile').value = '';
+                await poApiPost({ action: 'upload', title, category, year, department, description, fileName: file.name, mimeType: file.type || 'application/octet-stream', base64, user });
+                sendPODiscordNotification('upload', { title, category, year, department, fileName: file.name, fileSize: file.size });
+                titleInput.value = ''; document.getElementById('poDescription').value = ''; document.getElementById('poFile').value = ''; document.getElementById('poYear').value = '2569'; document.getElementById('poDepartment').value = '';
                 status.textContent = 'ส่งไฟล์แล้ว กำลังอัปเดตรายการ...';
                 setTimeout(async () => { await loadPODocuments(); status.textContent = 'อัปโหลดสำเร็จ'; }, 1800);
                 showModal('success', 'ส่งเอกสารสำเร็จ', 'ไฟล์กำลังถูกบันทึกลง Google Drive และประวัติ Google Sheet');
