@@ -357,7 +357,16 @@
                 </div>
 
                 <div>
-                    <label for="corrDetails" class="block text-sm font-medium text-gray-700 mb-1">5. รายละเอียดงานที่ต้องแก้ไข</label>
+                    <label for="corrReporterSelect" class="block text-sm font-medium text-gray-700 mb-1">5. ชื่อผู้แจ้ง</label>
+                    <select id="corrReporterSelect" class="w-full border-gray-300 rounded-lg p-3 text-sm border bg-gray-50 focus:border-amber-500 focus:ring-amber-500">
+                        <option value="">-- เลือกชื่อผู้แจ้ง --</option>
+                        <option value="อื่น ๆ">อื่น ๆ</option>
+                    </select>
+                    <input id="corrReporterOther" type="text" class="hidden w-full mt-2 border-gray-300 rounded-lg p-3 text-sm border bg-white focus:border-amber-500 focus:ring-amber-500" placeholder="กรอกชื่อผู้แจ้ง">
+                </div>
+
+                <div>
+                    <label for="corrDetails" class="block text-sm font-medium text-gray-700 mb-1">6. รายละเอียดงานที่ต้องแก้ไข</label>
                     <textarea id="corrDetails" rows="5" placeholder="ระบุรายละเอียด เช่น ถางวัชพืชรอบขาเสาไม่เรียบร้อย, มีกิ่งไม้พาดสาย หรือต้องเก็บงานบริเวณรอบเขตเดินสายเพิ่ม..." class="w-full border-gray-300 rounded-lg p-3 text-sm border bg-gray-50 focus:border-amber-500 focus:ring-amber-500"></textarea>
                 </div>
             </div>
@@ -509,7 +518,9 @@
                 </div>
                 <div>
                     <label for="poResponsible" class="block text-sm font-medium text-gray-700 mb-1">ผู้รับผิดชอบ <span class="text-xs text-gray-400">(ไม่บังคับ)</span></label>
-                    <input id="poResponsible" type="text" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600" placeholder="เช่น นายสมชาย ใจดี">
+                    <select id="poResponsible" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600">
+                        <option value="">-- เลือกผู้รับผิดชอบ --</option>
+                    </select>
                 </div>
                 <div>
                     <label for="poDueDate" class="block text-sm font-medium text-gray-700 mb-1">วันครบกำหนด <span class="text-xs text-gray-400">(ไม่บังคับ)</span></label>
@@ -519,9 +530,9 @@
             <div class="mt-4 border-t border-gray-100 pt-4">
                 <h4 class="text-sm font-bold text-gray-700 mb-2">คณะกรรมการตรวจรับงาน <span class="text-xs font-normal text-gray-400">(แก้ไขได้ภายหลัง)</span></h4>
                 <div class="space-y-2">
-                    <input id="poCommittee1" type="text" value="นายซาฟารี ละใบซอ ช. 5 ส่วนกลาง หสต3-ส. ประธานกรรมการ" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600" aria-label="คณะกรรมการคนที่ 1">
-                    <input id="poCommittee2" type="text" value="นางสาวศรุตยา เต็มคงแก้ว ช. 5 ส่วนกลาง กสต-ส. กรรมการ" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600" aria-label="คณะกรรมการคนที่ 2">
-                    <input id="poCommittee3" type="text" value="นายแวหะมะซามูดิง โตะแปเราะ ช. 8 บสส.นราธิวาส กรรมการและผู้ควบคุมงาน" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600" aria-label="คณะกรรมการคนที่ 3">
+                    <select id="poCommittee1" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600" aria-label="คณะกรรมการคนที่ 1"><option value="นายซาฟารี ละใบซอ ช. 5 ส่วนกลาง หสต3-ส. ประธานกรรมการ" selected>นายซาฟารี ละใบซอ · ประธานกรรมการ</option></select>
+                    <select id="poCommittee2" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600" aria-label="คณะกรรมการคนที่ 2"><option value="นางสาวศรุตยา เต็มคงแก้ว ช. 5 ส่วนกลาง กสต-ส. กรรมการ" selected>นางสาวศรุตยา เต็มคงแก้ว · กรรมการ</option></select>
+                    <select id="poCommittee3" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600" aria-label="คณะกรรมการคนที่ 3"><option value="นายแวหะมะซามูดิง โตะแปเราะ ช. 8 บสส.นราธิวาส กรรมการและผู้ควบคุมงาน" selected>นายแวหะมะซามูดิง โตะแปเราะ · กรรมการและผู้ควบคุมงาน</option></select>
                 </div>
             </div>
             <div class="mt-4">
@@ -583,6 +594,9 @@
                         <option value="รอตรวจสอบ">รอตรวจสอบ</option>
                         <option value="อนุมัติ">อนุมัติ</option>
                         <option value="ยกเลิก">ยกเลิก</option>
+                    </select>
+                    <select id="poResponsibleFilter" onchange="renderPODocuments()" class="border border-gray-300 rounded-lg p-3 text-sm sm:w-52 focus:border-green-600 focus:ring-green-600">
+                        <option value="">ผู้รับผิดชอบทุกคน</option>
                     </select>
                     <input id="poDateFrom" type="date" onchange="renderPODocuments()" class="border border-gray-300 rounded-lg p-3 text-sm sm:w-40" title="วันที่เริ่มต้น">
                     <input id="poDateTo" type="date" onchange="renderPODocuments()" class="border border-gray-300 rounded-lg p-3 text-sm sm:w-40" title="วันที่สิ้นสุด">
@@ -5067,6 +5081,7 @@
 
         let poDocuments = [];
         let poDocumentsLoaded = false;
+        let poUsers = [];
 
         function getCurrentLoginUser() {
             try { return JSON.parse(sessionStorage.getItem('weedLoginUser') || '{}'); }
@@ -5152,6 +5167,81 @@
             const payload = await response.json();
             if (!payload?.ok) throw new Error(payload?.error || 'โหลดข้อมูลไม่สำเร็จ');
             return Array.isArray(payload.documents) ? payload.documents : [];
+        }
+
+        async function loadPOUsers() {
+            const response = await fetch(`${PO_APPS_SCRIPT_URL}?action=users&_=${Date.now()}`, { cache: 'no-store', redirect: 'follow' });
+            if (!response.ok) throw new Error(`โหลดรายชื่อผู้ใช้งานไม่สำเร็จ (${response.status})`);
+            const payload = await response.json();
+            if (!payload?.ok) throw new Error(payload?.error || 'โหลดรายชื่อผู้ใช้งานไม่สำเร็จ');
+            poUsers = Array.isArray(payload.users) ? payload.users : [];
+            const responsibleSelect = document.getElementById('poResponsible');
+            if (responsibleSelect) {
+                const current = responsibleSelect.value;
+                responsibleSelect.innerHTML = '<option value="">-- เลือกผู้รับผิดชอบ --</option>' + poUsers.map(user => `<option value="${poSafe(user.name)}">${poSafe(user.name)}${user.unit ? ` · ${poSafe(user.unit)}` : ''}</option>`).join('');
+                responsibleSelect.value = poUsers.some(user => user.name === current) ? current : '';
+            }
+            populatePOCommitteeSelectors();
+            populateCorrectionReporterSelect();
+        }
+
+        function populateCorrectionReporterSelect() {
+            const select = document.getElementById('corrReporterSelect');
+            if (!select) return;
+            const current = select.value;
+            select.innerHTML = '<option value="">-- เลือกชื่อผู้แจ้ง --</option>' + poUsers.map(user => `<option value="${poSafe(user.name)}">${poSafe(user.name)}${user.unit ? ` · ${poSafe(user.unit)}` : ''}</option>`).join('') + '<option value="อื่น ๆ">อื่น ๆ</option>';
+            select.value = poUsers.some(user => user.name === current) || current === 'อื่น ๆ' ? current : '';
+        }
+
+        document.getElementById('corrReporterSelect')?.addEventListener('change', function () {
+            const other = document.getElementById('corrReporterOther');
+            const isOther = this.value === 'อื่น ๆ';
+            other?.classList.toggle('hidden', !isOther);
+            if (!isOther && other) other.value = '';
+            if (isOther) other?.focus();
+        });
+
+        function populatePOCommitteeSelectors() {
+            const roles = [
+                { id: 'poCommittee1', label: 'ประธานกรรมการ', suffix: 'ประธานกรรมการ' },
+                { id: 'poCommittee2', label: 'กรรมการ', suffix: 'กรรมการ' },
+                { id: 'poCommittee3', label: 'กรรมการและผู้ควบคุมงาน', suffix: 'กรรมการและผู้ควบคุมงาน' }
+            ];
+            roles.forEach(role => {
+                const select = document.getElementById(role.id);
+                if (!select || !poUsers.length) return;
+                const current = select.value || '';
+                const currentUser = poUsers.find(user => current.startsWith(user.name));
+                const selectedName = currentUser?.name || poUsers.find(user => role.id === 'poCommittee1' && user.name.includes('ซาฟารี'))?.name || poUsers.find(user => role.id === 'poCommittee2' && user.name.includes('ศรุตยา'))?.name || poUsers.find(user => role.id === 'poCommittee3' && user.name.includes('แวหะมะซามูดิง'))?.name || '';
+                select.innerHTML = '<option value="">-- เลือกคณะกรรมการ --</option>' + poUsers.map(user => {
+                    const value = `${user.name} ${role.suffix}`;
+                    return `<option value="${poSafe(value)}">${poSafe(user.name)}${user.unit ? ` · ${poSafe(user.unit)}` : ''} · ${role.label}</option>`;
+                }).join('');
+                const match = poUsers.find(user => user.name === selectedName);
+                if (match) select.value = `${match.name} ${role.suffix}`;
+                else if (current) select.insertAdjacentHTML('afterbegin', `<option value="${poSafe(current)}" selected>${poSafe(current)}</option>`);
+            });
+        }
+
+        function renderPOResponsibleFilter() {
+            const select = document.getElementById('poResponsibleFilter');
+            if (!select) return;
+            const current = select.value;
+            const names = [...new Set([...poUsers.map(user => user.name), ...poDocuments.map(item => String(item.responsible || '').trim()).filter(Boolean)])].sort((a, b) => a.localeCompare(b, 'th'));
+            select.innerHTML = '<option value="">ผู้รับผิดชอบทุกคน</option>' + names.map(name => `<option value="${poSafe(name)}">${poSafe(name)}</option>`).join('');
+            select.value = names.includes(current) ? current : '';
+        }
+
+        function choosePOResponsible(current = '') {
+            if (!poUsers.length) return prompt('ผู้รับผิดชอบ (เว้นว่างได้)', current || '');
+            const options = poUsers.map((user, index) => `${index + 1}. ${user.name}${user.unit ? ` (${user.unit})` : ''}`).join('\n');
+            const defaultIndex = Math.max(0, poUsers.findIndex(user => user.name === current));
+            const answer = prompt(`เลือกผู้รับผิดชอบโดยพิมพ์หมายเลข (0 = ไม่กำหนด)\n\n${options}`, current ? String(defaultIndex + 1) : '');
+            if (answer === null) return null;
+            if (!answer.trim() || answer.trim() === '0') return '';
+            const selected = poUsers[Number(answer.trim()) - 1];
+            if (!selected) { showModal('error', 'ผู้รับผิดชอบไม่ถูกต้อง', 'กรุณาเลือกหมายเลขจากรายชื่อ'); return choosePOResponsible(current); }
+            return selected.name;
         }
 
         function poApiPost(payload) {
@@ -5257,6 +5347,9 @@
             const list = document.getElementById('poDocumentList');
             if (list) list.innerHTML = '<p class="text-sm text-gray-400">กำลังโหลดรายการเอกสาร...</p>';
             try {
+                if (!poUsers.length) {
+                    try { await loadPOUsers(); } catch (userError) { console.warn('โหลดรายชื่อผู้รับผิดชอบไม่สำเร็จ:', userError); }
+                }
                 const loaded = await poApiList(document.getElementById('poSearchInput')?.value || '');
                 poDocuments = Array.isArray(loaded) ? loaded : [];
                 poDocumentsLoaded = true;
@@ -5282,6 +5375,7 @@
             const yearFilter = document.getElementById('poYearFilter')?.value || '';
             const departmentFilter = document.getElementById('poDepartmentFilter')?.value || '';
             const statusFilter = document.getElementById('poStatusFilter')?.value || '';
+            const responsibleFilter = document.getElementById('poResponsibleFilter')?.value || '';
             const dateFrom = document.getElementById('poDateFrom')?.value || '';
             const dateTo = document.getElementById('poDateTo')?.value || '';
             const years = [...new Set(poDocuments.map(item => String(item.year || '').trim()).filter(Boolean))].sort((a, b) => Number(b) - Number(a));
@@ -5298,10 +5392,11 @@
                 departmentSelect.innerHTML = '<option value="">ทุกหน่วยงาน</option>' + departments.map(department => `<option value="${poSafe(department)}">${poSafe(department)}</option>`).join('');
                 departmentSelect.value = departments.includes(currentDepartment) ? currentDepartment : '';
             }
+            renderPOResponsibleFilter();
             const filtered = poDocuments.filter(item => {
-                const matchesText = [item.title, item.category, item.description, item.fileName, item.uploadedByName, item.year].some(value => String(value || '').toLowerCase().includes(query));
+                const matchesText = [item.title, item.category, item.description, item.fileName, item.uploadedByName, item.responsible, item.year].some(value => String(value || '').toLowerCase().includes(query));
                 const itemDate = String(item.uploadedAt || '').slice(0, 10);
-                return matchesText && (!yearFilter || String(item.year || '') === yearFilter) && (!departmentFilter || String(item.department || '') === departmentFilter) && (!statusFilter || String(item.status || 'รอตรวจสอบ') === statusFilter) && (!dateFrom || itemDate >= dateFrom) && (!dateTo || itemDate <= dateTo);
+                return matchesText && (!yearFilter || String(item.year || '') === yearFilter) && (!departmentFilter || String(item.department || '') === departmentFilter) && (!statusFilter || String(item.status || 'รอตรวจสอบ') === statusFilter) && (!responsibleFilter || String(item.responsible || '') === responsibleFilter) && (!dateFrom || itemDate >= dateFrom) && (!dateTo || itemDate <= dateTo);
             });
             if (count) count.textContent = `แสดง ${filtered.length} จาก ${poDocuments.length} ไฟล์`;
             if (!filtered.length) { list.innerHTML = `<p class="text-sm text-gray-400">${poDocuments.length ? 'ไม่พบเอกสารที่ค้นหา' : 'ยังไม่มีเอกสาร'}</p>`; return; }
@@ -5320,7 +5415,7 @@
             if (status === null) return;
             const allowed = ['รอตรวจสอบ', 'อนุมัติ', 'ยกเลิก'];
             if (!allowed.includes(status.trim())) { showModal('error', 'สถานะไม่ถูกต้อง', 'กรุณาใช้ รอตรวจสอบ, อนุมัติ หรือ ยกเลิก'); return; }
-            const responsible = prompt('ผู้รับผิดชอบ (เว้นว่างได้)', item.responsible || '');
+            const responsible = choosePOResponsible(item.responsible || '');
             if (responsible === null) return;
             const dueDate = prompt('วันครบกำหนด รูปแบบ YYYY-MM-DD (เว้นว่างได้)', item.dueDate || '');
             if (dueDate === null) return;
@@ -5396,7 +5491,7 @@
                 }
                 await poApiPost({ action: 'upload', title, category, year, department, description, responsible, dueDate, committee1, committee2, committee3, attachments, user });
                 sendPODiscordNotification('upload', { title, category, year, department, fileName: tor.file.name, fileSize: tor.file.size, attachments: files.map(item => item.type) });
-                titleInput.value = ''; document.getElementById('poDescription').value = ''; document.getElementById('poYear').value = '2569'; document.getElementById('poDepartment').value = ''; document.getElementById('poResponsible').value = ''; document.getElementById('poDueDate').value = ''; document.getElementById('poCommittee1').value = 'นายซาฟารี ละใบซอ ช. 5 ส่วนกลาง หสต3-ส. ประธานกรรมการ'; document.getElementById('poCommittee2').value = 'นางสาวศรุตยา เต็มคงแก้ว ช. 5 ส่วนกลาง กสต-ส. กรรมการ'; document.getElementById('poCommittee3').value = 'นายแวหะมะซามูดิง โตะแปเราะ ช. 8 บสส.นราธิวาส กรรมการและผู้ควบคุมงาน';
+                titleInput.value = ''; document.getElementById('poDescription').value = ''; document.getElementById('poYear').value = '2569'; document.getElementById('poDepartment').value = ''; document.getElementById('poResponsible').value = ''; document.getElementById('poDueDate').value = ''; document.getElementById('poCommittee1').value = 'นายซาฟารี ละใบซอ ประธานกรรมการ'; document.getElementById('poCommittee2').value = 'นางสาวศรุตยา เต็มคงแก้ว กรรมการ'; document.getElementById('poCommittee3').value = 'นายแวหะมะซามูดิง โตะแปเราะ กรรมการและผู้ควบคุมงาน';
                 ['poFileTOR', 'poFilePO', 'poFileNotice', 'poFileApproval'].forEach(id => { const input = document.getElementById(id); if (input) input.value = ''; });
                 status.textContent = 'ส่งไฟล์แล้ว กำลังอัปเดตรายการ...';
                 setTimeout(async () => { await loadPODocuments(); status.textContent = 'อัปโหลดสำเร็จ'; }, 1800);
@@ -5739,6 +5834,7 @@
                 corrHistoryBtn.classList.remove('hidden');
                 updateCorrectionAutoDate();
                 updateCorrectionPhotoCount();
+                if (!poUsers.length) loadPOUsers().catch(error => console.warn('โหลดรายชื่อผู้แจ้งไม่สำเร็จ:', error));
             } else {
                 goHome();
             }
@@ -6098,6 +6194,9 @@
             const lineName = document.getElementById('corrLineSelect').value;
             const tower = document.getElementById('corrTowerSelect').value;
             const details = document.getElementById('corrDetails').value.trim();
+            const reporterChoice = document.getElementById('corrReporterSelect')?.value || '';
+            const reporterOther = document.getElementById('corrReporterOther')?.value.trim() || '';
+            const reporterName = reporterChoice === 'อื่น ๆ' ? reporterOther : reporterChoice;
             const dateIso = document.getElementById('corrAutoDate').dataset.iso || new Date().toISOString();
             const saveBtn = document.getElementById('saveCorrBtn');
 
@@ -6108,6 +6207,10 @@
             }
             if (!details) {
                 showModal('error', 'กรุณาระบุรายละเอียด', 'โปรดระบุรายละเอียดงานที่ต้องแก้ไข');
+                return;
+            }
+            if (!reporterName) {
+                showModal('error', 'กรุณาระบุชื่อผู้แจ้ง', 'เลือกชื่อผู้แจ้งจากรายชื่อ หรือเลือก อื่น ๆ แล้วกรอกชื่อ');
                 return;
             }
             if (photoIds.length < 1) {
@@ -6139,6 +6242,7 @@
                     tower,
                     towerInfo,
                     details,
+                    reporterName,
                     photos,
                     photoMetadata,
                     photoStampVersion: 2,
@@ -6157,6 +6261,7 @@
 🏢 หน่วยงาน: **${department}**
 ⚡ แนวสาย: **${lineName}**
 🗼 Tower: **${towerLabel}**
+👤 ผู้แจ้ง: **${reporterName}**
 📝 รายละเอียด: **${details}**
 🕒 วันที่แจ้ง: ${formatDateToThai(dateIso)}
 ${gpsText}`;
@@ -6174,6 +6279,9 @@ ${gpsText}`;
                 document.getElementById('corrTowerSelect').classList.add('bg-gray-100');
                 document.getElementById('corrTowerDetails')?.classList.add('hidden');
                 document.getElementById('corrDetails').value = '';
+                document.getElementById('corrReporterSelect').value = '';
+                document.getElementById('corrReporterOther').value = '';
+                document.getElementById('corrReporterOther').classList.add('hidden');
                 updateCorrectionAutoDate();
 
             } catch (err) {
@@ -6204,7 +6312,7 @@ ${gpsText}`;
             const from = document.getElementById('correctionDateFrom')?.value || '';
             const to = document.getElementById('correctionDateTo')?.value || '';
             return getCorrectionHistoryRecords().filter(item => {
-                const haystack = [item.department, item.lineName, item.tower, item.towerInfo, item.details].map(v => String(v || '').toLowerCase()).join(' ');
+                const haystack = [item.department, item.lineName, item.tower, item.towerInfo, item.reporterName, item.details].map(v => String(v || '').toLowerCase()).join(' ');
                 const date = item.timestamp ? new Date(item.timestamp) : null;
                 const dateKey = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '';
                 return (!search || haystack.includes(search)) &&
@@ -6285,6 +6393,7 @@ ${gpsText}`;
                                 <input type="text" id="corr-tower-${item.id}" value="${item.towerInfo || ''}" class="font-bold text-amber-900 text-base bg-white border border-amber-200 rounded px-2 py-1 w-full max-w-xs focus:ring-amber-500 focus:border-amber-500" placeholder="ระบุแนวสาย/เสา">
                                 <div class="text-right text-[11px] text-gray-500 whitespace-nowrap ml-2">
                                     <div>วันที่แจ้ง: ${createdText}</div>
+                                    <div>ผู้แจ้ง: ${reportEscape(item.reporterName || '-')}</div>
                                     <div id="corr-time-text-${item.id}" class="${item.lastUpdated ? '' : 'hidden'} text-amber-700 font-medium">วันที่แก้ไข: ${updatedText}</div>
                                 </div>
                             </div>
@@ -6331,9 +6440,9 @@ ${gpsText}`;
                 showModal('error', 'ไม่มีข้อมูลสำหรับส่งออก', 'กรุณาปรับตัวกรองหรือรอให้มีรายการแจ้งแก้ไขก่อน');
                 return;
             }
-            const headers = ['วันที่แจ้ง', 'หน่วยงาน', 'แนวสาย', 'หมายเลขเสา', 'สถานะงาน', 'จุด/แนวสาย', 'รายละเอียด', 'ข้อความเพิ่มเติมก่อนบันทึก', 'จำนวนรูปภาพ', 'วันที่แก้ไขล่าสุด'];
+            const headers = ['วันที่แจ้ง', 'ชื่อผู้แจ้ง', 'หน่วยงาน', 'แนวสาย', 'หมายเลขเสา', 'สถานะงาน', 'จุด/แนวสาย', 'รายละเอียด', 'ข้อความเพิ่มเติมก่อนบันทึก', 'จำนวนรูปภาพ', 'วันที่แก้ไขล่าสุด'];
             const rows = records.map(item => [
-                formatDateToThai(item.timestamp), item.department || '', item.lineName || '', item.tower || '', item.status || 'แจ้งแก้ไข', item.towerInfo || '', item.details || '',
+                formatDateToThai(item.timestamp), item.reporterName || '', item.department || '', item.lineName || '', item.tower || '', item.status || 'แจ้งแก้ไข', item.towerInfo || '', item.details || '',
                 item.updateNote || '', (item.photos || (item.photo ? [item.photo] : [])).length, item.lastUpdated ? formatDateToThai(item.lastUpdated) : ''
             ]);
             const csvCell = value => '"' + String(value ?? '').replace(/\r?\n|\r/g, ' ').replace(/"/g, '""') + '"';
@@ -6356,7 +6465,7 @@ ${gpsText}`;
             }
             const rows = records.map((item, index) => {
                 const photos = (item.photos || (item.photo ? [item.photo] : [])).filter(Boolean).map((src, idx) => `<figure><img src="${src}" alt="รูปที่ ${idx + 1}"><figcaption>รูปที่ ${idx + 1}</figcaption></figure>`).join('');
-                return `<article class="record"><h2>${index + 1}. ${reportEscape(item.towerInfo || item.tower || 'รายการแจ้งแก้ไข')}</h2><p><b>หน่วยงาน:</b> ${reportEscape(item.department || '-')} &nbsp; <b>แนวสาย:</b> ${reportEscape(item.lineName || '-')}</p><p><b>วันที่แจ้ง:</b> ${reportEscape(formatDateToThai(item.timestamp))} &nbsp; <b>วันที่แก้ไขล่าสุด:</b> ${reportEscape(item.lastUpdated ? formatDateToThai(item.lastUpdated) : '-')}</p><p><b>รายละเอียด:</b> ${reportEscape(item.details || '-')}</p><p><b>ข้อความเพิ่มเติมก่อนบันทึก:</b> ${reportEscape(item.updateNote || '-')}</p><div class="photos">${photos || '<p>ไม่มีรูปภาพ</p>'}</div></article>`;
+                return `<article class="record"><h2>${index + 1}. ${reportEscape(item.towerInfo || item.tower || 'รายการแจ้งแก้ไข')}</h2><p><b>หน่วยงาน:</b> ${reportEscape(item.department || '-')} &nbsp; <b>แนวสาย:</b> ${reportEscape(item.lineName || '-')}</p><p><b>ชื่อผู้แจ้ง:</b> ${reportEscape(item.reporterName || '-')} &nbsp; <b>วันที่แจ้ง:</b> ${reportEscape(formatDateToThai(item.timestamp))} &nbsp; <b>วันที่แก้ไขล่าสุด:</b> ${reportEscape(item.lastUpdated ? formatDateToThai(item.lastUpdated) : '-')}</p><p><b>รายละเอียด:</b> ${reportEscape(item.details || '-')}</p><p><b>ข้อความเพิ่มเติมก่อนบันทึก:</b> ${reportEscape(item.updateNote || '-')}</p><div class="photos">${photos || '<p>ไม่มีรูปภาพ</p>'}</div></article>`;
             }).join('');
             const win = window.open('', '_blank');
             if (!win) {
