@@ -507,6 +507,22 @@
                         <option value="อื่น ๆ">อื่น ๆ</option>
                     </select>
                 </div>
+                <div>
+                    <label for="poResponsible" class="block text-sm font-medium text-gray-700 mb-1">ผู้รับผิดชอบ <span class="text-xs text-gray-400">(ไม่บังคับ)</span></label>
+                    <input id="poResponsible" type="text" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600" placeholder="เช่น นายสมชาย ใจดี">
+                </div>
+                <div>
+                    <label for="poDueDate" class="block text-sm font-medium text-gray-700 mb-1">วันครบกำหนด <span class="text-xs text-gray-400">(ไม่บังคับ)</span></label>
+                    <input id="poDueDate" type="date" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600">
+                </div>
+            </div>
+            <div class="mt-4 border-t border-gray-100 pt-4">
+                <h4 class="text-sm font-bold text-gray-700 mb-2">คณะกรรมการตรวจรับงาน <span class="text-xs font-normal text-gray-400">(แก้ไขได้ภายหลัง)</span></h4>
+                <div class="space-y-2">
+                    <input id="poCommittee1" type="text" value="นายซาฟารี ละใบซอ ช. 5 ส่วนกลาง หสต3-ส. ประธานกรรมการ" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600" aria-label="คณะกรรมการคนที่ 1">
+                    <input id="poCommittee2" type="text" value="นางสาวศรุตยา เต็มคงแก้ว ช. 5 ส่วนกลาง กสต-ส. กรรมการ" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600" aria-label="คณะกรรมการคนที่ 2">
+                    <input id="poCommittee3" type="text" value="นายแวหะมะซามูดิง โตะแปเราะ ช. 8 บสส.นราธิวาส กรรมการและผู้ควบคุมงาน" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600" aria-label="คณะกรรมการคนที่ 3">
+                </div>
             </div>
             <div class="mt-4">
                 <label for="poDescription" class="block text-sm font-medium text-gray-700 mb-1">รายละเอียดเพิ่มเติม</label>
@@ -5226,6 +5242,17 @@
             return date.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
         }
 
+        function poDueBadge(item) {
+            if (!item?.dueDate) return '<span class="text-xs text-gray-400">ยังไม่กำหนดวันครบกำหนด</span>';
+            const due = new Date(`${item.dueDate}T23:59:59`);
+            if (Number.isNaN(due.getTime())) return `<span class="text-xs text-gray-500">ครบกำหนด ${poSafe(item.dueDate)}</span>`;
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const days = Math.ceil((due - today) / 86400000);
+            const state = days < 0 ? `เกินกำหนด ${Math.abs(days)} วัน` : days === 0 ? 'ครบกำหนดวันนี้' : `เหลือ ${days} วัน`;
+            const color = days < 0 ? 'text-red-600 bg-red-50' : days <= 7 ? 'text-orange-700 bg-orange-50' : 'text-green-700 bg-green-50';
+            return `<span class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full ${color}">ครบกำหนด ${poSafe(item.dueDate)} · ${state}</span>`;
+        }
+
         window.loadPODocuments = async function() {
             const list = document.getElementById('poDocumentList');
             if (list) list.innerHTML = '<p class="text-sm text-gray-400">กำลังโหลดรายการเอกสาร...</p>';
@@ -5279,7 +5306,7 @@
             if (count) count.textContent = `แสดง ${filtered.length} จาก ${poDocuments.length} ไฟล์`;
             if (!filtered.length) { list.innerHTML = `<p class="text-sm text-gray-400">${poDocuments.length ? 'ไม่พบเอกสารที่ค้นหา' : 'ยังไม่มีเอกสาร'}</p>`; return; }
             const grouped = filtered.reduce((groups, item) => { const key = String(item.year || 'ไม่ระบุปี'); (groups[key] ||= []).push(item); return groups; }, {});
-                list.innerHTML = Object.keys(grouped).sort((a, b) => Number(b) - Number(a)).map(year => `<div class="pt-2"><h4 class="text-lg font-bold text-green-800 border-b border-green-100 pb-2 mb-3">ปี ${poSafe(year)} <span class="text-xs font-normal text-gray-500">(${grouped[year].length} เอกสาร)</span></h4><div class="space-y-3">${grouped[year].map(item => `<article class="border border-gray-200 rounded-xl p-4 hover:border-green-300 transition"><div class="flex flex-col sm:flex-row gap-3 sm:items-start sm:justify-between"><div class="flex gap-3 min-w-0"><div class="text-3xl">${poFileIcon(item.fileType || item.fileName || '')}</div><div class="min-w-0"><h4 class="font-bold text-green-800 break-words">${poSafe(item.title || item.fileName || 'ไม่มีชื่อเอกสาร')}</h4><p class="text-xs text-gray-500 mt-1">${poSafe(item.category || 'เอกสาร')} | ปี ${poSafe(item.year || '-')} | หน่วยงาน ${poSafe(item.department || '-')} | ${formatFileSize(item.fileSize)} | ${poSafe(item.fileName || '')}</p><p class="text-xs text-gray-600 mt-2">${poSafe(item.description || 'ไม่มีรายละเอียด')}</p>${Array.isArray(item.attachments) && item.attachments.length ? `<div class="mt-2 flex flex-col gap-2"><p class="text-xs font-semibold text-gray-600">ไฟล์แนบ</p>${item.attachments.map(file => `<div class="flex flex-wrap items-center gap-2"><span class="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-green-50 text-green-700 text-xs">${poSafe(file.type || 'ไฟล์')} · ${poSafe(file.fileName || '')}</span><button type="button" onclick="previewPOFile('${item.fileId}','${file.fileId}')" class="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 text-xs font-semibold hover:bg-blue-100">ดูตัวอย่าง</button><button type="button" onclick="downloadPOFile('${item.fileId}','${file.fileId}')" class="px-2 py-1 rounded-lg bg-gray-100 text-gray-700 text-xs font-semibold hover:bg-gray-200">ดาวน์โหลด</button><button type="button" onclick="deletePOAttachment('${item.fileId}','${file.fileId}')" class="px-2 py-1 rounded-lg bg-red-50 text-red-600 text-xs font-semibold hover:bg-red-100">ลบไฟล์แนบ</button></div>`).join('')}</div>` : '<p class="text-xs text-gray-400 mt-2">ยังไม่มีไฟล์แนบเพิ่ม</p>'}<p class="text-[11px] text-gray-400 mt-2">เพิ่มโดย ${poSafe(item.uploadedByName || '-')} เมื่อ ${poFormatDate(item.uploadedAt)}</p><span class="inline-block mt-2 px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'อนุมัติ' ? 'bg-green-100 text-green-700' : item.status === 'ยกเลิก' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}">สถานะ: ${poSafe(item.status || 'รอตรวจสอบ')}</span></div></div><div class="flex gap-2 shrink-0 flex-wrap"><button type="button" onclick="previewPOFile('${item.fileId}','${item.fileId}')" class="bg-green-700 hover:bg-green-800 text-white px-3 py-2 rounded-lg text-xs font-semibold">ดูตัวอย่าง</button><button type="button" onclick="downloadPOFile('${item.fileId}','${item.fileId}')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-semibold">ดาวน์โหลด</button><button type="button" onclick="downloadPOZip('${item.fileId}')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">ZIP ทั้งหมด</button><button type="button" onclick="showPOQRCode('${item.fileId}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">QR Code</button><button type="button" onclick="addPOAttachment('${item.fileId}')" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-xs font-semibold">แนบเพิ่ม</button><button type="button" onclick="editPODocument('${item.fileId}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">แก้ไข</button><button type="button" onclick="deletePODocument('${item.fileId}')" class="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 px-3 py-2 rounded-lg text-xs font-semibold">ลบ</button></div></div></article>`).join('')}</div></div>`).join('');
+                list.innerHTML = Object.keys(grouped).sort((a, b) => Number(b) - Number(a)).map(year => `<div class="pt-2"><h4 class="text-lg font-bold text-green-800 border-b border-green-100 pb-2 mb-3">ปี ${poSafe(year)} <span class="text-xs font-normal text-gray-500">(${grouped[year].length} เอกสาร)</span></h4><div class="space-y-3">${grouped[year].map(item => `<article class="border border-gray-200 rounded-xl p-4 hover:border-green-300 transition"><div class="flex flex-col sm:flex-row gap-3 sm:items-start sm:justify-between"><div class="flex gap-3 min-w-0 flex-1 w-full"><div class="text-3xl shrink-0">${poFileIcon(item.fileType || item.fileName || '')}</div><div class="flex-1 min-w-0 w-full"><h4 class="font-bold text-green-800 break-words">${poSafe(item.title || item.fileName || 'ไม่มีชื่อเอกสาร')}</h4><p class="text-xs text-gray-500 mt-1">${poSafe(item.category || 'เอกสาร')} | ปี ${poSafe(item.year || '-')} | หน่วยงาน ${poSafe(item.department || '-')} | ${formatFileSize(item.fileSize)} | ${poSafe(item.fileName || '')}</p><p class="text-xs text-gray-600 mt-2">${poSafe(item.description || 'ไม่มีรายละเอียด')}</p>${Array.isArray(item.attachments) && item.attachments.length ? `<details class="mt-2 w-full border border-green-100 rounded-lg overflow-hidden"><summary class="cursor-pointer bg-green-50 px-3 py-2 text-xs font-semibold text-green-800">ไฟล์แนบ (${item.attachments.length}) <span class="font-normal text-green-600">กดเพื่อขยาย</span></summary><div class="w-full p-2 space-y-2">${item.attachments.map(file => `<div class="flex items-center gap-2 w-full min-w-0"><span class="basis-0 flex-1 min-w-[70px] overflow-hidden text-ellipsis whitespace-nowrap text-xs text-gray-700" title="${poSafe(file.fileName || '')}"><span class="font-semibold text-green-700">${poSafe(file.type || 'ไฟล์')}</span> · ${poSafe(file.fileName || 'ไม่มีชื่อไฟล์')}</span><div class="flex items-center gap-1 shrink-0"><button type="button" onclick="previewPOFile('${item.fileId}','${file.fileId}')" class="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 text-[11px] font-semibold hover:bg-blue-100 whitespace-nowrap">ดู</button><button type="button" onclick="downloadPOFile('${item.fileId}','${file.fileId}')" class="px-2 py-1 rounded-lg bg-gray-100 text-gray-700 text-[11px] font-semibold hover:bg-gray-200 whitespace-nowrap">โหลด</button><button type="button" onclick="deletePOAttachment('${item.fileId}','${file.fileId}')" class="px-2 py-1 rounded-lg bg-red-50 text-red-600 text-[11px] font-semibold hover:bg-red-100 whitespace-nowrap">ลบ</button></div></div>`).join('')}</div></details>` : '<p class="text-xs text-gray-400 mt-2">ยังไม่มีไฟล์แนบเพิ่ม</p>'}<p class="text-[11px] text-gray-400 mt-2">เพิ่มโดย ${poSafe(item.uploadedByName || '-')} เมื่อ ${poFormatDate(item.uploadedAt)}</p><p class="text-xs text-gray-600 mt-2">ผู้รับผิดชอบ: <span class="font-semibold">${poSafe(item.responsible || 'ยังไม่ได้กำหนด')}</span></p><div class="mt-2">${poDueBadge(item)}</div><details class="mt-2 text-xs text-gray-600"><summary class="cursor-pointer font-semibold text-green-700">คณะกรรมการตรวจรับงาน</summary><ol class="list-decimal list-inside mt-1 space-y-1">${[item.committee1, item.committee2, item.committee3].filter(Boolean).map(name => `<li>${poSafe(name)}</li>`).join('') || '<li>ยังไม่ได้กำหนด</li>'}</ol></details><span class="inline-block mt-2 px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'อนุมัติ' ? 'bg-green-100 text-green-700' : item.status === 'ยกเลิก' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}">สถานะ: ${poSafe(item.status || 'รอตรวจสอบ')}</span></div></div><div class="flex gap-2 shrink-0 flex-wrap"><button type="button" onclick="previewPOFile('${item.fileId}','${item.fileId}')" class="bg-green-700 hover:bg-green-800 text-white px-3 py-2 rounded-lg text-xs font-semibold">ดูตัวอย่าง</button><button type="button" onclick="downloadPOFile('${item.fileId}','${item.fileId}')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-semibold">ดาวน์โหลด</button><button type="button" onclick="downloadPOZip('${item.fileId}')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">ZIP ทั้งหมด</button><button type="button" onclick="showPOQRCode('${item.fileId}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">QR Code</button><button type="button" onclick="addPOAttachment('${item.fileId}')" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-xs font-semibold">แนบเพิ่ม</button><button type="button" onclick="editPODocument('${item.fileId}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">แก้ไข</button><button type="button" onclick="deletePODocument('${item.fileId}')" class="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 px-3 py-2 rounded-lg text-xs font-semibold">ลบ</button></div></div></article>`).join('')}</div></div>`).join('');
         };
 
         window.editPODocument = async function(fileId) {
@@ -5293,8 +5320,20 @@
             if (status === null) return;
             const allowed = ['รอตรวจสอบ', 'อนุมัติ', 'ยกเลิก'];
             if (!allowed.includes(status.trim())) { showModal('error', 'สถานะไม่ถูกต้อง', 'กรุณาใช้ รอตรวจสอบ, อนุมัติ หรือ ยกเลิก'); return; }
+            const responsible = prompt('ผู้รับผิดชอบ (เว้นว่างได้)', item.responsible || '');
+            if (responsible === null) return;
+            const dueDate = prompt('วันครบกำหนด รูปแบบ YYYY-MM-DD (เว้นว่างได้)', item.dueDate || '');
+            if (dueDate === null) return;
+            const normalizedDueDate = dueDate.trim();
+            if (normalizedDueDate && !/^\d{4}-\d{2}-\d{2}$/.test(normalizedDueDate)) { showModal('error', 'รูปแบบวันไม่ถูกต้อง', 'กรุณาใช้รูปแบบ YYYY-MM-DD เช่น 2026-10-15'); return; }
+            const committee1 = prompt('คณะกรรมการคนที่ 1', item.committee1 || '');
+            if (committee1 === null) return;
+            const committee2 = prompt('คณะกรรมการคนที่ 2', item.committee2 || '');
+            if (committee2 === null) return;
+            const committee3 = prompt('คณะกรรมการคนที่ 3', item.committee3 || '');
+            if (committee3 === null) return;
             try {
-                await poApiPost({ action: 'update', fileId, title: title.trim(), description: description.trim(), status: status.trim(), year: item.year || '', department: item.department || '', user: getCurrentLoginUser() });
+                await poApiPost({ action: 'update', fileId, title: title.trim(), description: description.trim(), status: status.trim(), year: item.year || '', department: item.department || '', responsible: responsible.trim(), dueDate: normalizedDueDate, committee1: committee1.trim(), committee2: committee2.trim(), committee3: committee3.trim(), user: getCurrentLoginUser() });
                 sendPODiscordNotification('update', { title: title.trim(), fileName: item.fileName, fileId, status: status.trim() });
                 setTimeout(loadPODocuments, 1200);
                 showModal('success', 'แก้ไขข้อมูลสำเร็จ', 'แก้ไขข้อมูลโดยไม่ลบไฟล์เดิมแล้ว');
@@ -5329,6 +5368,11 @@
             const description = document.getElementById('poDescription')?.value.trim() || '';
             const year = String(document.getElementById('poYear')?.value || '').trim();
             const department = String(document.getElementById('poDepartment')?.value || '').trim();
+            const responsible = document.getElementById('poResponsible')?.value.trim() || '';
+            const dueDate = document.getElementById('poDueDate')?.value || '';
+            const committee1 = document.getElementById('poCommittee1')?.value.trim() || '';
+            const committee2 = document.getElementById('poCommittee2')?.value.trim() || '';
+            const committee3 = document.getElementById('poCommittee3')?.value.trim() || '';
             const status = document.getElementById('poUploadStatus');
             const button = document.getElementById('poUploadButton');
             const user = getCurrentLoginUser();
@@ -5350,9 +5394,9 @@
                 for (const item of files) {
                     attachments.push({ type: item.type, fileName: item.file.name, mimeType: item.file.type || 'application/octet-stream', fileSize: item.file.size, base64: await fileToBase64(item.file) });
                 }
-                await poApiPost({ action: 'upload', title, category, year, department, description, attachments, user });
+                await poApiPost({ action: 'upload', title, category, year, department, description, responsible, dueDate, committee1, committee2, committee3, attachments, user });
                 sendPODiscordNotification('upload', { title, category, year, department, fileName: tor.file.name, fileSize: tor.file.size, attachments: files.map(item => item.type) });
-                titleInput.value = ''; document.getElementById('poDescription').value = ''; document.getElementById('poYear').value = '2569'; document.getElementById('poDepartment').value = '';
+                titleInput.value = ''; document.getElementById('poDescription').value = ''; document.getElementById('poYear').value = '2569'; document.getElementById('poDepartment').value = ''; document.getElementById('poResponsible').value = ''; document.getElementById('poDueDate').value = ''; document.getElementById('poCommittee1').value = 'นายซาฟารี ละใบซอ ช. 5 ส่วนกลาง หสต3-ส. ประธานกรรมการ'; document.getElementById('poCommittee2').value = 'นางสาวศรุตยา เต็มคงแก้ว ช. 5 ส่วนกลาง กสต-ส. กรรมการ'; document.getElementById('poCommittee3').value = 'นายแวหะมะซามูดิง โตะแปเราะ ช. 8 บสส.นราธิวาส กรรมการและผู้ควบคุมงาน';
                 ['poFileTOR', 'poFilePO', 'poFileNotice', 'poFileApproval'].forEach(id => { const input = document.getElementById(id); if (input) input.value = ''; });
                 status.textContent = 'ส่งไฟล์แล้ว กำลังอัปเดตรายการ...';
                 setTimeout(async () => { await loadPODocuments(); status.textContent = 'อัปโหลดสำเร็จ'; }, 1800);
