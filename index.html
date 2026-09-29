@@ -628,9 +628,30 @@
             <button type="button" onclick="togglePOCalendarView()" class="bg-white text-indigo-700 border border-indigo-300 hover:bg-indigo-100 px-3 py-2 rounded-lg text-sm font-semibold">กลับรายการไฟล์</button>
         </div>
         <section class="bg-white rounded-xl shadow-sm border border-indigo-200 p-5">
+            <div id="poCalendarSummary" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mb-5"></div>
+            <div class="border border-indigo-100 bg-indigo-50/40 rounded-xl p-3 mb-5">
+                <div class="text-sm font-bold text-indigo-900 mb-2">ตัวกรองปฏิทิน</div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    <select id="poCalendarYearFilter" onchange="applyPOCalendarFilters()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">ทุกปี</option></select>
+                    <select id="poCalendarDepartmentFilter" onchange="applyPOCalendarFilters()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">ทุกหน่วยงาน</option></select>
+                    <select id="poCalendarResponsibleFilter" onchange="applyPOCalendarFilters()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">ผู้รับผิดชอบทุกคน</option></select>
+                    <select id="poCalendarStatusFilter" onchange="applyPOCalendarFilters()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">ทุกสถานะ</option><option value="รอตรวจสอบ">รอตรวจสอบ</option><option value="อนุมัติ">อนุมัติ</option><option value="ยกเลิก">ยกเลิก</option></select>
+                    <input id="poCalendarDateFrom" type="date" onchange="applyPOCalendarFilters()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white" title="วันครบกำหนดตั้งแต่">
+                    <input id="poCalendarDateTo" type="date" onchange="applyPOCalendarFilters()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white" title="วันครบกำหนดถึง">
+                </div>
+                <button type="button" onclick="clearPOCalendarFilters()" class="mt-2 border border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold text-gray-600 hover:bg-white">ล้างตัวกรองปฏิทิน</button>
+                <div class="flex flex-wrap gap-2 mt-2 pt-2 border-t border-indigo-100">
+                    <span class="text-xs text-indigo-700 self-center">ตัวกรองด่วน:</span>
+                    <button type="button" onclick="applyPOCalendarQuickFilter('today')" class="px-3 py-1.5 rounded-lg bg-red-100 text-red-700 hover:bg-red-200 text-xs font-semibold">งานวันนี้</button>
+                    <button type="button" onclick="applyPOCalendarQuickFilter('next7')" class="px-3 py-1.5 rounded-lg bg-yellow-100 text-yellow-800 hover:bg-yellow-200 text-xs font-semibold">ภายใน 7 วัน</button>
+                    <button type="button" onclick="applyPOCalendarQuickFilter('overdue')" class="px-3 py-1.5 rounded-lg bg-red-100 text-red-800 hover:bg-red-200 text-xs font-semibold">งานเกินกำหนด</button>
+                </div>
+            </div>
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
                 <div><h3 class="font-bold text-indigo-900">ปฏิทินกำหนดงาน</h3><p class="text-xs text-indigo-600 mt-1">ดูเอกสารตามวันครบกำหนดและติดตามงานที่ใกล้ถึงกำหนด</p></div>
                 <div class="flex items-center gap-2">
+                    <button type="button" onclick="setPOCalendarMode('calendar')" id="poCalendarModeCalendar" class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold">ปฏิทิน</button>
+                    <button type="button" onclick="setPOCalendarMode('list')" id="poCalendarModeList" class="px-3 py-2 rounded-lg border border-indigo-200 text-indigo-700 hover:bg-indigo-50 text-sm font-semibold">รายการ</button>
                     <button type="button" onclick="changePOCalendarMonth(-1)" class="px-3 py-2 rounded-lg border border-indigo-200 text-indigo-700 hover:bg-indigo-50 text-sm font-semibold">เดือนก่อน</button>
                     <button type="button" onclick="goToPOCalendarToday()" class="px-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 text-sm font-semibold">เดือนนี้</button>
                     <button type="button" onclick="changePOCalendarMonth(1)" class="px-3 py-2 rounded-lg border border-indigo-200 text-indigo-700 hover:bg-indigo-50 text-sm font-semibold">เดือนถัดไป</button>
@@ -644,6 +665,7 @@
             </div>
             <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-gray-500 mb-1"><span>อา.</span><span>จ.</span><span>อ.</span><span>พ.</span><span>พฤ.</span><span>ศ.</span><span>ส.</span></div>
             <div id="poCalendarGrid" class="grid grid-cols-7 gap-1"></div>
+            <div id="poCalendarList" class="hidden space-y-2"></div>
         </section>
     </main>
 
@@ -828,6 +850,15 @@
         </div>
     </div>
 
+    <div id="poCalendarDetailModal" class="fixed inset-0 bg-black bg-opacity-60 z-[85] hidden items-center justify-center p-4" onclick="closePOCalendarDetail(event)">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="sticky top-0 bg-indigo-50 border-b border-indigo-100 p-4 flex items-center justify-between gap-3">
+                <h3 id="poCalendarDetailTitle" class="font-bold text-indigo-900 truncate">รายละเอียดเอกสาร PO</h3>
+                <button type="button" onclick="closePOCalendarDetail()" class="text-gray-500 hover:text-red-600 text-2xl leading-none" aria-label="ปิดรายละเอียด">×</button>
+            </div>
+            <div id="poCalendarDetailBody" class="p-4"></div>
+        </div>
+    </div>
     <div id="poQRModal" class="fixed inset-0 bg-black bg-opacity-75 z-[90] hidden items-center justify-center p-4" onclick="closePOQR(event)">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-5" onclick="event.stopPropagation()">
             <div class="flex items-center justify-between gap-3 mb-3">
@@ -5141,6 +5172,7 @@
         let poDocuments = [];
         let poDocumentsLoaded = false;
         let poCalendarDate = new Date();
+        let poCalendarMode = 'calendar';
         let poUsers = [];
 
         function getCurrentLoginUser() {
@@ -5414,29 +5446,163 @@
         function poCalendarDateKey(value) {
             return String(value || '').match(/(\d{4}-\d{2}-\d{2})/)?.[1] || '';
         }
+        function poCalendarTodayKey() {
+            const today = new Date();
+            return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+        }
+        function poCalendarDaysUntilDue(value) {
+            const dateKey = poCalendarDateKey(value);
+            if (!dateKey) return null;
+            const [year, month, day] = dateKey.split('-').map(Number);
+            const due = new Date(year, month - 1, day);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            return Math.round((due - today) / 86400000);
+        }
         function poCalendarThaiMonth(date) {
             return date.toLocaleDateString('th-TH', { month: 'long', year: 'numeric' });
         }
         function poCalendarItemClass(item, dateKey) {
-            const due = new Date(`${dateKey}T23:59:59`);
-            const today = new Date(); today.setHours(0, 0, 0, 0);
-            const days = Math.ceil((due - today) / 86400000);
+            const days = poCalendarDaysUntilDue(dateKey);
             if (item.status === 'อนุมัติ' || item.status === 'ยกเลิก') return 'bg-gray-100 border-gray-300 text-gray-500';
             if (days < 0) return 'bg-red-100 border-red-300 text-red-800';
             if (days <= 7) return 'bg-yellow-100 border-yellow-300 text-yellow-800';
             return 'bg-green-100 border-green-300 text-green-800';
         }
+        function renderPOCalendarSummary(items = poDocuments) {
+            const summary = document.getElementById('poCalendarSummary');
+            if (!summary) return;
+            const activeItems = items.filter(item => item.status !== 'อนุมัติ' && item.status !== 'ยกเลิก');
+            const dueToday = activeItems.filter(item => poCalendarDaysUntilDue(item.dueDate) === 0).length;
+            const dueSoon = activeItems.filter(item => {
+                const days = poCalendarDaysUntilDue(item.dueDate);
+                return days !== null && days > 0 && days <= 7;
+            }).length;
+            const overdue = activeItems.filter(item => {
+                const days = poCalendarDaysUntilDue(item.dueDate);
+                return days !== null && days < 0;
+            }).length;
+            const noDueDate = activeItems.filter(item => !poCalendarDateKey(item.dueDate)).length;
+            const cards = [
+                ['เอกสารทั้งหมด', items.length, 'bg-indigo-50 text-indigo-800 border-indigo-100'],
+                ['ครบกำหนดวันนี้', dueToday, 'bg-red-50 text-red-700 border-red-100'],
+                ['ใกล้ครบกำหนด 7 วัน', dueSoon, 'bg-yellow-50 text-yellow-800 border-yellow-100'],
+                ['เกินกำหนด', overdue, 'bg-red-100 text-red-800 border-red-200'],
+                ['ยังไม่กำหนดวัน', noDueDate, 'bg-gray-50 text-gray-700 border-gray-200']
+            ];
+            summary.innerHTML = cards.map(([label, value, classes]) => `<div class="rounded-xl border p-3 ${classes}"><div class="text-xs">${label}</div><div class="text-2xl font-bold mt-1">${value}</div></div>`).join('');
+        }
+        function populatePOCalendarFilter(id, placeholder, values) {
+            const select = document.getElementById(id);
+            if (!select) return;
+            const current = select.value;
+            const unique = [...new Set(values.map(value => String(value || '').trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'th'));
+            select.innerHTML = `<option value="">${placeholder}</option>` + unique.map(value => `<option value="${poSafe(value)}">${poSafe(value)}</option>`).join('');
+            if (unique.includes(current)) select.value = current;
+        }
+        function populatePOCalendarFilters() {
+            populatePOCalendarFilter('poCalendarYearFilter', 'ทุกปี', poDocuments.map(item => item.year));
+            populatePOCalendarFilter('poCalendarDepartmentFilter', 'ทุกหน่วยงาน', poDocuments.map(item => item.department));
+            populatePOCalendarFilter('poCalendarResponsibleFilter', 'ผู้รับผิดชอบทุกคน', poDocuments.map(item => item.responsible));
+        }
+        function getFilteredPOCalendarItems() {
+            populatePOCalendarFilters();
+            const year = document.getElementById('poCalendarYearFilter')?.value || '';
+            const department = document.getElementById('poCalendarDepartmentFilter')?.value || '';
+            const responsible = document.getElementById('poCalendarResponsibleFilter')?.value || '';
+            const status = document.getElementById('poCalendarStatusFilter')?.value || '';
+            const dateFrom = document.getElementById('poCalendarDateFrom')?.value || '';
+            const dateTo = document.getElementById('poCalendarDateTo')?.value || '';
+            return poDocuments.filter(item => {
+                const dueDate = poCalendarDateKey(item.dueDate);
+                return (!year || String(item.year || '') === year) &&
+                    (!department || String(item.department || '') === department) &&
+                    (!responsible || String(item.responsible || '') === responsible) &&
+                    (!status || String(item.status || 'รอตรวจสอบ') === status) &&
+                    (!dateFrom || (dueDate && dueDate >= dateFrom)) &&
+                    (!dateTo || (dueDate && dueDate <= dateTo));
+            });
+        }
+        window.applyPOCalendarFilters = function() {
+            renderPOCalendar(poDocuments);
+        };
+        window.clearPOCalendarFilters = function() {
+            ['poCalendarYearFilter', 'poCalendarDepartmentFilter', 'poCalendarResponsibleFilter', 'poCalendarStatusFilter'].forEach(id => {
+                const select = document.getElementById(id);
+                if (select) select.value = '';
+            });
+            ['poCalendarDateFrom', 'poCalendarDateTo'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input) input.value = '';
+            });
+            renderPOCalendar(poDocuments);
+        };
+        function poCalendarShiftDateKey(offset) {
+            const date = new Date();
+            date.setHours(0, 0, 0, 0);
+            date.setDate(date.getDate() + offset);
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+        window.applyPOCalendarQuickFilter = function(mode) {
+            const from = document.getElementById('poCalendarDateFrom');
+            const to = document.getElementById('poCalendarDateTo');
+            if (!from || !to) return;
+            const today = poCalendarTodayKey();
+            from.value = mode === 'overdue' ? '' : today;
+            to.value = mode === 'today' ? today : mode === 'next7' ? poCalendarShiftDateKey(7) : poCalendarShiftDateKey(-1);
+            renderPOCalendar(poDocuments);
+        };
+        window.setPOCalendarMode = function(mode) {
+            poCalendarMode = mode === 'list' ? 'list' : 'calendar';
+            const calendarButton = document.getElementById('poCalendarModeCalendar');
+            const listButton = document.getElementById('poCalendarModeList');
+            const active = 'bg-indigo-600 text-white';
+            const inactive = 'border border-indigo-200 text-indigo-700 hover:bg-indigo-50';
+            if (calendarButton) calendarButton.className = `px-3 py-2 rounded-lg ${poCalendarMode === 'calendar' ? active : inactive} text-sm font-semibold`;
+            if (listButton) listButton.className = `px-3 py-2 rounded-lg ${poCalendarMode === 'list' ? active : inactive} text-sm font-semibold`;
+            renderPOCalendar(poDocuments);
+        };
+        function renderPOCalendarList(items) {
+            const list = document.getElementById('poCalendarList');
+            if (!list) return;
+            const sorted = [...items].sort((a, b) => {
+                const dateA = poCalendarDateKey(a.dueDate);
+                const dateB = poCalendarDateKey(b.dueDate);
+                if (!dateA && !dateB) return String(a.title || '').localeCompare(String(b.title || ''), 'th');
+                if (!dateA) return 1;
+                if (!dateB) return -1;
+                return dateA.localeCompare(dateB);
+            });
+            if (!sorted.length) {
+                list.innerHTML = '<p class="text-sm text-gray-400 text-center py-8">ไม่พบเอกสารตามตัวกรอง</p>';
+                return;
+            }
+            list.innerHTML = sorted.map(item => `<button type="button" onclick="openPOCalendarDetails('${poSafe(item.fileId)}')" class="w-full text-left border border-gray-200 rounded-xl p-3 hover:border-indigo-300 hover:bg-indigo-50/40 transition"><div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2"><div class="min-w-0"><div class="font-bold text-indigo-900 break-words">${poSafe(item.title || item.fileName || 'เอกสาร')}</div><div class="text-xs text-gray-500 mt-1">${poSafe(item.department || 'ไม่ระบุหน่วยงาน')} · <span class="inline-flex items-center gap-1"><svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-indigo-500" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"/></svg>${poSafe(item.responsible || 'ยังไม่ได้กำหนด')}</span></div></div><div class="shrink-0">${poDueBadge(item)}</div></div><div class="flex flex-wrap gap-2 mt-2 text-xs text-gray-500"><span>ปี ${poSafe(item.year || '-')}</span><span>สถานะ: ${poSafe(item.status || 'รอตรวจสอบ')}</span><span>ไฟล์แนบ ${Array.isArray(item.attachments) ? item.attachments.length : 0} ไฟล์</span></div></button>`).join('');
+        }
         window.renderPOCalendar = function(items = poDocuments) {
             const grid = document.getElementById('poCalendarGrid');
             const title = document.getElementById('poCalendarTitle');
             if (!grid || !title) return;
+            const calendarItems = items === poDocuments ? getFilteredPOCalendarItems() : items;
+            const list = document.getElementById('poCalendarList');
+            if (poCalendarMode === 'list') {
+                grid.classList.add('hidden');
+                document.querySelector('#poCalendarGrid')?.previousElementSibling?.classList.add('hidden');
+                list?.classList.remove('hidden');
+            } else {
+                grid.classList.remove('hidden');
+                document.querySelector('#poCalendarGrid')?.previousElementSibling?.classList.remove('hidden');
+                list?.classList.add('hidden');
+            }
             const year = poCalendarDate.getFullYear();
             const month = poCalendarDate.getMonth();
             title.textContent = poCalendarThaiMonth(poCalendarDate);
+            renderPOCalendarSummary(calendarItems);
+            renderPOCalendarList(calendarItems);
             const firstDay = new Date(year, month, 1).getDay();
             const daysInMonth = new Date(year, month + 1, 0).getDate();
             const dueItems = {};
-            items.filter(item => poCalendarDateKey(item.dueDate)).forEach(item => {
+            calendarItems.filter(item => poCalendarDateKey(item.dueDate)).forEach(item => {
                 const key = poCalendarDateKey(item.dueDate);
                 (dueItems[key] ||= []).push(item);
             });
@@ -5445,11 +5611,52 @@
             for (let day = 1; day <= daysInMonth; day++) {
                 const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const dayItems = dueItems[key] || [];
-                const todayKey = new Date().toISOString().slice(0, 10);
+                const todayKey = poCalendarTodayKey();
                 const dayClass = dayItems[0] ? poCalendarItemClass(dayItems[0], key) : 'bg-white border-gray-200';
-                html += `<div class="min-h-[76px] rounded-lg border p-1 text-left ${dayClass} ${key === todayKey ? 'ring-2 ring-indigo-500' : ''}"><div class="text-xs font-bold mb-1">${day}</div>${dayItems.slice(0, 3).map(item => `<button type="button" onclick="focusPODocument('${poSafe(item.fileId)}')" class="block w-full text-left truncate text-[10px] leading-4 hover:underline" title="${poSafe(item.title || item.fileName || '')}">• ${poSafe(item.title || item.fileName || 'เอกสาร')}</button>`).join('')}${dayItems.length > 3 ? `<div class="text-[10px] mt-1">+ อีก ${dayItems.length - 3} รายการ</div>` : ''}</div>`;
+                html += `<div class="min-h-[92px] rounded-lg border p-1 text-left ${dayClass} ${key === todayKey ? 'ring-2 ring-indigo-500' : ''}"><div class="text-xs font-bold mb-1">${day}</div>${dayItems.slice(0, 3).map(item => `<button type="button" onclick="openPOCalendarDetails('${poSafe(item.fileId)}')" class="block w-full text-left truncate text-[10px] leading-3 hover:underline mb-1" title="เปิดรายละเอียด ${poSafe(item.title || item.fileName || '')}"><span class="block truncate">• ${poSafe(item.title || item.fileName || 'เอกสาร')}</span><span class="block truncate text-[9px] opacity-75 inline-flex items-center gap-0.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"/></svg>${poSafe(item.responsible || 'ยังไม่กำหนด')}</span></button>`).join('')}${dayItems.length > 3 ? `<div class="text-[10px] mt-1">+ อีก ${dayItems.length - 3} รายการ</div>` : ''}</div>`;
             }
             grid.innerHTML = html;
+        };
+        window.openPOCalendarDetails = function(fileId) {
+            const item = poDocuments.find(document => document.fileId === fileId);
+            const modal = document.getElementById('poCalendarDetailModal');
+            const title = document.getElementById('poCalendarDetailTitle');
+            const body = document.getElementById('poCalendarDetailBody');
+            if (!item || !modal || !body) {
+                showModal('info', 'ไม่พบเอกสาร', 'กรุณาโหลดรายการเอกสาร PO ใหม่อีกครั้ง');
+                return;
+            }
+            const status = item.status || 'รอตรวจสอบ';
+            const statusClass = status === 'อนุมัติ' ? 'bg-green-100 text-green-700' : status === 'ยกเลิก' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700';
+            const attachmentCount = Array.isArray(item.attachments) ? item.attachments.length : 0;
+            if (title) title.textContent = item.title || item.fileName || 'รายละเอียดเอกสาร PO';
+            body.innerHTML = `
+                <div class="space-y-3 text-sm">
+                    <div><div class="text-xs text-gray-500">ชื่อเอกสาร</div><div class="font-bold text-gray-800 break-words">${poSafe(item.title || item.fileName || '-')}</div></div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="rounded-lg bg-gray-50 p-3"><div class="text-xs text-gray-500">ปี</div><div class="font-semibold">${poSafe(item.year || '-')}</div></div>
+                        <div class="rounded-lg bg-gray-50 p-3"><div class="text-xs text-gray-500">หน่วยงาน</div><div class="font-semibold">${poSafe(item.department || '-')}</div></div>
+                        <div class="rounded-lg bg-gray-50 p-3"><div class="text-xs text-gray-500">ผู้รับผิดชอบ</div><div class="font-semibold">${poSafe(item.responsible || 'ยังไม่ได้กำหนด')}</div></div>
+                        <div class="rounded-lg bg-gray-50 p-3"><div class="text-xs text-gray-500">สถานะเอกสาร</div><div class="mt-1"><span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${statusClass}">${poSafe(status)}</span></div></div>
+                    </div>
+                    <div class="rounded-lg bg-indigo-50 border border-indigo-100 p-3"><div class="text-xs text-indigo-600">กำหนดงาน</div><div class="mt-1">${poDueBadge(item)}</div></div>
+                    <div><div class="text-xs text-gray-500">รายละเอียด</div><div class="text-gray-700 whitespace-pre-wrap break-words">${poSafe(item.description || 'ไม่มีรายละเอียด')}</div></div>
+                    <div><div class="text-xs text-gray-500">ไฟล์แนบ</div><div class="font-semibold text-gray-700">${attachmentCount} ไฟล์แนบ${item.fileName ? ` · ${poSafe(item.fileName)}` : ''}</div></div>
+                    <div class="flex flex-wrap gap-2 pt-2 border-t border-gray-100">
+                        <button type="button" onclick="closePOCalendarDetail(); previewPOFile('${poSafe(item.fileId)}','${poSafe(item.fileId)}')" class="flex-1 min-w-[120px] bg-green-700 hover:bg-green-800 text-white px-3 py-2 rounded-lg text-xs font-semibold">ดูตัวอย่าง</button>
+                        <button type="button" onclick="closePOCalendarDetail(); downloadPOFile('${poSafe(item.fileId)}','${poSafe(item.fileId)}')" class="flex-1 min-w-[120px] bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-semibold">ดาวน์โหลด</button>
+                        <button type="button" onclick="closePOCalendarDetail(); editPODueDate('${poSafe(item.fileId)}')" class="flex-1 min-w-[150px] bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-lg text-xs font-semibold">แก้ไขวันครบกำหนด</button>
+                        <button type="button" onclick="closePOCalendarDetail(); editPODocument('${poSafe(item.fileId)}')" class="flex-1 min-w-[120px] bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">แก้ไขข้อมูล</button>
+                    </div>
+                </div>`;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+        window.closePOCalendarDetail = function(event) {
+            if (event && event.target !== event.currentTarget) return;
+            const modal = document.getElementById('poCalendarDetailModal');
+            modal?.classList.add('hidden');
+            modal?.classList.remove('flex');
         };
         window.changePOCalendarMonth = function(offset) {
             poCalendarDate = new Date(poCalendarDate.getFullYear(), poCalendarDate.getMonth() + offset, 1);
@@ -5469,11 +5676,10 @@
         function poDueBadge(item) {
             if (!item?.dueDate) return '<span class="text-xs text-gray-400">ยังไม่กำหนดวันครบกำหนด</span>';
             const dateOnly = String(item.dueDate).match(/(\d{4}-\d{2}-\d{2})/)?.[1] || '';
-            const due = dateOnly ? new Date(`${dateOnly}T23:59:59`) : new Date('invalid');
+            const due = dateOnly ? new Date(`${dateOnly}T00:00:00`) : new Date('invalid');
             const displayDate = poDueDateOnly(item.dueDate);
             if (Number.isNaN(due.getTime())) return `<span class="text-xs text-gray-500">ครบกำหนด ${poSafe(displayDate)}</span>`;
-            const today = new Date(); today.setHours(0, 0, 0, 0);
-            const days = Math.ceil((due - today) / 86400000);
+            const days = poCalendarDaysUntilDue(dateOnly);
             const state = days < 0 ? `เกินกำหนด ${Math.abs(days)} วัน` : days === 0 ? 'ครบกำหนดวันนี้' : `เหลือ ${days} วัน`;
             const color = days < 0 ? 'text-red-600 bg-red-50' : days <= 7 ? 'text-orange-700 bg-orange-50' : 'text-green-700 bg-green-50';
             return `<span class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full ${color}">ครบกำหนด ${poSafe(displayDate)} · ${state}</span>`;
