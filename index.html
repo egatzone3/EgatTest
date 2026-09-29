@@ -6726,6 +6726,10 @@ ${gpsText}`;
                 localStorage.setItem('weed_correction_records_cloud', JSON.stringify(corrList));
                 localStorage.setItem('weed_correction_records', JSON.stringify(corrList));
                 renderCorrectionRecords();
+                const beforeCount = (item.photos || (item.photo ? [item.photo] : [])).filter(Boolean).length;
+                const afterCount = (item.afterPhotos || []).filter(Boolean).length;
+                const afterEvidenceMsg = `🔄 **บันทึกหลักฐานหลังแก้ไขงาน!**\n🏢 หน่วยงาน: **${item.department || '-'}**\n⚡ แนวสาย: **${item.lineName || '-'}**\n🗼 จุดตรวจ: **${item.towerInfo || item.tower || '-'}**\n👤 ผู้แจ้งเดิม: **${item.reporterName || '-'}**\n🧑‍💼 ผู้บันทึกหลักฐาน: **${patch.afterUpdatedBy}**\n🖼️ รูปก่อนแก้ไข: **${beforeCount} รูป**\n✅ รูปหลังแก้ไข: **${afterCount} รูป**\n📝 รายละเอียดหลังแก้ไข: **${patch.afterNote || '-'}**\n📌 สถานะปัจจุบัน: **${item.status || 'แจ้งแก้ไข'}**\n🕒 เวลา: ${formatDateToThai(now)}`;
+                await sendDiscordNotification(DISCORD_WEBHOOK_UPDATE, afterEvidenceMsg);
                 showModal('success', 'บันทึกหลักฐานสำเร็จ', 'บันทึกภาพและรายละเอียดหลังแก้ไขลง Firebase แล้ว');
             } catch (error) {
                 console.error('Error saving after-correction evidence:', error);
