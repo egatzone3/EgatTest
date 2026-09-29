@@ -657,7 +657,7 @@
                     </svg>
                     ประวัติแจ้งแก้ไขงานทั้งหมด (<span id="corrPageBadgeCount">0</span>)
                 </h2>
-                <p class="text-xs text-amber-700 mt-1">รายการและรูปภาพคำสั่งแก้ไขงานทั้งหมดที่บันทึกไว้</p>
+                <p class="text-xs text-amber-700 mt-1">รายการ รูปก่อนแก้ไข และหลักฐานหลังแก้ไข โดยไม่บังคับให้มุมภาพเหมือนกัน</p>
             </div>
             <button onclick="toggleCorrectionHistoryView()" class="bg-white text-amber-800 border border-amber-300 hover:bg-amber-100 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1 shadow-sm">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -5051,6 +5051,7 @@
             syncCloudData();
             updateCorrectionAutoDate();
             initCorrectionRealtimeListener();
+            loadPOUsers().catch(error => console.warn('โหลดรายชื่อผู้ใช้งานเริ่มต้นไม่สำเร็จ:', error));
             console.log("ระบบพร้อมใช้งาน ตรวจสอบสถานะสมบูรณ์");
         };
 
@@ -5964,7 +5965,8 @@
                 corrHistoryBtn.classList.remove('hidden');
                 updateCorrectionAutoDate();
                 updateCorrectionPhotoCount();
-                if (!poUsers.length) loadPOUsers().catch(error => console.warn('โหลดรายชื่อผู้แจ้งไม่สำเร็จ:', error));
+                if (poUsers.length) populateCorrectionReporterSelect();
+                else loadPOUsers().catch(error => console.warn('โหลดรายชื่อผู้แจ้งไม่สำเร็จ:', error));
             } else {
                 goHome();
             }
@@ -6384,7 +6386,11 @@
                     photoStampVersion: 2,
                     timestamp: dateIso,
                     status: 'แจ้งแก้ไข',
-                    lastUpdated: null
+                    lastUpdated: null,
+                    afterPhotos: [],
+                    afterNote: '',
+                    afterUpdatedAt: null,
+                    afterUpdatedBy: ''
                 };
 
                 await addDoc(collection(db, "corrections"), correctionDoc);
@@ -6519,6 +6525,14 @@ ${gpsText}`;
 
                 const createdText = formatDateToThai(item.timestamp);
                 const updatedText = item.lastUpdated ? formatDateToThai(item.lastUpdated) : '-';
+                const afterPhotos = Array.isArray(item.afterPhotos) ? item.afterPhotos.filter(Boolean) : [];
+                const afterPhotosHtml = afterPhotos.map((p, idx) => `
+                    <div class="relative group">
+                        <img src="${p}" onclick="openImageModal('${p}')" class="w-20 h-20 object-cover rounded-lg border border-blue-200 cursor-pointer shadow-sm" alt="หลักฐานหลังแก้ไข ${idx + 1}">
+                        <button onclick="removeAfterCorrectionPhoto('${item.id}', ${idx})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-[10px] shadow hover:bg-red-600" title="ลบหลักฐานภาพนี้">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>`).join('');
 
                 const card = document.createElement('div');
                 card.className = "bg-amber-50/40 p-4 rounded-xl border border-amber-200 flex flex-col gap-3";
@@ -6544,6 +6558,28 @@ ${gpsText}`;
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                         </button>
+                    </div>
+                    <div class="rounded-xl border border-blue-200 bg-blue-50/50 p-3 space-y-3">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div>
+                                <h4 class="font-bold text-blue-900 text-sm">หลักฐานหลังแก้ไข</h4>
+                                <p class="text-[11px] text-blue-700">ไม่บังคับให้มุมภาพเหมือนภาพเดิม ให้ถ่ายตามสภาพจริงและใช้จุด/แนวสายเป็นข้อมูลอ้างอิง</p>
+                            </div>
+                            <span class="text-[11px] text-blue-700">${afterPhotos.length}/3 รูป</span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 items-center">
+                            ${afterPhotosHtml || '<span class="text-xs text-gray-500 italic">ยังไม่มีภาพหลังแก้ไข</span>'}
+                            ${afterPhotos.length < 3 ? `<label class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded-lg shadow-sm flex items-center gap-1 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                                เพิ่มภาพหลังแก้ไข
+                                <input type="file" accept="image/*" class="hidden" onchange="addAfterCorrectionPhoto(event, '${item.id}')">
+                            </label>` : ''}
+                        </div>
+                        <textarea id="corr-after-note-${item.id}" rows="2" class="w-full text-xs text-gray-700 bg-white border border-blue-200 rounded p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="บันทึกวิธีแก้ไขหรือผลการตรวจภาพหลังแก้ไข...">${reportEscape(item.afterNote || '')}</textarea>
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span class="text-[11px] text-gray-500">${item.afterUpdatedAt ? `บันทึกล่าสุด: ${formatDateToThai(item.afterUpdatedAt)} โดย ${reportEscape(item.afterUpdatedBy || '-')}` : 'ยังไม่มีผู้บันทึกหลักฐานหลังแก้ไข'}</span>
+                            <button type="button" onclick="saveAfterCorrectionEvidence('${item.id}')" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm">บันทึกหลักฐานหลังแก้ไข</button>
+                        </div>
                     </div>
                     <div class="flex flex-col sm:flex-row justify-between items-center gap-3 pt-2 border-t border-amber-100">
                         <div class="flex flex-wrap items-center gap-3 w-full">
@@ -6576,10 +6612,10 @@ ${gpsText}`;
                 showModal('error', 'ไม่มีข้อมูลสำหรับส่งออก', 'กรุณาปรับตัวกรองหรือรอให้มีรายการแจ้งแก้ไขก่อน');
                 return;
             }
-            const headers = ['วันที่แจ้ง', 'ชื่อผู้แจ้ง', 'หน่วยงาน', 'แนวสาย', 'หมายเลขเสา', 'สถานะงาน', 'จุด/แนวสาย', 'รายละเอียด', 'ข้อความเพิ่มเติมก่อนบันทึก', 'จำนวนรูปภาพ', 'วันที่แก้ไขล่าสุด'];
+            const headers = ['วันที่แจ้ง', 'ชื่อผู้แจ้ง', 'หน่วยงาน', 'แนวสาย', 'หมายเลขเสา', 'สถานะงาน', 'จุด/แนวสาย', 'รายละเอียด', 'ข้อความเพิ่มเติมก่อนบันทึก', 'จำนวนรูปก่อนแก้ไข', 'จำนวนรูปหลังแก้ไข', 'รายละเอียดหลังแก้ไข', 'ผู้บันทึกหลังแก้ไข', 'วันที่แก้ไขล่าสุด'];
             const rows = records.map(item => [
                 formatDateToThai(item.timestamp), item.reporterName || '', item.department || '', item.lineName || '', item.tower || '', item.status || 'แจ้งแก้ไข', item.towerInfo || '', item.details || '',
-                item.updateNote || '', (item.photos || (item.photo ? [item.photo] : [])).length, item.lastUpdated ? formatDateToThai(item.lastUpdated) : ''
+                item.updateNote || '', (item.photos || (item.photo ? [item.photo] : [])).length, (item.afterPhotos || []).length, item.afterNote || '', item.afterUpdatedBy || '', item.lastUpdated ? formatDateToThai(item.lastUpdated) : ''
             ]);
             const csvCell = value => '"' + String(value ?? '').replace(/\r?\n|\r/g, ' ').replace(/"/g, '""') + '"';
             const csv = '\ufeff' + [headers, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n');
@@ -6600,8 +6636,9 @@ ${gpsText}`;
                 return;
             }
             const rows = records.map((item, index) => {
-                const photos = (item.photos || (item.photo ? [item.photo] : [])).filter(Boolean).map((src, idx) => `<figure><img src="${src}" alt="รูปที่ ${idx + 1}"><figcaption>รูปที่ ${idx + 1}</figcaption></figure>`).join('');
-                return `<article class="record"><h2>${index + 1}. ${reportEscape(item.towerInfo || item.tower || 'รายการแจ้งแก้ไข')}</h2><p><b>หน่วยงาน:</b> ${reportEscape(item.department || '-')} &nbsp; <b>แนวสาย:</b> ${reportEscape(item.lineName || '-')}</p><p><b>ชื่อผู้แจ้ง:</b> ${reportEscape(item.reporterName || '-')} &nbsp; <b>วันที่แจ้ง:</b> ${reportEscape(formatDateToThai(item.timestamp))} &nbsp; <b>วันที่แก้ไขล่าสุด:</b> ${reportEscape(item.lastUpdated ? formatDateToThai(item.lastUpdated) : '-')}</p><p><b>รายละเอียด:</b> ${reportEscape(item.details || '-')}</p><p><b>ข้อความเพิ่มเติมก่อนบันทึก:</b> ${reportEscape(item.updateNote || '-')}</p><div class="photos">${photos || '<p>ไม่มีรูปภาพ</p>'}</div></article>`;
+                const photos = (item.photos || (item.photo ? [item.photo] : [])).filter(Boolean).map((src, idx) => `<figure><img src="${src}" alt="รูปก่อนแก้ไข ${idx + 1}"><figcaption>ก่อนแก้ไข ${idx + 1}</figcaption></figure>`).join('');
+                const afterPhotos = (item.afterPhotos || []).filter(Boolean).map((src, idx) => `<figure><img src="${src}" alt="รูปหลังแก้ไข ${idx + 1}"><figcaption>หลังแก้ไข ${idx + 1}</figcaption></figure>`).join('');
+                return `<article class="record"><h2>${index + 1}. ${reportEscape(item.towerInfo || item.tower || 'รายการแจ้งแก้ไข')}</h2><p><b>หน่วยงาน:</b> ${reportEscape(item.department || '-')} &nbsp; <b>แนวสาย:</b> ${reportEscape(item.lineName || '-')}</p><p><b>ชื่อผู้แจ้ง:</b> ${reportEscape(item.reporterName || '-')} &nbsp; <b>วันที่แจ้ง:</b> ${reportEscape(formatDateToThai(item.timestamp))} &nbsp; <b>วันที่แก้ไขล่าสุด:</b> ${reportEscape(item.lastUpdated ? formatDateToThai(item.lastUpdated) : '-')}</p><p><b>รายละเอียด:</b> ${reportEscape(item.details || '-')}</p><p><b>ข้อความเพิ่มเติมก่อนบันทึก:</b> ${reportEscape(item.updateNote || '-')}</p><p><b>รายละเอียดหลังแก้ไข:</b> ${reportEscape(item.afterNote || '-')} &nbsp; <b>ผู้บันทึก:</b> ${reportEscape(item.afterUpdatedBy || '-')}</p><div class="photos"><div><b>ก่อนแก้ไข</b>${photos || '<p>ไม่มีรูปภาพ</p>'}</div><div><b>หลังแก้ไข</b>${afterPhotos || '<p>ยังไม่มีหลักฐาน</p>'}</div></div></article>`;
             }).join('');
             const win = window.open('', '_blank');
             if (!win) {
@@ -6658,6 +6695,93 @@ ${gpsText}`;
                 console.error('Error updating correction status:', error);
             }
         }
+
+        async function findCorrectionDocRef(id, item) {
+            const querySnapshot = await getDocs(collection(db, "corrections"));
+            for (const docSnap of querySnapshot.docs) {
+                const data = docSnap.data();
+                if (docSnap.id === id || data.id === id || docSnap.id === item?.docId) return docSnap.ref;
+            }
+            return id ? doc(db, "corrections", id) : null;
+        }
+
+        window.saveAfterCorrectionEvidence = async function(id) {
+            const corrList = getCorrectionHistoryRecords();
+            const item = corrList.find(i => i.id === id || i.docId === id);
+            if (!item) return;
+            const noteInput = document.getElementById(`corr-after-note-${id}`);
+            const user = getCurrentLoginUser();
+            const now = new Date().toISOString();
+            const patch = {
+                afterPhotos: Array.isArray(item.afterPhotos) ? item.afterPhotos : [],
+                afterNote: noteInput ? noteInput.value.trim() : '',
+                afterUpdatedAt: now,
+                afterUpdatedBy: user.name || 'ไม่ระบุ'
+            };
+            try {
+                const ref = await findCorrectionDocRef(id, item);
+                if (!ref) throw new Error('ไม่พบรายการแจ้งแก้ไข');
+                await updateDoc(ref, patch);
+                Object.assign(item, patch);
+                localStorage.setItem('weed_correction_records_cloud', JSON.stringify(corrList));
+                localStorage.setItem('weed_correction_records', JSON.stringify(corrList));
+                renderCorrectionRecords();
+                showModal('success', 'บันทึกหลักฐานสำเร็จ', 'บันทึกภาพและรายละเอียดหลังแก้ไขลง Firebase แล้ว');
+            } catch (error) {
+                console.error('Error saving after-correction evidence:', error);
+                showModal('error', 'บันทึกหลักฐานไม่สำเร็จ', 'ไม่สามารถบันทึกหลักฐานหลังแก้ไขลง Firebase ได้');
+            }
+        };
+
+        window.addAfterCorrectionPhoto = async function(event, id) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            const corrList = getCorrectionHistoryRecords();
+            const item = corrList.find(i => i.id === id || i.docId === id);
+            if (!item) return;
+            const photos = Array.isArray(item.afterPhotos) ? item.afterPhotos : [];
+            if (photos.length >= 3) {
+                showModal('error', 'แนบภาพครบแล้ว', 'หลักฐานหลังแก้ไขแนบได้สูงสุด 3 รูปต่อรายการ');
+                event.target.value = '';
+                return;
+            }
+            try {
+                const image = await compressImage(file, 600, 600, 0.4);
+                photos.push(image);
+                const ref = await findCorrectionDocRef(id, item);
+                if (!ref) throw new Error('ไม่พบรายการแจ้งแก้ไข');
+                await updateDoc(ref, { afterPhotos: photos });
+                item.afterPhotos = photos;
+                localStorage.setItem('weed_correction_records_cloud', JSON.stringify(corrList));
+                localStorage.setItem('weed_correction_records', JSON.stringify(corrList));
+                renderCorrectionRecords();
+            } catch (error) {
+                console.error('Error adding after-correction photo:', error);
+                showModal('error', 'เพิ่มภาพไม่สำเร็จ', 'ไม่สามารถบันทึกภาพหลังแก้ไขลง Firebase ได้');
+            } finally {
+                event.target.value = '';
+            }
+        };
+
+        window.removeAfterCorrectionPhoto = async function(id, photoIdx) {
+            const corrList = getCorrectionHistoryRecords();
+            const item = corrList.find(i => i.id === id || i.docId === id);
+            if (!item) return;
+            const photos = Array.isArray(item.afterPhotos) ? [...item.afterPhotos] : [];
+            photos.splice(photoIdx, 1);
+            try {
+                const ref = await findCorrectionDocRef(id, item);
+                if (!ref) throw new Error('ไม่พบรายการแจ้งแก้ไข');
+                await updateDoc(ref, { afterPhotos: photos });
+                item.afterPhotos = photos;
+                localStorage.setItem('weed_correction_records_cloud', JSON.stringify(corrList));
+                localStorage.setItem('weed_correction_records', JSON.stringify(corrList));
+                renderCorrectionRecords();
+            } catch (error) {
+                console.error('Error removing after-correction photo:', error);
+                showModal('error', 'ลบภาพไม่สำเร็จ', 'ไม่สามารถลบภาพหลังแก้ไขจาก Firebase ได้');
+            }
+        };
 
         window.saveCorrectionItem = async function(id) {
             const towerInput = document.getElementById(`corr-tower-${id}`);
