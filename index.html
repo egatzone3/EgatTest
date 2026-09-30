@@ -150,6 +150,13 @@
                     <select id="towerSelect" disabled class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-lg p-3 border bg-gray-100 disabled:opacity-50">
                         <option value="">-- กรุณาเลือกแนวสายก่อน --</option>
                     </select>
+                    <div id="recentLocationPanel" class="hidden mt-3 rounded-lg border border-indigo-100 bg-indigo-50/60 p-3">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <div class="text-sm font-semibold text-indigo-900">รายการที่ใช้งานล่าสุด</div>
+                            <button type="button" onclick="clearRecentLocations()" class="text-xs text-gray-500 hover:text-red-600">ล้างรายการ</button>
+                        </div>
+                        <div id="recentLocationList" class="grid gap-2 sm:grid-cols-2"></div>
+                    </div>
                 </div>
 
                 <!-- Tower Details & Navigation Card -->
@@ -177,7 +184,26 @@
                 <!-- Inspector Name Input -->
                 <div class="pt-2">
                     <label for="inspectorName" class="block text-sm font-medium text-gray-700 mb-1">ชื่อผู้ปฏิบัติงาน / ผู้รับเหมาส่งงาน</label>
-                    <input type="text" id="inspectorName" placeholder="ระบุชื่อผู้ส่งงาน / ทีมงาน" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base p-3 border bg-gray-50">
+                    <select id="inspectorName" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base p-3 border bg-gray-50">
+                        <option value="">-- กำลังโหลดรายชื่อผู้ใช้งาน --</option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-1">รายชื่อดึงจากชีต “ผู้ใช้งาน” เฉพาะรายการที่เปิดใช้งาน</p>
+                </div>
+                <div class="rounded-xl border border-green-200 bg-green-50/60 p-4" aria-live="polite">
+                    <div class="flex items-center justify-between gap-3 mb-2">
+                        <div class="font-bold text-green-900">ความพร้อมในการบันทึก</div>
+                        <span id="formProgressPercent" class="text-lg font-bold text-green-700">0%</span>
+                    </div>
+                    <div class="h-3 w-full overflow-hidden rounded-full bg-green-100" role="progressbar" aria-label="ความพร้อมในการบันทึก" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                        <div id="formProgressBar" class="h-full rounded-full bg-green-600 transition-all duration-300" style="width: 0%"></div>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mt-3 text-xs">
+                        <div id="progressLocation" class="rounded-lg bg-white border border-green-100 px-2 py-2 text-gray-500">จุดตรวจ: ยังไม่ครบ</div>
+                        <div id="progressInspector" class="rounded-lg bg-white border border-green-100 px-2 py-2 text-gray-500">ผู้ปฏิบัติงาน: ยังไม่ระบุ</div>
+                        <div id="progressPhotos" class="rounded-lg bg-white border border-green-100 px-2 py-2 text-gray-500">รูปภาพ: 0/5</div>
+                        <div id="progressGps" class="rounded-lg bg-white border border-green-100 px-2 py-2 text-gray-500">GPS: ข้อมูลเสริม (0 คะแนน)</div>
+                    </div>
+                    <p id="formProgressMessage" class="text-xs text-green-700 mt-2">กรุณาเลือกข้อมูลจุดตรวจและเพิ่มรูปภาพอย่างน้อย 1 รูป</p>
                 </div>
             </div>
         </section>
@@ -976,6 +1002,7 @@
                 document.getElementById('loginGate').classList.add('hidden');
                 document.getElementById('headerSubtitle').textContent = `ผู้ใช้งาน: ${user.name} | ${user.unit}`;
                 try { await sendLoginLog(user); } catch (err) { console.error('Login log error:', err); }
+                maybeOfferFormDraftRecovery();
             });
         }
 
@@ -5087,6 +5114,10 @@
         let activeLineTowers = [];
         let uploadedPhotosCount = 0;
         let currentViewMode = 'form';
+        const FORM_DRAFT_KEY = 'weed_inspection_form_draft_v1';
+        const RECENT_LOCATIONS_KEY = 'weed_recent_locations_v1';
+        let draftSaveTimer = null;
+        let isRestoringFormDraft = false;
 
         // รูปที่ประทับข้อมูลแล้ว (ใช้ส่งเข้า Firebase โดยตรง)
         const stampedPhotoData = {};
@@ -5106,12 +5137,209 @@
             }
         }
 
-        window.onload = function() {
+        window.onload = async function() {
             syncCloudData();
             updateCorrectionAutoDate();
             initCorrectionRealtimeListener();
-            loadPOUsers().catch(error => console.warn('โหลดรายชื่อผู้ใช้งานเริ่มต้นไม่สำเร็จ:', error));
+            try { await loadPOUsers(); } catch (error) { console.warn('โหลดรายชื่อผู้ใช้งานเริ่มต้นไม่สำเร็จ:', error); }
+            renderRecentLocations();
             console.log("ระบบพร้อมใช้งาน ตรวจสอบสถานะสมบูรณ์");
+        };
+
+        function getFormDraft() {
+            try {
+                const raw = localStorage.getItem(FORM_DRAFT_KEY);
+                return raw ? JSON.parse(raw) : null;
+            } catch (error) {
+                console.warn('อ่านข้อมูลร่างไม่สำเร็จ:', error);
+                return null;
+            }
+        }
+
+        function hasUsefulFormDraft(draft) {
+            return !!(draft && (draft.department || draft.lineName || draft.tower || draft.inspector || Object.keys(draft.photos || {}).length || draft.gps));
+        }
+
+        function saveFormDraft() {
+            if (isRestoringFormDraft) return;
+            const draft = {
+                version: 1,
+                savedAt: new Date().toISOString(),
+                department: document.getElementById('departmentSelect')?.value || '',
+                lineName: document.getElementById('lineSelect')?.value || '',
+                tower: document.getElementById('towerSelect')?.value || '',
+                inspector: document.getElementById('inspectorName')?.value || '',
+                photos: { ...stampedPhotoData },
+                photoMeta: { ...stampedPhotoMeta },
+                gps: gpsCache?.position || null,
+                gpsCachedAt: gpsCache?.cachedAt || null,
+                gpsStatus: document.getElementById('gpsStatusBadge')?.textContent || 'GPS: ข้อมูลเสริม (0 คะแนน)'
+            };
+            if (!hasUsefulFormDraft(draft)) {
+                localStorage.removeItem(FORM_DRAFT_KEY);
+                return;
+            }
+            try {
+                localStorage.setItem(FORM_DRAFT_KEY, JSON.stringify(draft));
+            } catch (error) {
+                console.warn('บันทึกร่างไม่สำเร็จ อาจมีพื้นที่จัดเก็บไม่เพียงพอ:', error);
+            }
+        }
+
+        function scheduleFormDraftSave() {
+            if (isRestoringFormDraft) return;
+            clearTimeout(draftSaveTimer);
+            draftSaveTimer = setTimeout(saveFormDraft, 350);
+        }
+
+        function removeFormDraft() {
+            clearTimeout(draftSaveTimer);
+            localStorage.removeItem(FORM_DRAFT_KEY);
+        }
+
+        function closeFormDraftModal() {
+            document.getElementById('formDraftModal')?.remove();
+        }
+
+        function showFormDraftRecoveryPrompt(draft) {
+            if (document.getElementById('formDraftModal')) return;
+            const savedAt = draft.savedAt ? new Date(draft.savedAt).toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' }) : '-';
+            const photoCount = Object.keys(draft.photos || {}).length;
+            const wrapper = document.createElement('div');
+            wrapper.id = 'formDraftModal';
+            wrapper.className = 'fixed inset-0 z-[120] flex items-center justify-center bg-black/50 p-4';
+            wrapper.innerHTML = `
+                <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                    <div class="mb-4 flex items-center gap-3">
+                        <div class="flex h-11 w-11 items-center justify-center rounded-full bg-amber-100 text-2xl">📝</div>
+                        <div><h3 class="text-lg font-bold text-gray-800">พบข้อมูลที่กรอกค้างไว้</h3><p class="text-xs text-gray-500">ระบบพบร่างที่บันทึกไว้ในเครื่องนี้</p></div>
+                    </div>
+                    <div class="mb-5 rounded-lg bg-gray-50 p-3 text-sm text-gray-600 space-y-1">
+                        <div>บันทึกล่าสุด: <strong>${savedAt}</strong></div>
+                        <div>รูปภาพในร่าง: <strong>${photoCount}/5 รูป</strong></div>
+                    </div>
+                    <p class="mb-5 text-sm text-gray-700">ต้องการกู้คืนข้อมูลร่างนี้หรือไม่?</p>
+                    <div class="flex gap-2">
+                        <button type="button" onclick="discardFormDraft()" class="flex-1 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">ลบข้อมูลร่าง</button>
+                        <button type="button" onclick="restoreFormDraft()" class="flex-1 rounded-lg bg-green-700 px-4 py-3 text-sm font-semibold text-white hover:bg-green-800">กู้คืนข้อมูล</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(wrapper);
+        }
+
+        window.discardFormDraft = function() {
+            removeFormDraft();
+            closeFormDraftModal();
+        };
+
+        window.restoreFormDraft = function() {
+            const draft = getFormDraft();
+            if (!hasUsefulFormDraft(draft)) { removeFormDraft(); closeFormDraftModal(); return; }
+            isRestoringFormDraft = true;
+            try {
+                const departmentSelect = document.getElementById('departmentSelect');
+                const lineSelect = document.getElementById('lineSelect');
+                const towerSelect = document.getElementById('towerSelect');
+                departmentSelect.value = draft.department || '';
+                departmentSelect.dispatchEvent(new Event('change'));
+                lineSelect.value = draft.lineName || '';
+                lineSelect.dispatchEvent(new Event('change'));
+                towerSelect.value = draft.tower || '';
+                towerSelect.dispatchEvent(new Event('change'));
+                const inspectorSelect = document.getElementById('inspectorName');
+                if (inspectorSelect) inspectorSelect.value = draft.inspector || '';
+                Object.keys(stampedPhotoData).forEach(key => delete stampedPhotoData[key]);
+                Object.keys(stampedPhotoMeta).forEach(key => delete stampedPhotoMeta[key]);
+                Object.assign(stampedPhotoData, draft.photos || {});
+                Object.assign(stampedPhotoMeta, draft.photoMeta || {});
+                uploadedPhotosCount = 0;
+                for (let i = 1; i <= 5; i++) {
+                    const id = `photo${i}`;
+                    const image = document.getElementById(`preview-${id}`);
+                    const placeholder = document.getElementById(`placeholder-${id}`);
+                    const clearButton = document.getElementById(`clear-${id}`);
+                    const badge = document.getElementById(`badge-${id}`);
+                    if (stampedPhotoData[id]) {
+                        uploadedPhotosCount++;
+                        if (image) { image.src = stampedPhotoData[id]; image.classList.remove('hidden'); }
+                        placeholder?.classList.add('hidden');
+                        clearButton?.classList.remove('hidden');
+                        if (badge) { badge.textContent = 'ร่างที่กู้คืน'; badge.className = 'text-xs bg-blue-500 text-white px-2 py-1 rounded-full'; }
+                    }
+                }
+                gpsCache = draft.gps ? { position: draft.gps, cachedAt: draft.gpsCachedAt || Date.now() } : null;
+                setGpsStatus(gpsCache ? 'ok' : 'idle', gpsCache ? `GPS พร้อม ±${gpsCache.position.accuracy || 0} ม.` : (draft.gpsStatus || 'GPS: ข้อมูลเสริม (0 คะแนน)'));
+                countUploadedPhotos();
+                updateSaveButton();
+                updateFormProgress();
+            } finally {
+                isRestoringFormDraft = false;
+            }
+            closeFormDraftModal();
+            scheduleFormDraftSave();
+        };
+
+        async function maybeOfferFormDraftRecovery() {
+            const draft = getFormDraft();
+            if (!hasUsefulFormDraft(draft)) return;
+            if (!poUsers.length) {
+                try { await loadPOUsers(); } catch (error) { console.warn('โหลดรายชื่อก่อนกู้คืนร่างไม่สำเร็จ:', error); }
+            }
+            showFormDraftRecoveryPrompt(draft);
+        }
+
+        function getRecentLocations() {
+            try {
+                const value = JSON.parse(localStorage.getItem(RECENT_LOCATIONS_KEY) || '[]');
+                return Array.isArray(value) ? value : [];
+            } catch (error) {
+                console.warn('อ่านรายการจุดตรวจล่าสุดไม่สำเร็จ:', error);
+                return [];
+            }
+        }
+
+        function rememberRecentLocation(location) {
+            if (!location?.department || !location?.lineName || !location?.tower) return;
+            const key = `${location.department}|${location.lineName}|${location.tower}`;
+            const recent = getRecentLocations().filter(item => `${item.department}|${item.lineName}|${item.tower}` !== key);
+            recent.unshift({ ...location, usedAt: new Date().toISOString() });
+            try { localStorage.setItem(RECENT_LOCATIONS_KEY, JSON.stringify(recent.slice(0, 6))); }
+            catch (error) { console.warn('บันทึกรายการจุดตรวจล่าสุดไม่สำเร็จ:', error); }
+            renderRecentLocations();
+        }
+
+        function renderRecentLocations() {
+            const panel = document.getElementById('recentLocationPanel');
+            const list = document.getElementById('recentLocationList');
+            if (!panel || !list) return;
+            const recent = getRecentLocations();
+            panel.classList.toggle('hidden', recent.length === 0);
+            list.innerHTML = recent.map((item, index) => `
+                <button type="button" onclick="useRecentLocation(${index})" class="w-full rounded-lg border border-indigo-100 bg-white px-3 py-2 text-left shadow-sm hover:border-indigo-400 hover:bg-indigo-50 transition">
+                    <span class="block truncate text-sm font-semibold text-gray-800">${poSafe(item.department)}</span>
+                    <span class="mt-1 block truncate text-xs text-gray-600">แนวสาย ${poSafe(item.lineName)} · เสา ${poSafe(item.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : item.tower)}</span>
+                </button>`).join('');
+        }
+
+        window.useRecentLocation = function(index) {
+            const item = getRecentLocations()[Number(index)];
+            if (!item) return;
+            const departmentSelect = document.getElementById('departmentSelect');
+            const lineSelect = document.getElementById('lineSelect');
+            const towerSelect = document.getElementById('towerSelect');
+            if (!departmentSelect || !lineSelect || !towerSelect) return;
+            departmentSelect.value = item.department;
+            departmentSelect.dispatchEvent(new Event('change'));
+            lineSelect.value = item.lineName;
+            lineSelect.dispatchEvent(new Event('change'));
+            towerSelect.value = item.tower;
+            towerSelect.dispatchEvent(new Event('change'));
+            rememberRecentLocation(item);
+        };
+
+        window.clearRecentLocations = function() {
+            localStorage.removeItem(RECENT_LOCATIONS_KEY);
+            renderRecentLocations();
         };
 
         function initCorrectionRealtimeListener() {
@@ -5281,6 +5509,12 @@
             const payload = await response.json();
             if (!payload?.ok) throw new Error(payload?.error || 'โหลดรายชื่อผู้ใช้งานไม่สำเร็จ');
             poUsers = Array.isArray(payload.users) ? payload.users : [];
+            const inspectorSelect = document.getElementById('inspectorName');
+            if (inspectorSelect) {
+                const currentInspector = inspectorSelect.value;
+                inspectorSelect.innerHTML = '<option value="">-- เลือกชื่อผู้ปฏิบัติงาน / ผู้รับเหมาส่งงาน --</option>' + poUsers.map(user => `<option value="${poSafe(user.name)}">${poSafe(user.name)}${user.unit ? ` · ${poSafe(user.unit)}` : ''}</option>`).join('');
+                inspectorSelect.value = poUsers.some(user => user.name === currentInspector) ? currentInspector : '';
+            }
             const responsibleSelect = document.getElementById('poResponsible');
             if (responsibleSelect) {
                 const current = responsibleSelect.value;
@@ -7216,6 +7450,7 @@ ${gpsText}`;
 
             if (!dept) {
                 subtitle.textContent = "กรุณาเลือกหน่วยงานและแนวสาย";
+                updateFormProgress();
                 return;
             }
 
@@ -7235,6 +7470,7 @@ ${gpsText}`;
                 });
             }
             updateSaveButton();
+            updateFormProgress();
         });
 
         document.getElementById('lineSelect').addEventListener('change', function(e) {
@@ -7255,7 +7491,7 @@ ${gpsText}`;
             towerSelect.classList.add('bg-gray-100');
             detailsDiv.classList.add('hidden');
 
-            if (!lineName) return;
+            if (!lineName) { updateFormProgress(); return; }
 
             const lines = organizationStructure[dept] || [];
             const selectedLineObj = lines.find(l => l.lineName === lineName);
@@ -7284,11 +7520,19 @@ ${gpsText}`;
             towerSelect.appendChild(opt);
         }
         updateSaveButton();
+        updateFormProgress();
     });
 
     document.getElementById('towerSelect').addEventListener('change', function(e) {
         const val = e.target.value;
         const detailsDiv = document.getElementById('towerDetails');
+        if (val) {
+            rememberRecentLocation({
+                department: document.getElementById('departmentSelect').value,
+                lineName: document.getElementById('lineSelect').value,
+                tower: val
+            });
+        }
 
         if (uploadedPhotosCount > 0) {
             for (let i = 1; i <= 5; i++) {
@@ -7300,6 +7544,7 @@ ${gpsText}`;
         if (!val || val === "GENERIC-TOWER") {
             detailsDiv.classList.add('hidden');
             updateSaveButton();
+            updateFormProgress();
             return;
         }
 
@@ -7321,7 +7566,10 @@ ${gpsText}`;
             detailsDiv.classList.add('hidden');
         }
         updateSaveButton();
+        updateFormProgress();
     });
+    document.getElementById('inspectorName')?.addEventListener('input', updateFormProgress);
+    document.getElementById('inspectorName')?.addEventListener('change', updateFormProgress);
 
     // อ่าน GPS แบบสั้นสำหรับการถ่ายรูป: GPS เป็นข้อมูลเสริมและหากอ่านไม่ได้จะไม่บล็อกการบันทึกรูป
     async function tryGetGpsForPhoto() {
@@ -7465,12 +7713,52 @@ ${gpsText}`;
         function countUploadedPhotos() {
             uploadedPhotosCount = 0;
             for (let i = 1; i <= 5; i++) {
-                if (document.getElementById('photo' + i).files.length > 0) {
+                const fileInput = document.getElementById('photo' + i);
+                if (stampedPhotoData['photo' + i] || fileInput?.files?.length > 0) {
                     uploadedPhotosCount++;
                 }
             }
-            document.getElementById('photoCount').textContent = uploadedPhotosCount;
+            const photoCountLabel = document.getElementById('photoCount');
+            if (photoCountLabel) photoCountLabel.textContent = uploadedPhotosCount;
             updateSaveButton();
+            updateFormProgress();
+        }
+        function updateFormProgress() {
+            const department = document.getElementById('departmentSelect')?.value || '';
+            const line = document.getElementById('lineSelect')?.value || '';
+            const tower = document.getElementById('towerSelect')?.value || '';
+            const inspector = document.getElementById('inspectorName')?.value.trim() || '';
+            const gpsReady = !!gpsCache?.position;
+            const locationComplete = [department, line, tower].filter(Boolean).length;
+            const score = (department ? 2 : 0) + (line ? 2 : 0) + (tower ? 2 : 0) + (inspector ? 2 : 0) + (uploadedPhotosCount > 0 ? 2 : 0);
+            const percent = Math.min(100, score * 10);
+            const percentEl = document.getElementById('formProgressPercent');
+            const bar = document.getElementById('formProgressBar');
+            const progress = bar?.parentElement;
+            if (percentEl) percentEl.textContent = `${percent}%`;
+            if (bar) bar.style.width = `${percent}%`;
+            if (progress) progress.setAttribute('aria-valuenow', String(percent));
+            const setItem = (id, complete, text) => {
+                const element = document.getElementById(id);
+                if (!element) return;
+                element.textContent = `${complete ? '✓' : '•'} ${text}`;
+                element.classList.toggle('text-green-700', complete);
+                element.classList.toggle('text-gray-500', !complete);
+                element.classList.toggle('font-semibold', complete);
+            };
+            setItem('progressLocation', locationComplete === 3, locationComplete === 3 ? 'จุดตรวจ: 6/6 คะแนน' : `จุดตรวจ: ${locationComplete}/3 รายการ`);
+            setItem('progressInspector', !!inspector, inspector ? 'ผู้ปฏิบัติงาน: 2/2 คะแนน' : 'ผู้ปฏิบัติงาน: 0/2 คะแนน');
+            setItem('progressPhotos', uploadedPhotosCount > 0, `รูปภาพ: ${uploadedPhotosCount}/5 · 2/2 คะแนน`);
+            setItem('progressGps', gpsReady, gpsReady ? 'GPS: ข้อมูลเสริม (0 คะแนน) · พร้อม' : 'GPS: ข้อมูลเสริม (0 คะแนน)');
+            const message = document.getElementById('formProgressMessage');
+            if (message) {
+                const missing = [];
+                if (locationComplete < 3) missing.push('ข้อมูลจุดตรวจ');
+                if (!inspector) missing.push('ชื่อผู้ปฏิบัติงาน');
+                if (!uploadedPhotosCount) missing.push('รูปภาพอย่างน้อย 1 รูป');
+                message.textContent = missing.length ? `ยังขาด: ${missing.join(' • ')}` : 'พร้อมบันทึกข้อมูล (GPS เป็นข้อมูลเสริม ไม่คิดคะแนน)';
+            }
+            scheduleFormDraftSave();
         }
 
         function updateSaveButton() {
@@ -7584,6 +7872,7 @@ ${gpsText}`;
             } else {
                 badge.classList.add('bg-gray-100', 'text-gray-500', 'border-gray-200');
             }
+            updateFormProgress();
         }
 
         window.testDeviceGps = async function() {
@@ -7773,7 +8062,7 @@ ${gpsText}`;
                 for (let i = 1; i <= 5; i++) {
                     const photoId = 'photo' + i;
                     const fileInput = document.getElementById(photoId);
-                    if (fileInput.files.length > 0) {
+                    if (fileInput?.files?.length > 0 || stampedPhotoData[photoId]) {
                         if (!stampedPhotoData[photoId]) {
                             throw new Error(`รูปที่ ${i} ยังไม่ได้ประมวลผล กรุณาลบรูปแล้วอัปโหลดใหม่`);
                         }
@@ -7808,6 +8097,7 @@ ${gpsText}`;
 
                 const discordMsg = `📢 **มีรายงานการส่งงานใหม่!**\n🏢 หน่วยงาน: **${department}**\n⚡ แนวสาย: **${lineName}**\n🗼 เสา: **${tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + tower}**\n👷 ผู้ปฏิบัติงาน: **${inspectorName}**\n🕒 เวลา: ${formatDateToThai(newRecord.timestamp)}`;
                 await sendDiscordNotification(DISCORD_WEBHOOK_CREATE, discordMsg);
+                removeFormDraft();
 
                 showModal('success', 'ส่งงานสำเร็จ!', `ส่งข้อมูล Tower ${tower} (${department}) ขึ้น Firebase Cloud เรียบร้อยแล้ว`);
                 
@@ -8346,6 +8636,7 @@ ${gpsText}`;
             }
             gpsCache = null;
             setGpsStatus('idle', 'ยังไม่ได้ตรวจ GPS');
+            removeFormDraft();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
