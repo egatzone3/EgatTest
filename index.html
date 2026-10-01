@@ -230,9 +230,14 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div class="bg-gray-100 px-4 py-3 border-b border-gray-200 flex justify-between items-center">
                         <span class="font-semibold text-gray-800">1. ก่อนจ้างถาง</span>
-                        <span id="badge-photo1" class="text-xs bg-gray-300 text-gray-600 px-2 py-1 rounded-full">รอรูปภาพ</span>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="togglePhotoTip('photo-tip-photo1')" class="flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 bg-white text-xs font-bold text-gray-500 hover:border-blue-400 hover:text-blue-600" title="ดูคำแนะนำเพิ่มเติม" aria-label="ดูคำแนะนำเพิ่มเติม">i</button>
+                            <span id="badge-photo1" class="text-xs bg-gray-300 text-gray-600 px-2 py-1 rounded-full">รอรูปภาพ</span>
+                        </div>
                     </div>
                     <div class="p-4">
+                        <p class="mb-2 text-xs leading-relaxed text-indigo-700"><span class="font-semibold">คำแนะนำ:</span> รูปที่ 1: ถ่ายก่อนเริ่มงาน ให้เห็นสภาพวัชพืชเดิม</p>
+                        <div id="photo-tip-photo1" class="mb-3 hidden rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs leading-relaxed text-indigo-800">ถ่ายให้เห็นบริเวณงานและสภาพวัชพืชก่อนดำเนินการ โดยพยายามให้เสาอยู่ในภาพเพื่อใช้อ้างอิง</div>
                         <label for="photo1" class="upload-area flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 relative overflow-hidden">
                             <div id="placeholder-photo1" class="flex flex-col items-center justify-center pt-5 pb-6 text-gray-400">
                                 <svg aria-hidden="true" class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
@@ -241,6 +246,7 @@
                             <img id="preview-photo1" class="absolute inset-0 w-full h-full object-cover hidden" alt="preview" />
                             <input id="photo1" type="file" class="hidden" accept="image/*" onchange="previewImage(event, 'photo1')" />
                         </label>
+                        <button type="button" onclick="openPreSendPhotoPreview('photo1')" class="mt-2 w-full py-2 text-sm text-blue-600 border border-blue-200 rounded-md hover:bg-blue-50 hidden" id="view-photo1">ดูรูปเต็มก่อนส่ง</button>
                         <button type="button" onclick="clearImage('photo1')" class="mt-2 w-full py-2 text-sm text-red-500 border border-red-200 rounded-md hover:bg-red-50 hidden" id="clear-photo1">ลบรูปภาพ</button>
                     </div>
                 </div>
@@ -249,9 +255,14 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div class="bg-green-50 px-4 py-3 border-b border-green-100 flex justify-between items-center">
                         <span class="font-semibold text-green-800">2. ตรวจจ้างถาง - หน้าต้น</span>
-                        <span id="badge-photo2" class="text-xs bg-gray-300 text-gray-600 px-2 py-1 rounded-full">รอรูปภาพ</span>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="togglePhotoTip('photo-tip-photo2')" class="flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 bg-white text-xs font-bold text-gray-500 hover:border-blue-400 hover:text-blue-600" title="ดูคำแนะนำเพิ่มเติม" aria-label="ดูคำแนะนำเพิ่มเติม">i</button>
+                            <span id="badge-photo2" class="text-xs bg-gray-300 text-gray-600 px-2 py-1 rounded-full">รอรูปภาพ</span>
+                        </div>
                     </div>
                     <div class="p-4">
+                        <p class="mb-2 text-xs leading-relaxed text-indigo-700"><span class="font-semibold">คำแนะนำ:</span> รูปที่ 2: ถ่ายด้านหน้าต้นเสา</p>
+                        <div id="photo-tip-photo2" class="mb-3 hidden rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs leading-relaxed text-indigo-800">ถ่ายตรงจากด้านหน้าต้นเสา ให้เห็นแนวพื้นที่ด้านหน้าและบริเวณโดยรอบอย่างชัดเจน</div>
                         <label for="photo2" class="upload-area flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 relative overflow-hidden">
                             <div id="placeholder-photo2" class="flex flex-col items-center justify-center pt-5 pb-6 text-gray-400">
                                 <svg aria-hidden="true" class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
@@ -260,6 +271,7 @@
                             <img id="preview-photo2" class="absolute inset-0 w-full h-full object-cover hidden" alt="preview" />
                             <input id="photo2" type="file" class="hidden" accept="image/*" onchange="previewImage(event, 'photo2')" />
                         </label>
+                        <button type="button" onclick="openPreSendPhotoPreview('photo2')" class="mt-2 w-full py-2 text-sm text-blue-600 border border-blue-200 rounded-md hover:bg-blue-50 hidden" id="view-photo2">ดูรูปเต็มก่อนส่ง</button>
                         <button type="button" onclick="clearImage('photo2')" class="mt-2 w-full py-2 text-sm text-red-500 border border-red-200 rounded-md hover:bg-red-50 hidden" id="clear-photo2">ลบรูปภาพ</button>
                     </div>
                 </div>
@@ -268,9 +280,14 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div class="bg-green-50 px-4 py-3 border-b border-green-100 flex justify-between items-center">
                         <span class="font-semibold text-green-800">3. ตรวจจ้างถาง - หลังต้น</span>
-                        <span id="badge-photo3" class="text-xs bg-gray-300 text-gray-600 px-2 py-1 rounded-full">รอรูปภาพ</span>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="togglePhotoTip('photo-tip-photo3')" class="flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 bg-white text-xs font-bold text-gray-500 hover:border-blue-400 hover:text-blue-600" title="ดูคำแนะนำเพิ่มเติม" aria-label="ดูคำแนะนำเพิ่มเติม">i</button>
+                            <span id="badge-photo3" class="text-xs bg-gray-300 text-gray-600 px-2 py-1 rounded-full">รอรูปภาพ</span>
+                        </div>
                     </div>
                     <div class="p-4">
+                        <p class="mb-2 text-xs leading-relaxed text-indigo-700"><span class="font-semibold">คำแนะนำ:</span> รูปที่ 3: ถ่ายด้านหลังต้นเสา</p>
+                        <div id="photo-tip-photo3" class="mb-3 hidden rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs leading-relaxed text-indigo-800">ถ่ายจากด้านหลังต้นเสา ให้เห็นพื้นที่อีกด้านเพื่อเปรียบเทียบสภาพโดยรอบ</div>
                         <label for="photo3" class="upload-area flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 relative overflow-hidden">
                             <div id="placeholder-photo3" class="flex flex-col items-center justify-center pt-5 pb-6 text-gray-400">
                                 <svg aria-hidden="true" class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
@@ -279,6 +296,7 @@
                             <img id="preview-photo3" class="absolute inset-0 w-full h-full object-cover hidden" alt="preview" />
                             <input id="photo3" type="file" class="hidden" accept="image/*" onchange="previewImage(event, 'photo3')" />
                         </label>
+                        <button type="button" onclick="openPreSendPhotoPreview('photo3')" class="mt-2 w-full py-2 text-sm text-blue-600 border border-blue-200 rounded-md hover:bg-blue-50 hidden" id="view-photo3">ดูรูปเต็มก่อนส่ง</button>
                         <button type="button" onclick="clearImage('photo3')" class="mt-2 w-full py-2 text-sm text-red-500 border border-red-200 rounded-md hover:bg-red-50 hidden" id="clear-photo3">ลบรูปภาพ</button>
                     </div>
                 </div>
@@ -287,9 +305,14 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     <div class="bg-green-50 px-4 py-3 border-b border-green-100 flex justify-between items-center">
                         <span class="font-semibold text-green-800">4. ตรวจจ้างถาง - รอบขาเสา</span>
-                        <span id="badge-photo4" class="text-xs bg-gray-300 text-gray-600 px-2 py-1 rounded-full">รอรูปภาพ</span>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="togglePhotoTip('photo-tip-photo4')" class="flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 bg-white text-xs font-bold text-gray-500 hover:border-blue-400 hover:text-blue-600" title="ดูคำแนะนำเพิ่มเติม" aria-label="ดูคำแนะนำเพิ่มเติม">i</button>
+                            <span id="badge-photo4" class="text-xs bg-gray-300 text-gray-600 px-2 py-1 rounded-full">รอรูปภาพ</span>
+                        </div>
                     </div>
                     <div class="p-4">
+                        <p class="mb-2 text-xs leading-relaxed text-indigo-700"><span class="font-semibold">คำแนะนำ:</span> รูปที่ 4: ถ่ายรอบขาเสาระยะประมาณ 4 เมตร</p>
+                        <div id="photo-tip-photo4" class="mb-3 hidden rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs leading-relaxed text-indigo-800">ถ่ายให้เห็นขาเสาและพื้นที่โดยรอบในระยะประมาณ 4 เมตร เพื่อยืนยันการถางรอบฐานเสา</div>
                         <label for="photo4" class="upload-area flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 relative overflow-hidden">
                             <div id="placeholder-photo4" class="flex flex-col items-center justify-center pt-5 pb-6 text-gray-400">
                                 <svg aria-hidden="true" class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
@@ -298,6 +321,7 @@
                             <img id="preview-photo4" class="absolute inset-0 w-full h-full object-cover hidden" alt="preview" />
                             <input id="photo4" type="file" class="hidden" accept="image/*" onchange="previewImage(event, 'photo4')" />
                         </label>
+                        <button type="button" onclick="openPreSendPhotoPreview('photo4')" class="mt-2 w-full py-2 text-sm text-blue-600 border border-blue-200 rounded-md hover:bg-blue-50 hidden" id="view-photo4">ดูรูปเต็มก่อนส่ง</button>
                         <button type="button" onclick="clearImage('photo4')" class="mt-2 w-full py-2 text-sm text-red-500 border border-red-200 rounded-md hover:bg-red-50 hidden" id="clear-photo4">ลบรูปภาพ</button>
                     </div>
                 </div>
@@ -306,9 +330,14 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden md:col-span-2 lg:col-span-1">
                     <div class="bg-green-50 px-4 py-3 border-b border-green-100 flex justify-between items-center">
                         <span class="font-semibold text-green-800">5. ตรวจจ้างถาง - รอบเขตเดินสาย</span>
-                        <span id="badge-photo5" class="text-xs bg-gray-300 text-gray-600 px-2 py-1 rounded-full">รอรูปภาพ</span>
+                        <div class="flex items-center gap-2">
+                            <button type="button" onclick="togglePhotoTip('photo-tip-photo5')" class="flex h-6 w-6 items-center justify-center rounded-full border border-gray-300 bg-white text-xs font-bold text-gray-500 hover:border-blue-400 hover:text-blue-600" title="ดูคำแนะนำเพิ่มเติม" aria-label="ดูคำแนะนำเพิ่มเติม">i</button>
+                            <span id="badge-photo5" class="text-xs bg-gray-300 text-gray-600 px-2 py-1 rounded-full">รอรูปภาพ</span>
+                        </div>
                     </div>
                     <div class="p-4">
+                        <p class="mb-2 text-xs leading-relaxed text-indigo-700"><span class="font-semibold">คำแนะนำ:</span> รูปที่ 5: ถ่ายให้เห็นหลักเขตระยะประมาณ 1 เมตร</p>
+                        <div id="photo-tip-photo5" class="mb-3 hidden rounded-lg border border-indigo-100 bg-indigo-50 px-3 py-2 text-xs leading-relaxed text-indigo-800">ถ่ายให้เห็นหลักเขตหรือแนวเขตงาน พร้อมพื้นที่โดยรอบในระยะประมาณ 1 เมตร</div>
                         <label for="photo5" class="upload-area flex flex-col items-center justify-center w-full h-48 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 relative overflow-hidden">
                             <div id="placeholder-photo5" class="flex flex-col items-center justify-center pt-5 pb-6 text-gray-400">
                                 <svg aria-hidden="true" class="w-10 h-10 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
@@ -317,6 +346,7 @@
                             <img id="preview-photo5" class="absolute inset-0 w-full h-full object-cover hidden" alt="preview" />
                             <input id="photo5" type="file" class="hidden" accept="image/*" onchange="previewImage(event, 'photo5')" />
                         </label>
+                        <button type="button" onclick="openPreSendPhotoPreview('photo5')" class="mt-2 w-full py-2 text-sm text-blue-600 border border-blue-200 rounded-md hover:bg-blue-50 hidden" id="view-photo5">ดูรูปเต็มก่อนส่ง</button>
                         <button type="button" onclick="clearImage('photo5')" class="mt-2 w-full py-2 text-sm text-red-500 border border-red-200 rounded-md hover:bg-red-50 hidden" id="clear-photo5">ลบรูปภาพ</button>
                     </div>
                 </div>
@@ -470,6 +500,14 @@
             </div>
         </div>
         <div id="dashboardSummaryCards" class="grid grid-cols-2 lg:grid-cols-4 gap-3"></div>
+        <section class="bg-white rounded-xl shadow-sm border border-red-200 p-5">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+                <div><h3 class="font-bold text-red-900">งานที่ต้องติดตาม</h3><p class="text-xs text-red-700 mt-1">กดตัวเลขเพื่อเปิดรายการที่เกี่ยวข้องทันที</p></div>
+                <span id="dashboardTrackingUpdated" class="text-xs text-gray-500"></span>
+            </div>
+            <div id="dashboardTrackingCards" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2"></div>
+            <div id="dashboardTrackingList" class="mt-4 space-y-2"></div>
+        </section>
         <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
             <h3 class="font-bold text-gray-800 mb-3">สรุปสถานะงานตรวจ</h3>
             <div id="dashboardStatusSummary" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2"></div>
@@ -5114,6 +5152,8 @@
         let activeLineTowers = [];
         let uploadedPhotosCount = 0;
         let currentViewMode = 'form';
+        let dashboardHistoryFilter = '';
+        let dashboardPOFilter = '';
         const FORM_DRAFT_KEY = 'weed_inspection_form_draft_v1';
         const RECENT_LOCATIONS_KEY = 'weed_recent_locations_v1';
         let draftSaveTimer = null;
@@ -5264,6 +5304,7 @@
                         if (image) { image.src = stampedPhotoData[id]; image.classList.remove('hidden'); }
                         placeholder?.classList.add('hidden');
                         clearButton?.classList.remove('hidden');
+                        document.getElementById(`view-${id}`)?.classList.remove('hidden');
                         if (badge) { badge.textContent = 'ร่างที่กู้คืน'; badge.className = 'text-xs bg-blue-500 text-white px-2 py-1 rounded-full'; }
                     }
                 }
@@ -5972,7 +6013,13 @@
             const filtered = poDocuments.filter(item => {
                 const matchesText = [item.title, item.category, item.description, item.fileName, item.uploadedByName, item.responsible, item.year].some(value => String(value || '').toLowerCase().includes(query));
                 const itemDate = String(item.uploadedAt || '').slice(0, 10);
-                return matchesText && (!yearFilter || String(item.year || '') === yearFilter) && (!departmentFilter || String(item.department || '') === departmentFilter) && (!statusFilter || String(item.status || 'รอตรวจสอบ') === statusFilter) && (!responsibleFilter || String(item.responsible || '') === responsibleFilter) && (!dateFrom || itemDate >= dateFrom) && (!dateTo || itemDate <= dateTo);
+                const dueDays = typeof dashboardDaysUntil === 'function' ? dashboardDaysUntil(item.dueDate) : null;
+                const matchesDashboardPO = !dashboardPOFilter || (
+                    dashboardPOFilter === 'dueSoon' ? (dueDays !== null && dueDays >= 0 && dueDays <= 7) :
+                    dashboardPOFilter === 'overdue' ? (dueDays !== null && dueDays < 0) :
+                    dashboardPOFilter === 'noResponsible' ? !String(item.responsible || '').trim() : true
+                );
+                return matchesText && matchesDashboardPO && (!yearFilter || String(item.year || '') === yearFilter) && (!departmentFilter || String(item.department || '') === departmentFilter) && (!statusFilter || String(item.status || 'รอตรวจสอบ') === statusFilter) && (!responsibleFilter || String(item.responsible || '') === responsibleFilter) && (!dateFrom || itemDate >= dateFrom) && (!dateTo || itemDate <= dateTo);
             });
             renderPOCalendar(filtered);
             if (count) count.textContent = `แสดง ${filtered.length} จาก ${poDocuments.length} ไฟล์`;
@@ -6273,7 +6320,7 @@
             'ปิดงาน': 'bg-indigo-100 text-indigo-700'
         };
 
-        window.refreshDashboard = function() {
+        window.refreshDashboard = async function() {
             const inspections = dashboardRecords('weed_inspection_firebase_cache');
             const corrections = dashboardRecords('weed_correction_records_cloud').length
                 ? dashboardRecords('weed_correction_records_cloud')
@@ -6307,7 +6354,102 @@
             const recent = [...inspections.map(r => ({ date: r.timestamp, label: `ส่งงานตรวจ ${r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + (r.tower || '')}`, type: 'ตรวจรับ' })), ...corrections.map(r => ({ date: r.timestamp, label: `แจ้งแก้ไข ${r.towerInfo || r.tower || ''}`, type: 'แก้ไข' }))].filter(r => r.date).sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 8);
             const recentBox = document.getElementById('dashboardRecentSummary');
             if (recentBox) recentBox.innerHTML = recent.length ? recent.map(r => `<div class="flex justify-between gap-2 border-b border-gray-100 pb-2"><span>${reportEscape(r.label)}</span><span class="text-xs text-gray-500 whitespace-nowrap">${formatDateToThai(r.date)}</span></div>`).join('') : '<p class="text-gray-400">ยังไม่มีข้อมูลล่าสุด</p>';
+            renderDashboardTracking(inspections, corrections);
+            if (!poDocumentsLoaded) {
+                try {
+                    const loadedPO = await poApiList('');
+                    poDocuments = Array.isArray(loadedPO) ? loadedPO : [];
+                    poDocumentsLoaded = true;
+                    renderDashboardTracking(inspections, corrections);
+                } catch (error) {
+                    console.warn('โหลดข้อมูล PO สำหรับงานติดตามไม่สำเร็จ:', error);
+                }
+            }
         }
+
+        function dashboardLocalDateKey(date) {
+            const d = new Date(date);
+            if (Number.isNaN(d.getTime())) return '';
+            return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+
+        function dashboardStartOfDay(date) {
+            const d = new Date(date); d.setHours(0,0,0,0); return d;
+        }
+
+        function dashboardDaysUntil(date) {
+            const due = dashboardStartOfDay(date);
+            if (Number.isNaN(due.getTime())) return null;
+            return Math.round((due - dashboardStartOfDay(new Date())) / 86400000);
+        }
+
+        function dashboardTrackingCard(key, title, value, color) {
+            return `<button type="button" onclick="openDashboardTracking('${key}')" class="text-left rounded-xl border p-3 ${color} hover:brightness-95 transition"><span class="block text-xs">${title}</span><span class="block text-2xl font-bold mt-1">${value}</span><span class="block text-[10px] mt-1 opacity-75">กดเพื่อเปิดรายการ</span></button>`;
+        }
+
+        function renderDashboardTracking(inspections, corrections) {
+            const todayKey = dashboardLocalDateKey(new Date());
+            const today = dashboardStartOfDay(new Date());
+            const weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay());
+            const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+            const inspectionPhotos = r => Object.keys(r.photos || {}).filter(k => r.photos[k]).length;
+            const activityDate = r => r.timestamp || r.createdAt || r.updatedAt;
+            const todayItems = inspections.filter(r => dashboardLocalDateKey(activityDate(r)) === todayKey);
+            const weekItems = inspections.filter(r => { const d = new Date(activityDate(r)); return !Number.isNaN(d.getTime()) && d >= weekStart && d <= new Date(); });
+            const monthItems = inspections.filter(r => { const d = new Date(activityDate(r)); return !Number.isNaN(d.getTime()) && d >= monthStart && d <= new Date(); });
+            const noPhotoItems = inspections.filter(r => inspectionPhotos(r) === 0);
+            const poItems = Array.isArray(poDocuments) ? poDocuments : [];
+            const overduePO = poItems.filter(r => dashboardDaysUntil(r.dueDate) !== null && dashboardDaysUntil(r.dueDate) < 0);
+            const dueSoonPO = poItems.filter(r => { const n = dashboardDaysUntil(r.dueDate); return n !== null && n >= 0 && n <= 7; });
+            const noResponsiblePO = poItems.filter(r => !String(r.responsible || '').trim());
+            const followUp = [...overduePO.map(r => `po:${r.id || r.fileId || r.title}`), ...dueSoonPO.map(r => `po:${r.id || r.fileId || r.title}`), ...noResponsiblePO.map(r => `po:${r.id || r.fileId || r.title}`), ...noPhotoItems.map(r => `inspection:${r.id || r.timestamp}`)];
+            const cards = document.getElementById('dashboardTrackingCards');
+            if (cards) cards.innerHTML = [
+                dashboardTrackingCard('followup', 'งานที่ต้องติดตาม', new Set(followUp).size, 'bg-red-50 border-red-200 text-red-800'),
+                dashboardTrackingCard('today', 'งานวันนี้', todayItems.length, 'bg-blue-50 border-blue-200 text-blue-800'),
+                dashboardTrackingCard('week', 'งานสัปดาห์นี้', weekItems.length, 'bg-indigo-50 border-indigo-200 text-indigo-800'),
+                dashboardTrackingCard('month', 'งานเดือนนี้', monthItems.length, 'bg-purple-50 border-purple-200 text-purple-800'),
+                dashboardTrackingCard('dueSoon', 'ใกล้ครบกำหนด 7 วัน', dueSoonPO.length, 'bg-yellow-50 border-yellow-200 text-yellow-800'),
+                dashboardTrackingCard('overdue', 'เกินกำหนด', overduePO.length, 'bg-red-100 border-red-300 text-red-900'),
+                dashboardTrackingCard('noResponsible', 'ยังไม่มีผู้รับผิดชอบ', noResponsiblePO.length, 'bg-orange-50 border-orange-200 text-orange-800'),
+                dashboardTrackingCard('noPhoto', 'ยังไม่มีรูปภาพ', noPhotoItems.length, 'bg-gray-50 border-gray-300 text-gray-800')
+            ].join('');
+            const list = document.getElementById('dashboardTrackingList');
+            const items = [
+                ...overduePO.slice(0,5).map(r => ({key:'overdue', icon:'เกินกำหนด', label:r.title || r.fileName || 'เอกสาร PO', detail:`ครบกำหนด ${r.dueDate || '-'}`})),
+                ...dueSoonPO.slice(0,5).map(r => ({key:'dueSoon', icon:'ใกล้ครบกำหนด', label:r.title || r.fileName || 'เอกสาร PO', detail:`ครบกำหนด ${r.dueDate || '-'}`})),
+                ...noResponsiblePO.slice(0,5).map(r => ({key:'noResponsible', icon:'รอผู้รับผิดชอบ', label:r.title || r.fileName || 'เอกสาร PO', detail:'ยังไม่ได้กำหนดผู้รับผิดชอบ'})),
+                ...noPhotoItems.slice(0,5).map(r => ({key:'noPhoto', icon:'ไม่มีรูป', label:`${r.department || '-'} · ${r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + (r.tower || '-')}`, detail:'งานตรวจยังไม่มีรูปภาพ'}))
+            ].slice(0,10);
+            if (list) list.innerHTML = items.length ? `<div class="text-xs font-semibold text-gray-500 mb-2">รายการที่ควรติดตามล่าสุด</div>` + items.map(item => `<button type="button" onclick="openDashboardTracking('${item.key}')" class="w-full flex items-center justify-between gap-3 rounded-lg border border-gray-100 px-3 py-2 text-left hover:bg-gray-50"><span class="min-w-0"><span class="block text-xs font-semibold text-gray-700 truncate">${reportEscape(item.label)}</span><span class="block text-[11px] text-gray-500">${reportEscape(item.detail)}</span></span><span class="shrink-0 rounded-full bg-gray-100 px-2 py-1 text-[10px] text-gray-600">${item.icon}</span></button>`).join('') : '<p class="text-sm text-gray-400">ยังไม่มีรายการที่ต้องติดตาม</p>';
+            const updated = document.getElementById('dashboardTrackingUpdated');
+            if (updated) updated.textContent = `อัปเดต ${formatDateToThai(new Date().toISOString())}`;
+        }
+
+        window.openDashboardTracking = function(type) {
+            const inspectionTypes = ['today','week','month','noPhoto','followup'];
+            if (type === 'dueSoon' || type === 'overdue' || type === 'noResponsible') {
+                dashboardPOFilter = type;
+                togglePOHistoryView();
+                showModal('success', 'เปิดรายการเอกสาร PO', type === 'dueSoon' ? 'กรุณาตรวจรายการเอกสารที่ใกล้ครบกำหนดในหน้าประวัติไฟล์' : type === 'overdue' ? 'กรุณาตรวจรายการเอกสารที่เกินกำหนดในหน้าประวัติไฟล์' : 'กรุณาตรวจรายการที่ยังไม่มีผู้รับผิดชอบในหน้าประวัติไฟล์');
+                return;
+            }
+            if (currentViewMode !== 'history') {
+                currentViewMode = 'history';
+                ['formView','correctionView','correctionHistoryView','dashboardView','poDocumentsView','poHistoryView','poCalendarView'].forEach(id => document.getElementById(id)?.classList.replace('block','hidden'));
+                document.getElementById('historyView')?.classList.replace('hidden','block');
+                document.getElementById('bottomActionBar')?.classList.replace('block','hidden');
+                document.getElementById('photoCountBadge')?.classList.add('hidden');
+            }
+            dashboardHistoryFilter = ['today','week','month','noPhoto'].includes(type) ? type : '';
+            if (type === 'noPhoto') {
+                const input = document.getElementById('searchInput'); if (input) input.value = '';
+                loadHistoryData();
+                document.getElementById('historyContainer')?.scrollIntoView({behavior:'smooth', block:'start'});
+            } else {
+                loadHistoryData();
+            }
+        };
 
         window.refreshPODashboard = async function() {
             const cards = document.getElementById('poDashboardCards');
@@ -6659,6 +6801,7 @@
                 const capturedAt = meta.capturedAt ? new Date(meta.capturedAt) : new Date();
                 const stampedImg = await stampImageWithFieldData(raw, {
                     towerLabel,
+                    department: department || '-',
                     lineName: lineName || '-',
                     capturedAt,
                     lat: meta.lat || null,
@@ -6722,6 +6865,7 @@
                 const towerLabel = tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : `Tower ${tower}`;
                 const stampedImg = await stampImageWithFieldData(rawImg, {
                     towerLabel,
+                    department,
                     lineName,
                     capturedAt,
                     lat: gps ? gps.lat : null,
@@ -7605,6 +7749,18 @@ ${gpsText}`;
         }
     }
 
+        window.togglePhotoTip = function(id) {
+            const tip = document.getElementById(id);
+            if (!tip) return;
+            tip.classList.toggle('hidden');
+        };
+
+    window.openPreSendPhotoPreview = function(id) {
+        const image = stampedPhotoData[id];
+        if (!image) { showModal('error', 'ยังไม่มีรูปภาพ', 'กรุณาเลือกรูปภาพก่อน'); return; }
+        openImageModal(image);
+    };
+
     window.previewImage = async function(event, id) {
         const file = event.target.files[0];
         if (file) {
@@ -7635,6 +7791,7 @@ ${gpsText}`;
                 const base64Img = await compressImage(file, 600, 600, 0.4);
                 const stampedImg = await stampImageWithFieldData(base64Img, {
                     towerLabel,
+                    department,
                     lineName,
                     capturedAt,
                     lat: gps ? gps.lat : null,
@@ -7664,6 +7821,7 @@ ${gpsText}`;
                 img.src = stampedImg;
                 img.classList.remove('hidden');
                 document.getElementById('clear-' + id).classList.remove('hidden');
+                document.getElementById('view-' + id)?.classList.remove('hidden');
 
                 badge.classList.remove('bg-gray-300', 'text-gray-600', 'bg-amber-500', 'bg-red-500');
                 if (gps) {
@@ -7702,6 +7860,7 @@ ${gpsText}`;
         document.getElementById('preview-' + id).src = '';
         document.getElementById('placeholder-' + id).classList.remove('hidden');
         document.getElementById('clear-' + id).classList.add('hidden');
+        document.getElementById('view-' + id)?.classList.add('hidden');
 
         const badge = document.getElementById('badge-' + id);
         badge.textContent = 'รอรูปภาพ';
@@ -7985,13 +8144,15 @@ ${gpsText}`;
             const dd = String(date.getDate()).padStart(2, '0');
             const mm = String(date.getMonth() + 1).padStart(2, '0');
             const yyyy = date.getFullYear() + 543;
+            return `${dd}/${mm}/${yyyy}`;
+        }
+        function formatThaiStampTime(date) {
             const hh = String(date.getHours()).padStart(2, '0');
             const min = String(date.getMinutes()).padStart(2, '0');
-            return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+            return `${hh}:${min} น.`;
         }
-
-        function stampImageWithFieldData(dataUrl, { towerLabel, lineName, capturedAt, lat, lng }) {
-            return new Promise((resolve, reject) => {
+        function stampImageWithFieldData(dataUrl, { department, towerLabel, lineName, capturedAt, lat, lng }) {
+        return new Promise((resolve, reject) => {
                 const img = new Image();
                 img.onload = function() {
                     try {
@@ -8010,13 +8171,14 @@ ${gpsText}`;
                         const fontSub = Math.round(18 * scale);
                         const lineGap = Math.round(7 * scale);
                         const lines = [
-                            towerLabel || '-',
-                            lineName || '-',
-                            formatThaiStampDate(capturedAt),
-                            `Lat ${lat ?? 'ไม่พบพิกัด'}`,
-                            `Long ${lng ?? 'ไม่พบพิกัด'}`
+                            `หน่วยงาน: ${department || '-'}`,
+                            `แนวสาย: ${lineName || '-'}`,
+                            `เสา: ${towerLabel || '-'}`,
+                            `วันที่: ${formatThaiStampDate(capturedAt)}`,
+                            `เวลา: ${formatThaiStampTime(capturedAt)}`,
+                            `พิกัด: ${lat && lng ? `${lat}, ${lng}` : 'ไม่พบพิกัด'}`
                         ];
-                        const lineHeights = [fontMain, fontSub, fontSub, fontSub, fontSub];
+                        const lineHeights = [fontMain, fontSub, fontSub, fontSub, fontSub, fontSub];
                         const blockHeight = lines.reduce((sum, _, i) => sum + lineHeights[i], 0)
                             + lineGap * (lines.length - 1) + padding * 2;
                         const blockY = canvas.height - blockHeight;
@@ -8044,6 +8206,72 @@ ${gpsText}`;
                 img.src = dataUrl;
             });
         }
+
+        function closePostSaveActions() {
+            document.getElementById('postSaveActionsModal')?.remove();
+        }
+
+        function showPostSaveActions(department, lineName, tower) {
+            closePostSaveActions();
+            const wrapper = document.createElement('div');
+            wrapper.id = 'postSaveActionsModal';
+            wrapper.className = 'fixed inset-0 z-[120] flex items-center justify-center bg-black/50 p-4';
+            wrapper.innerHTML = `
+                <div class="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+                    <div class="mb-4 text-center">
+                        <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-3xl">✓</div>
+                        <h3 class="text-xl font-bold text-green-800">ส่งงานสำเร็จ</h3>
+                        <p class="mt-2 text-sm text-gray-600">บันทึก ${tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : `Tower ${poSafe(tower)}`} ขึ้น Firebase แล้ว</p>
+                    </div>
+                    <div class="grid gap-2">
+                        <button type="button" onclick="goToNextInspectionTower()" class="w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-bold text-white hover:bg-blue-700">ไปเสาถัดไป</button>
+                        <button type="button" onclick="closePostSaveActions(); resetForm()" class="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50">เริ่มรายการใหม่</button>
+                        <button type="button" onclick="closePostSaveActions(); goHome()" class="w-full rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-100">กลับหน้าหลัก</button>
+                    </div>
+                </div>`;
+            wrapper.dataset.department = department;
+            wrapper.dataset.lineName = lineName;
+            wrapper.dataset.tower = tower;
+            document.body.appendChild(wrapper);
+        }
+
+        window.goToNextInspectionTower = function() {
+            const modal = document.getElementById('postSaveActionsModal');
+            const department = modal?.dataset.department || document.getElementById('departmentSelect')?.value || '';
+            const lineName = modal?.dataset.lineName || document.getElementById('lineSelect')?.value || '';
+            const currentTower = modal?.dataset.tower || document.getElementById('towerSelect')?.value || '';
+            const line = (organizationStructure[department] || []).find(item => item.lineName === lineName);
+            const towers = line?.towers || [];
+            const currentIndex = towers.findIndex(item => item.tower === currentTower);
+            if (currentIndex < 0 || currentIndex + 1 >= towers.length) {
+                closePostSaveActions();
+                showModal('success', 'ไม่มีเสาถัดไป', 'รายการนี้เป็นเสาสุดท้ายของแนวสายแล้ว');
+                return;
+            }
+            const nextTower = towers[currentIndex + 1].tower;
+            isRestoringFormDraft = true;
+            try {
+                for (let i = 1; i <= 5; i++) clearImage('photo' + i);
+                document.getElementById('inspectorName').value = '';
+                const departmentSelect = document.getElementById('departmentSelect');
+                const lineSelect = document.getElementById('lineSelect');
+                const towerSelect = document.getElementById('towerSelect');
+                departmentSelect.value = department;
+                departmentSelect.dispatchEvent(new Event('change'));
+                lineSelect.value = lineName;
+                lineSelect.dispatchEvent(new Event('change'));
+                towerSelect.value = nextTower;
+                towerSelect.dispatchEvent(new Event('change'));
+                uploadedPhotosCount = 0;
+                updateSaveButton();
+                updateFormProgress();
+            } finally {
+                isRestoringFormDraft = false;
+            }
+            closePostSaveActions();
+            scheduleFormDraftSave();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        };
 
         window.saveData = async function() {
             const department = document.getElementById('departmentSelect').value;
@@ -8099,7 +8327,7 @@ ${gpsText}`;
                 await sendDiscordNotification(DISCORD_WEBHOOK_CREATE, discordMsg);
                 removeFormDraft();
 
-                showModal('success', 'ส่งงานสำเร็จ!', `ส่งข้อมูล Tower ${tower} (${department}) ขึ้น Firebase Cloud เรียบร้อยแล้ว`);
+                showPostSaveActions(department, lineName, tower);
                 
             } catch (error) {
                 console.error("Error saving document to Firebase: ", error);
@@ -8151,8 +8379,21 @@ ${gpsText}`;
             const from = document.getElementById('historyDateFrom')?.value || '';
             const to = document.getElementById('historyDateTo')?.value || '';
             const sortMode = document.getElementById('historySortFilter')?.value || 'latest';
+            const dashboardFilter = dashboardHistoryFilter;
             const filtered = getHistoryRecords().filter(r => {
                 const towerStr = (r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + (r.tower || '')).toLowerCase();
+                const recordDate = r.timestamp ? new Date(r.timestamp) : null;
+                const now = new Date();
+                const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                const startWeek = new Date(startToday); startWeek.setDate(startToday.getDate() - startToday.getDay());
+                const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+                const hasPhotos = Object.values(r.photos || {}).some(Boolean);
+                const matchesDashboard = !dashboardFilter || (
+                    dashboardFilter === 'today' ? (recordDate && recordDate >= startToday) :
+                    dashboardFilter === 'week' ? (recordDate && recordDate >= startWeek && recordDate <= now) :
+                    dashboardFilter === 'month' ? (recordDate && recordDate >= startMonth && recordDate <= now) :
+                    dashboardFilter === 'noPhoto' ? !hasPhotos : true
+                );
                 const haystack = [towerStr, r.lineName, r.inspector, r.department].map(v => String(v || '').toLowerCase()).join(' ');
                 const date = r.timestamp ? new Date(r.timestamp) : null;
                 const dateKey = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '';
@@ -8162,6 +8403,7 @@ ${gpsText}`;
                     (!status || (r.status || 'รอตรวจสอบ') === status) &&
                     (!inspector || (r.inspector || 'ผู้รับเหมาทั่วไป') === inspector) &&
                     (!tower || towerStr.includes(tower)) &&
+                    matchesDashboard &&
                     (!from || (dateKey && dateKey >= from)) &&
                     (!to || (dateKey && dateKey <= to));
             });
@@ -8382,6 +8624,7 @@ ${gpsText}`;
         }
 
         window.clearHistoryFilters = function() {
+            dashboardHistoryFilter = '';
             ['searchInput', 'historyTowerFilter', 'historyDateFrom', 'historyDateTo'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.value = '';
