@@ -591,6 +591,9 @@
                     <label for="poDueDate" class="block text-sm font-medium text-gray-700 mb-1">วันครบกำหนด <span class="text-xs text-gray-400">(ไม่บังคับ)</span></label>
                     <input id="poDueDate" type="date" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600">
                 </div>
+                <div><label for="poEcmNumber" class="block text-sm font-medium text-gray-700 mb-1">เลขที่ ECM <span class="text-xs text-gray-400">(ไม่บังคับ)</span></label><input id="poEcmNumber" type="text" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600" placeholder="เช่น ECM-2569-001"></div>
+                <div><label for="poStartDate" class="block text-sm font-medium text-gray-700 mb-1">วันที่เริ่มงาน <span class="text-xs text-gray-400">(ไม่บังคับ)</span></label><input id="poStartDate" type="date" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600"></div>
+                <div><label for="poEndDate" class="block text-sm font-medium text-gray-700 mb-1">วันสิ้นสุดงาน <span class="text-xs text-gray-400">(ไม่บังคับ)</span></label><input id="poEndDate" type="date" class="w-full border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600"></div>
             </div>
             <div class="mt-4 border-t border-gray-100 pt-4">
                 <h4 class="text-sm font-bold text-gray-700 mb-2">คณะกรรมการตรวจรับงาน <span class="text-xs font-normal text-gray-400">(แก้ไขได้ภายหลัง)</span></h4>
@@ -663,6 +666,7 @@
                     <select id="poResponsibleFilter" onchange="renderPODocuments()" class="border border-gray-300 rounded-lg p-3 text-sm sm:w-52 focus:border-green-600 focus:ring-green-600">
                         <option value="">ผู้รับผิดชอบทุกคน</option>
                     </select>
+                    <select id="poAttachmentFilter" onchange="renderPODocuments()" class="border border-gray-300 rounded-lg p-3 text-sm sm:w-52 focus:border-green-600 focus:ring-green-600"><option value="">ไฟล์แนบทั้งหมด</option><option value="incomplete">ไฟล์แนบไม่ครบ</option><option value="missingDue">ยังไม่มีวันครบกำหนด</option></select>
                     <input id="poDateFrom" type="date" onchange="renderPODocuments()" class="border border-gray-300 rounded-lg p-3 text-sm sm:w-40" title="วันที่เริ่มต้น">
                     <input id="poDateTo" type="date" onchange="renderPODocuments()" class="border border-gray-300 rounded-lg p-3 text-sm sm:w-40" title="วันที่สิ้นสุด">
                 </div>
@@ -700,6 +704,7 @@
                     <select id="poCalendarDepartmentFilter" onchange="applyPOCalendarFilters()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">ทุกหน่วยงาน</option></select>
                     <select id="poCalendarResponsibleFilter" onchange="applyPOCalendarFilters()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">ผู้รับผิดชอบทุกคน</option></select>
                     <select id="poCalendarStatusFilter" onchange="applyPOCalendarFilters()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">ทุกสถานะ</option><option value="รอตรวจสอบ">รอตรวจสอบ</option><option value="อนุมัติ">อนุมัติ</option><option value="ยกเลิก">ยกเลิก</option></select>
+                    <select id="poCalendarSpecialFilter" onchange="applyPOCalendarFilters()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white"><option value="">รายการทั้งหมด</option><option value="mine">งานของฉัน</option><option value="noDue">ยังไม่มีวันครบกำหนด</option></select>
                     <input id="poCalendarDateFrom" type="date" onchange="applyPOCalendarFilters()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white" title="วันครบกำหนดตั้งแต่">
                     <input id="poCalendarDateTo" type="date" onchange="applyPOCalendarFilters()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white" title="วันครบกำหนดถึง">
                 </div>
@@ -719,6 +724,8 @@
                     <button type="button" onclick="changePOCalendarMonth(-1)" class="px-3 py-2 rounded-lg border border-indigo-200 text-indigo-700 hover:bg-indigo-50 text-sm font-semibold">เดือนก่อน</button>
                     <button type="button" onclick="goToPOCalendarToday()" class="px-3 py-2 rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 text-sm font-semibold">เดือนนี้</button>
                     <button type="button" onclick="changePOCalendarMonth(1)" class="px-3 py-2 rounded-lg border border-indigo-200 text-indigo-700 hover:bg-indigo-50 text-sm font-semibold">เดือนถัดไป</button>
+                    <button type="button" onclick="printPOCalendar()" class="px-3 py-2 rounded-lg border border-gray-300 text-gray-700 hover:bg-gray-50 text-sm font-semibold">พิมพ์</button>
+                    <button type="button" onclick="exportPOCalendarCSV()" class="px-3 py-2 rounded-lg bg-emerald-600 text-white hover:bg-emerald-700 text-sm font-semibold">ส่งออก CSV</button>
                 </div>
             </div>
             <div id="poCalendarTitle" class="text-center text-lg font-bold text-indigo-900 mb-3"></div>
@@ -726,6 +733,7 @@
                 <span><i class="inline-block w-3 h-3 rounded bg-green-200 mr-1"></i>ปกติ</span>
                 <span><i class="inline-block w-3 h-3 rounded bg-yellow-200 mr-1"></i>ใกล้ครบกำหนด</span>
                 <span><i class="inline-block w-3 h-3 rounded bg-red-200 mr-1"></i>ครบกำหนด/เกินกำหนด</span>
+                <span><i class="inline-block w-3 h-3 rounded bg-blue-500 mr-1"></i>อนุมัติ</span><span><i class="inline-block w-3 h-3 rounded bg-purple-500 mr-1"></i>แยกสีผู้รับผิดชอบ</span>
             </div>
             <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-gray-500 mb-1"><span>อา.</span><span>จ.</span><span>อ.</span><span>พ.</span><span>พฤ.</span><span>ศ.</span><span>ส.</span></div>
             <div id="poCalendarGrid" class="grid grid-cols-7 gap-1"></div>
@@ -762,9 +770,13 @@
                 <select id="correctionDepartmentFilter" onchange="filterCorrectionHistory()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50">
                     <option value="">ทุกหน่วยงาน</option>
                 </select>
+                <select id="correctionStatusFilter" onchange="filterCorrectionHistory()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50">
+                    <option value="">ทุกสถานะ</option><option value="แจ้งแก้ไข">แจ้งแก้ไข</option><option value="แก้ไขแล้ว">แก้ไขแล้ว</option><option value="ปิดงาน">ปิดงาน</option>
+                </select>
                 <input type="date" id="correctionDateFrom" onchange="filterCorrectionHistory()" title="ตั้งแต่วันที่" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50">
                 <input type="date" id="correctionDateTo" onchange="filterCorrectionHistory()" title="ถึงวันที่" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50">
             </div>
+            <div id="correctionTrackingSummary" class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-1"></div>
             <div class="flex flex-wrap gap-2 pt-1 border-t border-gray-100">
                 <button type="button" onclick="clearCorrectionHistoryFilters()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100">ล้างตัวกรอง</button>
                 <button type="button" onclick="exportCorrectionHistoryCSV()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold">ส่งออก Excel/CSV</button>
@@ -834,6 +846,12 @@
                 <button type="button" onclick="clearHistoryFilters()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm font-semibold text-gray-600 hover:bg-gray-100">ล้างตัวกรอง</button>
             </div>
             <div id="historyStatusSummary" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 pt-1"></div>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-2 rounded-lg bg-indigo-50 border border-indigo-100 p-3">
+                <label class="flex items-center gap-2 text-sm font-semibold text-indigo-900"><input id="selectAllHistory" type="checkbox" onchange="toggleSelectAllHistory(this.checked)" class="h-4 w-4 rounded border-gray-300 text-indigo-600"> เลือกทั้งหมดในผลการกรอง</label>
+                <span id="selectedHistoryCount" class="text-xs text-indigo-700">เลือกแล้ว 0 รายการ</span>
+                <select id="bulkHistoryStatus" class="border border-indigo-200 rounded-lg px-2 py-1.5 text-xs bg-white sm:ml-auto"><option value="">เลือกสถานะใหม่</option><option value="รอตรวจสอบ">รอตรวจสอบ</option><option value="ผ่าน">ผ่าน</option><option value="ไม่ผ่าน">ไม่ผ่าน</option><option value="แจ้งแก้ไข">แจ้งแก้ไข</option><option value="แก้ไขแล้ว">แก้ไขแล้ว</option><option value="ปิดงาน">ปิดงาน</option></select>
+                <button type="button" onclick="saveBulkHistoryStatus()" class="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold">บันทึกสถานะที่เลือก</button>
+            </div>
             <div class="flex flex-wrap gap-2 pt-1 border-t border-gray-100">
                 <button type="button" onclick="exportHistoryCSV()" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-semibold">ส่งออก Excel/CSV</button>
                 <button type="button" onclick="printHistoryReport()" class="px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-semibold">สร้างรายงาน PDF</button>
@@ -5739,10 +5757,16 @@
         }
         function poCalendarItemClass(item, dateKey) {
             const days = poCalendarDaysUntilDue(dateKey);
-            if (item.status === 'อนุมัติ' || item.status === 'ยกเลิก') return 'bg-gray-100 border-gray-300 text-gray-500';
+            if (item.status === 'อนุมัติ') return 'bg-blue-100 border-blue-300 text-blue-800';
+            if (item.status === 'ยกเลิก') return 'bg-gray-100 border-gray-300 text-gray-500';
             if (days < 0) return 'bg-red-100 border-red-300 text-red-800';
             if (days <= 7) return 'bg-yellow-100 border-yellow-300 text-yellow-800';
             return 'bg-green-100 border-green-300 text-green-800';
+        }
+        function poCalendarResponsibleClass(item) {
+            const colors = ['border-l-4 border-purple-500','border-l-4 border-pink-500','border-l-4 border-cyan-500','border-l-4 border-orange-500','border-l-4 border-violet-500'];
+            const text = String(item?.responsible || 'ยังไม่ได้กำหนด'); let hash = 0; for (let i = 0; i < text.length; i++) hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
+            return colors[hash % colors.length];
         }
         function renderPOCalendarSummary(items = poDocuments) {
             const summary = document.getElementById('poCalendarSummary');
@@ -5786,6 +5810,8 @@
             const department = document.getElementById('poCalendarDepartmentFilter')?.value || '';
             const responsible = document.getElementById('poCalendarResponsibleFilter')?.value || '';
             const status = document.getElementById('poCalendarStatusFilter')?.value || '';
+            const special = document.getElementById('poCalendarSpecialFilter')?.value || '';
+            const currentUser = getCurrentLoginUser();
             const dateFrom = document.getElementById('poCalendarDateFrom')?.value || '';
             const dateTo = document.getElementById('poCalendarDateTo')?.value || '';
             return poDocuments.filter(item => {
@@ -5794,6 +5820,7 @@
                     (!department || String(item.department || '') === department) &&
                     (!responsible || String(item.responsible || '') === responsible) &&
                     (!status || String(item.status || 'รอตรวจสอบ') === status) &&
+                    (!special || (special === 'mine' ? String(item.responsible || '').trim() === String(currentUser.name || '').trim() : special === 'noDue' ? !dueDate : true)) &&
                     (!dateFrom || (dueDate && dueDate >= dateFrom)) &&
                     (!dateTo || (dueDate && dueDate <= dateTo));
             });
@@ -5802,7 +5829,7 @@
             renderPOCalendar(poDocuments);
         };
         window.clearPOCalendarFilters = function() {
-            ['poCalendarYearFilter', 'poCalendarDepartmentFilter', 'poCalendarResponsibleFilter', 'poCalendarStatusFilter'].forEach(id => {
+            ['poCalendarYearFilter', 'poCalendarDepartmentFilter', 'poCalendarResponsibleFilter', 'poCalendarStatusFilter', 'poCalendarSpecialFilter'].forEach(id => {
                 const select = document.getElementById(id);
                 if (select) select.value = '';
             });
@@ -5888,9 +5915,25 @@
                 const dayItems = dueItems[key] || [];
                 const todayKey = poCalendarTodayKey();
                 const dayClass = dayItems[0] ? poCalendarItemClass(dayItems[0], key) : 'bg-white border-gray-200';
-                html += `<div class="min-h-[92px] rounded-lg border p-1 text-left ${dayClass} ${key === todayKey ? 'ring-2 ring-indigo-500' : ''}"><div class="text-xs font-bold mb-1">${day}</div>${dayItems.slice(0, 3).map(item => `<button type="button" onclick="openPOCalendarDetails('${poSafe(item.fileId)}')" class="block w-full text-left truncate text-[10px] leading-3 hover:underline mb-1" title="เปิดรายละเอียด ${poSafe(item.title || item.fileName || '')}"><span class="block truncate">• ${poSafe(item.title || item.fileName || 'เอกสาร')}</span><span class="block truncate text-[9px] opacity-75 inline-flex items-center gap-0.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"/></svg>${poSafe(item.responsible || 'ยังไม่กำหนด')}</span></button>`).join('')}${dayItems.length > 3 ? `<div class="text-[10px] mt-1">+ อีก ${dayItems.length - 3} รายการ</div>` : ''}</div>`;
+                html += `<div onclick="openPOCalendarDay('${key}')" class="min-h-[92px] rounded-lg border p-1 text-left cursor-pointer ${dayClass} ${key === todayKey ? 'ring-2 ring-indigo-500' : ''}"><div class="text-xs font-bold mb-1">${day}</div>${dayItems.slice(0, 3).map(item => `<button type="button" onclick="event.stopPropagation(); openPOCalendarDetails('${poSafe(item.fileId)}')" class="${poCalendarResponsibleClass(item)} block w-full text-left truncate text-[10px] leading-3 hover:underline mb-1" title="เปิดรายละเอียด ${poSafe(item.title || item.fileName || '')}"><span class="block truncate">• ${poSafe(item.title || item.fileName || 'เอกสาร')}</span><span class="block truncate text-[9px] opacity-75 inline-flex items-center gap-0.5"><svg xmlns="http://www.w3.org/2000/svg" class="h-2.5 w-2.5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.42 0-8 2.24-8 5v1h16v-1c0-2.76-3.58-5-8-5Z"/></svg>${poSafe(item.responsible || 'ยังไม่กำหนด')}</span></button>`).join('')}${dayItems.length > 3 ? `<div class="text-[10px] mt-1">+ อีก ${dayItems.length - 3} รายการ</div>` : ''}</div>`;
             }
             grid.innerHTML = html;
+        };
+        window.openPOCalendarDay = function(dateKey) {
+            const items = getFilteredPOCalendarItems().filter(item => poCalendarDateKey(item.dueDate) === dateKey);
+            const modal = document.getElementById('poCalendarDetailModal'); const title = document.getElementById('poCalendarDetailTitle'); const body = document.getElementById('poCalendarDetailBody');
+            if (!modal || !body) return;
+            if (title) title.textContent = `รายการวันที่ ${poDueDateOnly(dateKey)} (${items.length} รายการ)`;
+            body.innerHTML = items.length ? `<div class="space-y-2">${items.map(item => `<button type="button" onclick="openPOCalendarDetails('${poSafe(item.fileId)}')" class="w-full text-left border rounded-lg p-3 hover:bg-indigo-50 ${poCalendarResponsibleClass(item)}"><div class="font-semibold">${poSafe(item.title || item.fileName || 'เอกสาร')}</div><div class="text-xs text-gray-500 mt-1">${poSafe(item.department || '-')} · ${poSafe(item.responsible || 'ยังไม่ได้กำหนด')} · ${poSafe(item.status || 'รอตรวจสอบ')}</div></button>`).join('')}</div>` : '<p class="text-sm text-gray-500">ไม่มีรายการในวันที่เลือก</p>';
+            modal.classList.remove('hidden'); modal.classList.add('flex');
+        };
+        window.exportPOCalendarCSV = function() {
+            const rows = [['วันครบกำหนด','ชื่อเอกสาร','ปี','หน่วยงาน','ผู้รับผิดชอบ','สถานะ','เลขที่ ECM']];
+            getFilteredPOCalendarItems().sort((a,b) => poCalendarDateKey(a.dueDate).localeCompare(poCalendarDateKey(b.dueDate))).forEach(item => rows.push([poDueDateOnly(item.dueDate) || 'ยังไม่มีวันครบกำหนด', item.title || item.fileName || '', item.year || '', item.department || '', item.responsible || 'ยังไม่ได้กำหนด', item.status || 'รอตรวจสอบ', item.ecmNumber || '']));
+            const csv='\ufeff'+rows.map(row=>row.map(v=>'"'+String(v ?? '').replace(/"/g,'""')+'"').join(',')).join('\r\n'); const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); const link=document.createElement('a'); link.href=url; link.download=`ปฏิทินเอกสาร_PO_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+        };
+        window.printPOCalendar = function() {
+            const items = getFilteredPOCalendarItems(); const rows = items.map((item,i)=>`<tr><td>${i+1}</td><td>${poSafe(poDueDateOnly(item.dueDate) || 'ยังไม่มีวันครบกำหนด')}</td><td>${poSafe(item.title || item.fileName || '')}</td><td>${poSafe(item.department || '-')}</td><td>${poSafe(item.responsible || 'ยังไม่ได้กำหนด')}</td><td>${poSafe(item.status || 'รอตรวจสอบ')}</td></tr>`).join(''); const win=window.open('','_blank'); if(!win){showModal('error','เปิดหน้าพิมพ์ไม่ได้','กรุณาอนุญาตป๊อปอัปแล้วลองใหม่');return;} win.document.write(`<html lang="th"><head><meta charset="utf-8"><title>ปฏิทินเอกสาร PO</title><style>body{font-family:Arial,sans-serif;padding:24px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:8px;text-align:left}th{background:#eef2ff}@media print{button{display:none}}</style></head><body><h2>ปฏิทินเอกสาร PO</h2><p>พิมพ์เมื่อ ${new Date().toLocaleString('th-TH')}</p><table><thead><tr><th>ลำดับ</th><th>วันครบกำหนด</th><th>เอกสาร</th><th>หน่วยงาน</th><th>ผู้รับผิดชอบ</th><th>สถานะ</th></tr></thead><tbody>${rows}</tbody></table></body></html>`); win.document.close(); win.focus(); setTimeout(()=>win.print(),400);
         };
         window.openPOCalendarDetails = function(fileId) {
             const item = poDocuments.find(document => document.fileId === fileId);
@@ -5960,6 +6003,17 @@
             return `<span class="inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full ${color}">ครบกำหนด ${poSafe(displayDate)} · ${state}</span>`;
         }
 
+        function poAttachmentStatus(item) {
+            const files = Array.isArray(item?.attachments) ? item.attachments : [];
+            const types = new Set(files.map(file => String(file.type || '').trim()));
+            return { tor: types.has('TOR'), po: types.has('PO'), notice: types.has('ใบแจ้งเข้าทำงาน'), approval: types.has('ขออนุมัติจ้าง'), complete: types.has('TOR') && types.has('PO') && types.has('ใบแจ้งเข้าทำงาน') && types.has('ขออนุมัติจ้าง') };
+        }
+        function poAttachmentStatusHtml(item) {
+            const st = poAttachmentStatus(item);
+            const chip = (label, ok) => `<span class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] ${ok ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}"><span>${ok ? '✓' : '!'}</span>${label}</span>`;
+            return `<div class="flex flex-wrap gap-1 mt-2" title="สถานะไฟล์แนบ">${chip('TOR', st.tor)}${chip('PO', st.po)}${chip('ใบแจ้งเข้าทำงาน', st.notice)}${chip('ขออนุมัติจ้าง', st.approval)}</div>`;
+        }
+        function poMissingDueDate(item) { return !String(item?.dueDate || '').trim(); }
         window.loadPODocuments = async function() {
             const list = document.getElementById('poDocumentList');
             if (list) list.innerHTML = '<p class="text-sm text-gray-400">กำลังโหลดรายการเอกสาร...</p>';
@@ -5993,6 +6047,7 @@
             const departmentFilter = document.getElementById('poDepartmentFilter')?.value || '';
             const statusFilter = document.getElementById('poStatusFilter')?.value || '';
             const responsibleFilter = document.getElementById('poResponsibleFilter')?.value || '';
+            const attachmentFilter = document.getElementById('poAttachmentFilter')?.value || '';
             const dateFrom = document.getElementById('poDateFrom')?.value || '';
             const dateTo = document.getElementById('poDateTo')?.value || '';
             const years = [...new Set(poDocuments.map(item => String(item.year || '').trim()).filter(Boolean))].sort((a, b) => Number(b) - Number(a));
@@ -6019,13 +6074,15 @@
                     dashboardPOFilter === 'overdue' ? (dueDays !== null && dueDays < 0) :
                     dashboardPOFilter === 'noResponsible' ? !String(item.responsible || '').trim() : true
                 );
-                return matchesText && matchesDashboardPO && (!yearFilter || String(item.year || '') === yearFilter) && (!departmentFilter || String(item.department || '') === departmentFilter) && (!statusFilter || String(item.status || 'รอตรวจสอบ') === statusFilter) && (!responsibleFilter || String(item.responsible || '') === responsibleFilter) && (!dateFrom || itemDate >= dateFrom) && (!dateTo || itemDate <= dateTo);
+                const attachmentStatus = poAttachmentStatus(item);
+                const matchesAttachment = !attachmentFilter || (attachmentFilter === 'incomplete' ? !attachmentStatus.complete : attachmentFilter === 'missingDue' ? poMissingDueDate(item) : true);
+                return matchesText && matchesDashboardPO && matchesAttachment && (!yearFilter || String(item.year || '') === yearFilter) && (!departmentFilter || String(item.department || '') === departmentFilter) && (!statusFilter || String(item.status || 'รอตรวจสอบ') === statusFilter) && (!responsibleFilter || String(item.responsible || '') === responsibleFilter) && (!dateFrom || itemDate >= dateFrom) && (!dateTo || itemDate <= dateTo);
             });
             renderPOCalendar(filtered);
             if (count) count.textContent = `แสดง ${filtered.length} จาก ${poDocuments.length} ไฟล์`;
             if (!filtered.length) { list.innerHTML = `<p class="text-sm text-gray-400">${poDocuments.length ? 'ไม่พบเอกสารที่ค้นหา' : 'ยังไม่มีเอกสาร'}</p>`; return; }
             const grouped = filtered.reduce((groups, item) => { const key = String(item.year || 'ไม่ระบุปี'); (groups[key] ||= []).push(item); return groups; }, {});
-                list.innerHTML = Object.keys(grouped).sort((a, b) => Number(b) - Number(a)).map(year => `<div class="pt-2"><h4 class="text-lg font-bold text-green-800 border-b border-green-100 pb-2 mb-3">ปี ${poSafe(year)} <span class="text-xs font-normal text-gray-500">(${grouped[year].length} เอกสาร)</span></h4><div class="space-y-3">${grouped[year].map(item => `<article id="po-doc-${item.fileId}" class="border border-gray-200 rounded-xl p-4 hover:border-green-300 transition"><div class="flex flex-col sm:flex-row gap-3 sm:items-start sm:justify-between"><div class="flex gap-3 min-w-0 flex-1 w-full"><div class="text-3xl shrink-0">${poFileIcon(item.fileType || item.fileName || '')}</div><div class="flex-1 min-w-0 w-full"><h4 class="font-bold text-green-800 break-words">${poSafe(item.title || item.fileName || 'ไม่มีชื่อเอกสาร')}</h4><p class="text-xs text-gray-500 mt-1">${poSafe(item.category || 'เอกสาร')} | ปี ${poSafe(item.year || '-')} | หน่วยงาน ${poSafe(item.department || '-')} | ${formatFileSize(item.fileSize)} | ${poSafe(item.fileName || '')}</p><p class="text-xs text-gray-600 mt-2">${poSafe(item.description || 'ไม่มีรายละเอียด')}</p>${Array.isArray(item.attachments) && item.attachments.length ? `<details class="mt-2 w-full border border-green-100 rounded-lg overflow-hidden"><summary class="cursor-pointer bg-green-50 px-3 py-2 text-xs font-semibold text-green-800">ไฟล์แนบ (${item.attachments.length}) <span class="font-normal text-green-600">กดเพื่อขยาย</span></summary><div class="w-full p-2 space-y-2">${item.attachments.map(file => `<div class="flex items-center gap-2 w-full min-w-0"><span class="basis-0 flex-1 min-w-[70px] overflow-hidden text-ellipsis whitespace-nowrap text-xs text-gray-700" title="${poSafe(file.fileName || '')}"><span class="font-semibold text-green-700">${poSafe(file.type || 'ไฟล์')}</span> · ${poSafe(file.fileName || 'ไม่มีชื่อไฟล์')}</span><div class="flex items-center gap-1 shrink-0"><button type="button" onclick="previewPOFile('${item.fileId}','${file.fileId}')" class="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 text-[11px] font-semibold hover:bg-blue-100 whitespace-nowrap">ดู</button><button type="button" onclick="downloadPOFile('${item.fileId}','${file.fileId}')" class="px-2 py-1 rounded-lg bg-gray-100 text-gray-700 text-[11px] font-semibold hover:bg-gray-200 whitespace-nowrap">โหลด</button><button type="button" onclick="deletePOAttachment('${item.fileId}','${file.fileId}')" class="px-2 py-1 rounded-lg bg-red-50 text-red-600 text-[11px] font-semibold hover:bg-red-100 whitespace-nowrap">ลบ</button></div></div>`).join('')}</div></details>` : '<p class="text-xs text-gray-400 mt-2">ยังไม่มีไฟล์แนบเพิ่ม</p>'}<p class="text-[11px] text-gray-400 mt-2">เพิ่มโดย ${poSafe(item.uploadedByName || '-')} เมื่อ ${poFormatDate(item.uploadedAt)}</p><p class="text-xs text-gray-600 mt-2">ผู้รับผิดชอบ: <span class="font-semibold">${poSafe(item.responsible || 'ยังไม่ได้กำหนด')}</span></p><div class="mt-2">${poDueBadge(item)}</div><details class="mt-2 text-xs text-gray-600"><summary class="cursor-pointer font-semibold text-green-700">คณะกรรมการตรวจรับงาน</summary><ol class="list-decimal list-inside mt-1 space-y-1">${[item.committee1, item.committee2, item.committee3].filter(Boolean).map(name => `<li>${poSafe(name)}</li>`).join('') || '<li>ยังไม่ได้กำหนด</li>'}</ol></details><span class="inline-block mt-2 px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'อนุมัติ' ? 'bg-green-100 text-green-700' : item.status === 'ยกเลิก' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}">สถานะ: ${poSafe(item.status || 'รอตรวจสอบ')}</span></div></div><div class="flex flex-col gap-2 shrink-0"><div class="flex gap-2 flex-wrap"><button type="button" onclick="previewPOFile('${item.fileId}','${item.fileId}')" class="bg-green-700 hover:bg-green-800 text-white px-3 py-2 rounded-lg text-xs font-semibold">ดูตัวอย่าง</button><button type="button" onclick="downloadPOFile('${item.fileId}','${item.fileId}')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-semibold">ดาวน์โหลด</button><button type="button" onclick="downloadPOZip('${item.fileId}')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">ZIP ทั้งหมด</button><button type="button" onclick="showPOQRCode('${item.fileId}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">QR Code</button></div><div class="flex gap-2 flex-wrap"><button type="button" onclick="editPODocument('${item.fileId}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">แก้ไข</button><button type="button" onclick="addPOAttachment('${item.fileId}')" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-xs font-semibold">แนบเพิ่ม</button><button type="button" onclick="editPODueDate('${item.fileId}')" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-lg text-xs font-semibold">แก้ไขวันครบกำหนด</button><button type="button" onclick="deletePODocument('${item.fileId}')" class="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 px-3 py-2 rounded-lg text-xs font-semibold">ลบ</button></div></div></div></article>`).join('')}</div></div>`).join('');
+                list.innerHTML = Object.keys(grouped).sort((a, b) => Number(b) - Number(a)).map(year => `<div class="pt-2"><h4 class="text-lg font-bold text-green-800 border-b border-green-100 pb-2 mb-3">ปี ${poSafe(year)} <span class="text-xs font-normal text-gray-500">(${grouped[year].length} เอกสาร)</span></h4><div class="space-y-3">${grouped[year].map(item => `<article id="po-doc-${item.fileId}" class="border border-gray-200 rounded-xl p-4 hover:border-green-300 transition"><div class="flex flex-col sm:flex-row gap-3 sm:items-start sm:justify-between"><div class="flex gap-3 min-w-0 flex-1 w-full"><div class="text-3xl shrink-0">${poFileIcon(item.fileType || item.fileName || '')}</div><div class="flex-1 min-w-0 w-full"><h4 class="font-bold text-green-800 break-words">${poSafe(item.title || item.fileName || 'ไม่มีชื่อเอกสาร')}</h4><p class="text-xs text-gray-500 mt-1">${poSafe(item.category || 'เอกสาร')} | ปี ${poSafe(item.year || '-')} | หน่วยงาน ${poSafe(item.department || '-')} | ${formatFileSize(item.fileSize)} | ${poSafe(item.fileName || '')}</p><p class="text-xs text-gray-600 mt-2">${poSafe(item.description || 'ไม่มีรายละเอียด')}</p>${poAttachmentStatusHtml(item)}${poMissingDueDate(item) ? '<p class="text-xs text-red-600 font-semibold mt-1">⚠ ยังไม่มีวันครบกำหนด</p>' : ''}${item.ecmNumber ? `<p class="text-xs text-gray-600 mt-1">เลขที่ ECM: <span class="font-semibold">${poSafe(item.ecmNumber)}</span></p>` : ''}${item.startDate || item.endDate ? `<p class="text-xs text-gray-600 mt-1">ช่วงงาน: ${poSafe(poDueDateOnly(item.startDate) || '-')} - ${poSafe(poDueDateOnly(item.endDate) || '-')}</p>` : ''}${Array.isArray(item.attachments) && item.attachments.length ? `<details class="mt-2 w-full border border-green-100 rounded-lg overflow-hidden"><summary class="cursor-pointer bg-green-50 px-3 py-2 text-xs font-semibold text-green-800">ไฟล์แนบ (${item.attachments.length}) <span class="font-normal text-green-600">กดเพื่อขยาย</span></summary><div class="w-full p-2 space-y-2">${item.attachments.map(file => `<div class="flex items-center gap-2 w-full min-w-0"><span class="basis-0 flex-1 min-w-[70px] overflow-hidden text-ellipsis whitespace-nowrap text-xs text-gray-700" title="${poSafe(file.fileName || '')}"><span class="font-semibold text-green-700">${poSafe(file.type || 'ไฟล์')}</span> · ${poSafe(file.fileName || 'ไม่มีชื่อไฟล์')}</span><div class="flex items-center gap-1 shrink-0"><button type="button" onclick="previewPOFile('${item.fileId}','${file.fileId}')" class="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 text-[11px] font-semibold hover:bg-blue-100 whitespace-nowrap">ดู</button><button type="button" onclick="downloadPOFile('${item.fileId}','${file.fileId}')" class="px-2 py-1 rounded-lg bg-gray-100 text-gray-700 text-[11px] font-semibold hover:bg-gray-200 whitespace-nowrap">โหลด</button><button type="button" onclick="deletePOAttachment('${item.fileId}','${file.fileId}')" class="px-2 py-1 rounded-lg bg-red-50 text-red-600 text-[11px] font-semibold hover:bg-red-100 whitespace-nowrap">ลบ</button></div></div>`).join('')}</div></details>` : '<p class="text-xs text-gray-400 mt-2">ยังไม่มีไฟล์แนบเพิ่ม</p>'}<p class="text-[11px] text-gray-400 mt-2">เพิ่มโดย ${poSafe(item.uploadedByName || '-')} เมื่อ ${poFormatDate(item.uploadedAt)}</p><p class="text-xs text-gray-600 mt-2">ผู้รับผิดชอบ: <span class="font-semibold">${poSafe(item.responsible || 'ยังไม่ได้กำหนด')}</span></p><div class="mt-2">${poDueBadge(item)}</div><details class="mt-2 text-xs text-gray-600"><summary class="cursor-pointer font-semibold text-green-700">คณะกรรมการตรวจรับงาน</summary><ol class="list-decimal list-inside mt-1 space-y-1">${[item.committee1, item.committee2, item.committee3].filter(Boolean).map(name => `<li>${poSafe(name)}</li>`).join('') || '<li>ยังไม่ได้กำหนด</li>'}</ol></details><span class="inline-block mt-2 px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'อนุมัติ' ? 'bg-green-100 text-green-700' : item.status === 'ยกเลิก' ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}">สถานะ: ${poSafe(item.status || 'รอตรวจสอบ')}</span>${Array.isArray(item.editHistory) && item.editHistory.length ? `<details class="mt-2 text-xs text-gray-600"><summary class="cursor-pointer font-semibold text-teal-700">ประวัติแก้ไขเอกสาร (${item.editHistory.length})</summary><div class="mt-1 space-y-1 border-l-2 border-teal-200 pl-2">${item.editHistory.slice().reverse().slice(0, 10).map(history => `<div><span class="font-semibold">${poSafe(history.event || "แก้ไข")}</span> · ${poSafe(history.userName || "-")} · ${poFormatDate(history.time)}<div class="text-gray-500">${poSafe(history.detail || "")}</div></div>`).join("")}</div></details>` : ""}</div></div><div class="flex flex-col gap-2 shrink-0"><div class="flex gap-2 flex-wrap"><button type="button" onclick="previewPOFile('${item.fileId}','${item.fileId}')" class="bg-green-700 hover:bg-green-800 text-white px-3 py-2 rounded-lg text-xs font-semibold">ดูตัวอย่าง</button><button type="button" onclick="downloadPOFile('${item.fileId}','${item.fileId}')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-semibold">ดาวน์โหลด</button><button type="button" onclick="downloadPOZip('${item.fileId}')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">ZIP ทั้งหมด</button><button type="button" onclick="showPOQRCode('${item.fileId}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">QR Code</button></div><div class="flex gap-2 flex-wrap"><button type="button" onclick="editPODocument('${item.fileId}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">แก้ไข</button><button type="button" onclick="addPOAttachment('${item.fileId}')" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-xs font-semibold">แนบเพิ่ม</button><button type="button" onclick="editPODueDate('${item.fileId}')" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-lg text-xs font-semibold">แก้ไขวันครบกำหนด</button><button type="button" onclick="deletePODocument('${item.fileId}')" class="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 px-3 py-2 rounded-lg text-xs font-semibold">ลบ</button></div></div></div></article>`).join('')}</div></div>`).join('');
         };
 
         window.editPODueDate = async function(fileId) {
@@ -6063,8 +6120,15 @@
             if (responsible === null) return;
             const dueDate = prompt('วันครบกำหนด รูปแบบ YYYY-MM-DD (เว้นว่างได้)', item.dueDate || '');
             if (dueDate === null) return;
+            const ecmNumber = prompt('เลขที่ ECM (เว้นว่างได้)', item.ecmNumber || '');
+            if (ecmNumber === null) return;
+            const startDate = prompt('วันที่เริ่มงาน YYYY-MM-DD (เว้นว่างได้)', item.startDate || '');
+            if (startDate === null) return;
+            const endDate = prompt('วันสิ้นสุดงาน YYYY-MM-DD (เว้นว่างได้)', item.endDate || '');
+            if (endDate === null) return;
             const normalizedDueDate = dueDate.trim();
             if (normalizedDueDate && !/^\d{4}-\d{2}-\d{2}$/.test(normalizedDueDate)) { showModal('error', 'รูปแบบวันไม่ถูกต้อง', 'กรุณาใช้รูปแบบ YYYY-MM-DD เช่น 2026-10-15'); return; }
+            if (startDate && endDate && (!/^\d{4}-\d{2}-\d{2}$/.test(startDate) || !/^\d{4}-\d{2}-\d{2}$/.test(endDate) || startDate > endDate)) { showModal('error', 'ช่วงวันที่ไม่ถูกต้อง', 'กรุณาตรวจสอบวันที่เริ่มงานและวันสิ้นสุดงาน'); return; }
             const committee1 = prompt('คณะกรรมการคนที่ 1', item.committee1 || '');
             if (committee1 === null) return;
             const committee2 = prompt('คณะกรรมการคนที่ 2', item.committee2 || '');
@@ -6072,7 +6136,7 @@
             const committee3 = prompt('คณะกรรมการคนที่ 3', item.committee3 || '');
             if (committee3 === null) return;
             try {
-                await poApiPost({ action: 'update', fileId, title: title.trim(), description: description.trim(), status: status.trim(), year: item.year || '', department: item.department || '', responsible: responsible.trim(), dueDate: normalizedDueDate, committee1: committee1.trim(), committee2: committee2.trim(), committee3: committee3.trim(), user: getCurrentLoginUser() });
+                await poApiPost({ action: 'update', fileId, title: title.trim(), description: description.trim(), status: status.trim(), year: item.year || '', department: item.department || '', responsible: responsible.trim(), dueDate: normalizedDueDate, ecmNumber: ecmNumber.trim(), startDate: startDate.trim(), endDate: endDate.trim(), committee1: committee1.trim(), committee2: committee2.trim(), committee3: committee3.trim(), user: getCurrentLoginUser() });
                 sendPODiscordNotification('update', { title: title.trim(), fileName: item.fileName, fileId, status: status.trim() });
                 setTimeout(loadPODocuments, 1200);
                 showModal('success', 'แก้ไขข้อมูลสำเร็จ', 'แก้ไขข้อมูลโดยไม่ลบไฟล์เดิมแล้ว');
@@ -6109,6 +6173,10 @@
             const department = String(document.getElementById('poDepartment')?.value || '').trim();
             const responsible = document.getElementById('poResponsible')?.value.trim() || '';
             const dueDate = document.getElementById('poDueDate')?.value || '';
+            const ecmNumber = document.getElementById('poEcmNumber')?.value.trim() || '';
+            const startDate = document.getElementById('poStartDate')?.value || '';
+            const endDate = document.getElementById('poEndDate')?.value || '';
+            if (startDate && endDate && startDate > endDate) { showModal('error', 'วันที่ไม่ถูกต้อง', 'วันที่เริ่มงานต้องไม่หลังวันที่สิ้นสุดงาน'); return; }
             const committee1 = document.getElementById('poCommittee1')?.value.trim() || '';
             const committee2 = document.getElementById('poCommittee2')?.value.trim() || '';
             const committee3 = document.getElementById('poCommittee3')?.value.trim() || '';
@@ -6133,9 +6201,9 @@
                 for (const item of files) {
                     attachments.push({ type: item.type, fileName: item.file.name, mimeType: item.file.type || 'application/octet-stream', fileSize: item.file.size, base64: await fileToBase64(item.file) });
                 }
-                await poApiPost({ action: 'upload', title, category, year, department, description, responsible, dueDate, committee1, committee2, committee3, attachments, user });
+                await poApiPost({ action: 'upload', title, category, year, department, description, responsible, dueDate, ecmNumber, startDate, endDate, committee1, committee2, committee3, attachments, user });
                 sendPODiscordNotification('upload', { title, category, year, department, fileName: tor.file.name, fileSize: tor.file.size, attachments: files.map(item => item.type) });
-                titleInput.value = ''; document.getElementById('poDescription').value = ''; document.getElementById('poYear').value = '2569'; document.getElementById('poDepartment').value = ''; document.getElementById('poResponsible').value = ''; document.getElementById('poDueDate').value = ''; document.getElementById('poCommittee1').value = 'นายซาฟารี ละใบซอ ประธานกรรมการ'; document.getElementById('poCommittee2').value = 'นางสาวศรุตยา เต็มคงแก้ว กรรมการ'; document.getElementById('poCommittee3').value = 'นายแวหะมะซามูดิง โตะแปเราะ กรรมการและผู้ควบคุมงาน';
+                titleInput.value = ''; document.getElementById('poDescription').value = ''; document.getElementById('poYear').value = '2569'; document.getElementById('poDepartment').value = ''; document.getElementById('poResponsible').value = ''; document.getElementById('poDueDate').value = ''; document.getElementById('poEcmNumber').value = ''; document.getElementById('poStartDate').value = ''; document.getElementById('poEndDate').value = ''; document.getElementById('poCommittee1').value = 'นายซาฟารี ละใบซอ ประธานกรรมการ'; document.getElementById('poCommittee2').value = 'นางสาวศรุตยา เต็มคงแก้ว กรรมการ'; document.getElementById('poCommittee3').value = 'นายแวหะมะซามูดิง โตะแปเราะ กรรมการและผู้ควบคุมงาน';
                 ['poFileTOR', 'poFilePO', 'poFileNotice', 'poFileApproval'].forEach(id => { const input = document.getElementById(id); if (input) input.value = ''; });
                 status.textContent = 'ส่งไฟล์แล้ว กำลังอัปเดตรายการ...';
                 setTimeout(async () => { await loadPODocuments(); status.textContent = 'อัปโหลดสำเร็จ'; }, 1800);
@@ -7052,6 +7120,18 @@ ${gpsText}`;
             }
         }
 
+        let correctionViewFilter = '';
+        function correctionDaysOpen(item) {
+            const start = new Date(item.timestamp || 0);
+            if (Number.isNaN(start.getTime())) return 0;
+            const end = (item.status === 'ปิดงาน' || item.status === 'แก้ไขแล้ว') && (item.lastUpdated || item.afterUpdatedAt) ? new Date(item.lastUpdated || item.afterUpdatedAt) : new Date();
+            return Math.max(0, Math.floor((end - start) / 86400000));
+        }
+        function correctionIsOverdue(item) {
+            if (item.status === 'ปิดงาน') return false;
+            const date = String(item.scheduledFixDate || '').slice(0, 10);
+            return (date && date < new Date().toISOString().slice(0, 10)) || (!date && correctionDaysOpen(item) >= 7);
+        }
         function getCorrectionHistoryRecords() {
             try {
                 return JSON.parse(localStorage.getItem('weed_correction_records_cloud') || localStorage.getItem('weed_correction_records') || '[]');
@@ -7063,6 +7143,7 @@ ${gpsText}`;
         function getFilteredCorrectionRecords() {
             const search = (document.getElementById('correctionSearchInput')?.value || '').toLowerCase().trim();
             const department = document.getElementById('correctionDepartmentFilter')?.value || '';
+            const status = document.getElementById('correctionStatusFilter')?.value || '';
             const from = document.getElementById('correctionDateFrom')?.value || '';
             const to = document.getElementById('correctionDateTo')?.value || '';
             return getCorrectionHistoryRecords().filter(item => {
@@ -7071,6 +7152,8 @@ ${gpsText}`;
                 const dateKey = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : '';
                 return (!search || haystack.includes(search)) &&
                     (!department || item.department === department) &&
+                    (!status || (item.status || 'แจ้งแก้ไข') === status) &&
+                    (!correctionViewFilter || (correctionViewFilter === 'pending' ? item.status === 'แจ้งแก้ไข' : correctionViewFilter === 'fixed_open' ? item.status === 'แก้ไขแล้ว' : correctionViewFilter === 'overdue' ? correctionIsOverdue(item) : correctionViewFilter === 'followup' ? !!item.scheduledFixDate : true)) &&
                     (!from || (dateKey && dateKey >= from)) &&
                     (!to || (dateKey && dateKey <= to));
             });
@@ -7096,9 +7179,16 @@ ${gpsText}`;
             });
             const department = document.getElementById('correctionDepartmentFilter');
             if (department) department.value = '';
+            const status = document.getElementById('correctionStatusFilter');
+            if (status) status.value = '';
+            correctionViewFilter = '';
             renderCorrectionRecords();
         }
 
+        window.setCorrectionTrackingFilter = function(filter) {
+            correctionViewFilter = correctionViewFilter === filter ? '' : filter;
+            renderCorrectionRecords();
+        };
         function renderCorrectionRecords() {
             const container = document.getElementById('correctionContainer');
             const empty = document.getElementById('emptyCorrection');
@@ -7110,6 +7200,15 @@ ${gpsText}`;
             let corrList = getFilteredCorrectionRecords();
             const countEl = document.getElementById('correctionResultCount');
             if (countEl) countEl.textContent = `แสดง ${corrList.length} จาก ${allCorrectionRecords.length} รายการ`;
+            const summary = document.getElementById('correctionTrackingSummary');
+            if (summary) {
+                const pending = allCorrectionRecords.filter(item => item.status === 'แจ้งแก้ไข').length;
+                const fixedOpen = allCorrectionRecords.filter(item => item.status === 'แก้ไขแล้ว').length;
+                const overdue = allCorrectionRecords.filter(correctionIsOverdue).length;
+                const followup = allCorrectionRecords.filter(item => item.scheduledFixDate && item.status !== 'ปิดงาน').length;
+                const card = (key, title, value, color) => `<button type="button" onclick="setCorrectionTrackingFilter('${key}')" class="text-left rounded-lg border p-2 ${color} hover:brightness-95"><span class="block text-[11px]">${title}</span><span class="block text-xl font-bold">${value}</span></button>`;
+                summary.innerHTML = [card('pending','ยังไม่แก้ไข',pending,'bg-amber-50 border-amber-200 text-amber-800'),card('fixed_open','แก้ไขแล้วแต่ยังไม่ปิด',fixedOpen,'bg-blue-50 border-blue-200 text-blue-800'),card('overdue','เกินวันที่นัด',overdue,'bg-red-50 border-red-200 text-red-800'),card('followup','มีวันนัดติดตาม',followup,'bg-indigo-50 border-indigo-200 text-indigo-800')].join('');
+            }
             updateCorrectionBadges();
 
             if (corrList.length === 0) {
@@ -7119,6 +7218,9 @@ ${gpsText}`;
             if (empty) empty.classList.add('hidden');
 
             corrList.forEach(item => {
+                const correctionId = item.id || item.docId;
+                const daysOpen = correctionDaysOpen(item);
+                const overdue = correctionIsOverdue(item);
                 let photos = item.photos || (item.photo ? [item.photo] : []);
                 
                 let photosHtml = '';
@@ -7126,7 +7228,7 @@ ${gpsText}`;
                     photosHtml += `
                         <div class="relative group">
                             <img src="${p}" onclick="openImageModal('${p}')" class="w-20 h-20 object-cover rounded-lg border border-amber-200 cursor-pointer shadow-sm" alt="photo ${idx+1}">
-                            ${idx > 0 ? `<button onclick="removeCorrectionPhoto('${item.id}', ${idx})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-[10px] shadow hover:bg-red-600" title="ลบรูปนี้">
+                            ${idx > 0 ? `<button onclick="removeCorrectionPhoto('${correctionId}', ${idx})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-[10px] shadow hover:bg-red-600" title="ลบรูปนี้">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                 </svg>
@@ -7141,7 +7243,7 @@ ${gpsText}`;
                 const afterPhotosHtml = afterPhotos.map((p, idx) => `
                     <div class="relative group">
                         <img src="${p}" onclick="openImageModal('${p}')" class="w-20 h-20 object-cover rounded-lg border border-blue-200 cursor-pointer shadow-sm" alt="หลักฐานหลังแก้ไข ${idx + 1}">
-                        <button onclick="removeAfterCorrectionPhoto('${item.id}', ${idx})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-[10px] shadow hover:bg-red-600" title="ลบหลักฐานภาพนี้">
+                        <button onclick="removeAfterCorrectionPhoto('${correctionId}', ${idx})" class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 text-[10px] shadow hover:bg-red-600" title="ลบหลักฐานภาพนี้">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                     </div>`).join('');
@@ -7152,24 +7254,37 @@ ${gpsText}`;
                     <div class="flex justify-between items-start">
                         <div class="w-full space-y-2">
                             <div class="flex justify-between items-center">
-                                <input type="text" id="corr-tower-${item.id}" value="${item.towerInfo || ''}" class="font-bold text-amber-900 text-base bg-white border border-amber-200 rounded px-2 py-1 w-full max-w-xs focus:ring-amber-500 focus:border-amber-500" placeholder="ระบุแนวสาย/เสา">
+                                <input type="text" id="corr-tower-${correctionId}" value="${item.towerInfo || ''}" class="font-bold text-amber-900 text-base bg-white border border-amber-200 rounded px-2 py-1 w-full max-w-xs focus:ring-amber-500 focus:border-amber-500" placeholder="ระบุแนวสาย/เสา">
                                 <div class="text-right text-[11px] text-gray-500 whitespace-nowrap ml-2">
                                     <div>วันที่แจ้ง: ${createdText}</div>
                                     <div>ผู้แจ้ง: ${reportEscape(item.reporterName || '-')}</div>
-                                    <div id="corr-time-text-${item.id}" class="${item.lastUpdated ? '' : 'hidden'} text-amber-700 font-medium">วันที่แก้ไข: ${updatedText}</div>
+                                    <div id="corr-time-text-${correctionId}" class="${item.lastUpdated ? '' : 'hidden'} text-amber-700 font-medium">วันที่แก้ไข: ${updatedText}</div>
                                 </div>
                             </div>
-                    <textarea id="corr-details-${item.id}" rows="2" class="w-full text-xs text-gray-700 bg-white border border-amber-200 rounded p-2 focus:ring-amber-500 focus:border-amber-500" placeholder="ระบุรายละเอียดการแก้ไข...">${item.details || ''}</textarea>
-                            <select onchange="updateCorrectionStatus('${item.id}', this.value)" class="w-full text-xs font-semibold text-gray-700 bg-green-50 border border-green-200 rounded p-2 focus:ring-green-500 focus:border-green-500" title="สถานะการแก้ไข">
+                    <textarea id="corr-details-${correctionId}" rows="2" class="w-full text-xs text-gray-700 bg-white border border-amber-200 rounded p-2 focus:ring-amber-500 focus:border-amber-500" placeholder="ระบุรายละเอียดการแก้ไข...">${item.details || ''}</textarea>
+                            <select onchange="updateCorrectionStatus('${correctionId}', this.value)" class="w-full text-xs font-semibold text-gray-700 bg-green-50 border border-green-200 rounded p-2 focus:ring-green-500 focus:border-green-500" title="สถานะการแก้ไข">
                                 ${correctionStatuses.map(status => `<option value="${status}" ${((item.status || 'แจ้งแก้ไข') === status) ? 'selected' : ''}>สถานะ: ${status}</option>`).join('')}
                             </select>
-                            <textarea id="corr-update-note-${item.id}" rows="2" class="w-full text-xs text-gray-700 bg-yellow-50 border border-amber-200 rounded p-2 focus:ring-amber-500 focus:border-amber-500" placeholder="เพิ่มข้อความก่อนบันทึกการแก้ไข...">${item.updateNote || ''}</textarea>
+                            <textarea id="corr-update-note-${correctionId}" rows="2" class="w-full text-xs text-gray-700 bg-yellow-50 border border-amber-200 rounded p-2 focus:ring-amber-500 focus:border-amber-500" placeholder="เพิ่มข้อความก่อนบันทึกการแก้ไข...">${item.updateNote || ''}</textarea>
                         </div>
-                        <button onclick="deleteCorrectionRecord('${item.id}')" class="text-gray-400 hover:text-red-500 p-2 ml-2" title="ลบรายการนี้">
+                        <button onclick="deleteCorrectionRecord('${correctionId}')" class="text-gray-400 hover:text-red-500 p-2 ml-2" title="ลบรายการนี้">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
                         </button>
+                    </div>
+                    <div class="rounded-xl border ${overdue ? 'border-red-300 bg-red-50' : 'border-gray-200 bg-gray-50'} p-3 space-y-2">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <div class="text-xs"><span class="font-semibold ${overdue ? 'text-red-800' : 'text-gray-700'}">ระยะเวลาตั้งแต่แจ้ง: ${daysOpen} วัน</span>${overdue ? `<span class="ml-2 rounded-full bg-red-600 text-white px-2 py-0.5">${item.scheduledFixDate ? 'เกินวันที่นัดแก้ไข' : 'ค้างเกิน 7 วัน'}</span>` : ''}</div>
+                            <span class="text-[11px] text-gray-500">${item.scheduledFixDate ? `วันที่นัด: ${reportEscape(item.scheduledFixDate)}` : 'ยังไม่มีวันที่นัดแก้ไข'}</span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-2 sm:items-end">
+                            <label class="flex-1 text-xs font-semibold text-gray-600">วันที่นัดแก้ไข
+                                <input id="corr-due-${correctionId}" type="date" value="${reportEscape(item.scheduledFixDate || '')}" class="mt-1 w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm bg-white">
+                            </label>
+                            <button type="button" onclick="saveCorrectionFollowUp('${correctionId}')" class="px-3 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold whitespace-nowrap">บันทึกวันนัด</button>
+                            ${overdue ? `<button type="button" onclick="sendCorrectionFollowupReminder('${correctionId}')" class="px-3 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-semibold whitespace-nowrap">ส่งเตือนงานค้าง</button>` : ''}
+                        </div>
                     </div>
                     <div class="rounded-xl border border-blue-200 bg-blue-50/50 p-3 space-y-3">
                         <div class="flex flex-wrap items-center justify-between gap-2">
@@ -7177,20 +7292,20 @@ ${gpsText}`;
                                 <h4 class="font-bold text-blue-900 text-sm">หลักฐานหลังแก้ไข</h4>
                                 <p class="text-[11px] text-blue-700">ไม่บังคับให้มุมภาพเหมือนภาพเดิม ให้ถ่ายตามสภาพจริงและใช้จุด/แนวสายเป็นข้อมูลอ้างอิง</p>
                             </div>
-                            <span class="text-[11px] text-blue-700">${afterPhotos.length}/3 รูป</span>
+                            <div class="flex items-center gap-2"><span class="text-[11px] text-blue-700">${afterPhotos.length}/3 รูป</span><button type="button" onclick="showCorrectionComparison('${correctionId}')" class="text-[11px] bg-white border border-blue-200 text-blue-700 rounded px-2 py-1 hover:bg-blue-100">เปรียบเทียบก่อน–หลัง</button></div>
                         </div>
                         <div class="flex flex-wrap gap-2 items-center">
                             ${afterPhotosHtml || '<span class="text-xs text-gray-500 italic">ยังไม่มีภาพหลังแก้ไข</span>'}
                             ${afterPhotos.length < 3 ? `<label class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-2 rounded-lg shadow-sm flex items-center gap-1 transition">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
                                 เพิ่มภาพหลังแก้ไข
-                                <input type="file" accept="image/*" class="hidden" onchange="addAfterCorrectionPhoto(event, '${item.id}')">
+                                <input type="file" accept="image/*" class="hidden" onchange="addAfterCorrectionPhoto(event, '${correctionId}')">
                             </label>` : ''}
                         </div>
-                        <textarea id="corr-after-note-${item.id}" rows="2" class="w-full text-xs text-gray-700 bg-white border border-blue-200 rounded p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="บันทึกวิธีแก้ไขหรือผลการตรวจภาพหลังแก้ไข...">${reportEscape(item.afterNote || '')}</textarea>
+                        <textarea id="corr-after-note-${correctionId}" rows="2" class="w-full text-xs text-gray-700 bg-white border border-blue-200 rounded p-2 focus:ring-blue-500 focus:border-blue-500" placeholder="บันทึกวิธีแก้ไขหรือผลการตรวจภาพหลังแก้ไข...">${reportEscape(item.afterNote || '')}</textarea>
                         <div class="flex flex-wrap items-center justify-between gap-2">
                             <span class="text-[11px] text-gray-500">${item.afterUpdatedAt ? `บันทึกล่าสุด: ${formatDateToThai(item.afterUpdatedAt)} โดย ${reportEscape(item.afterUpdatedBy || '-')}` : 'ยังไม่มีผู้บันทึกหลักฐานหลังแก้ไข'}</span>
-                            <button type="button" onclick="saveAfterCorrectionEvidence('${item.id}')" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm">บันทึกหลักฐานหลังแก้ไข</button>
+                            <button type="button" onclick="saveAfterCorrectionEvidence('${correctionId}')" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm">บันทึกหลักฐานหลังแก้ไข</button>
                         </div>
                     </div>
                     <div class="flex flex-col sm:flex-row justify-between items-center gap-3 pt-2 border-t border-amber-100">
@@ -7203,10 +7318,10 @@ ${gpsText}`;
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                                 </svg>
                                 เพิ่มรูปภาพ
-                                <input type="file" accept="image/*" class="hidden" onchange="addCorrectionPhoto(event, '${item.id}')">
+                                <input type="file" accept="image/*" class="hidden" onchange="addCorrectionPhoto(event, '${correctionId}')">
                             </label>
                         </div>
-                        <button type="button" onclick="saveCorrectionItem('${item.id}')" class="w-full sm:w-auto px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg shadow transition whitespace-nowrap flex items-center justify-center gap-1">
+                        <button type="button" onclick="saveCorrectionItem('${correctionId}')" class="w-full sm:w-auto px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold rounded-lg shadow transition whitespace-nowrap flex items-center justify-center gap-1">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                             </svg>
@@ -7281,7 +7396,11 @@ ${gpsText}`;
             const item = corrList.find(i => i.id === id || i.docId === id);
             if (!item) return;
             const previousStatus = item.status || 'แจ้งแก้ไข';
+            const statusUpdatedAt = new Date().toISOString();
+            const statusUpdatedBy = getCurrentLoginUser().name || 'ไม่ระบุ';
             item.status = status;
+            item.statusUpdatedAt = statusUpdatedAt;
+            item.statusUpdatedBy = statusUpdatedBy;
             localStorage.setItem('weed_correction_records_cloud', JSON.stringify(corrList));
             localStorage.setItem('weed_correction_records', JSON.stringify(corrList));
             try {
@@ -7290,7 +7409,7 @@ ${gpsText}`;
                 for (const docSnap of querySnapshot.docs) {
                     const data = docSnap.data();
                     if (docSnap.id === id || data.id === id || docSnap.id === item.docId) {
-                        await updateDoc(docSnap.ref, { status });
+                        await updateDoc(docSnap.ref, { status, statusUpdatedAt, statusUpdatedBy });
                         updated = true;
                         break;
                     }
@@ -7308,6 +7427,30 @@ ${gpsText}`;
             }
         }
 
+        window.saveCorrectionFollowUp = async function(id) {
+            const input = document.getElementById(`corr-due-${id}`); const item = getCorrectionHistoryRecords().find(i => i.id === id || i.docId === id); if (!item || !input) return;
+            const scheduledFixDate = input.value || ''; const followUpUpdatedAt = new Date().toISOString(); const followUpUpdatedBy = getCurrentLoginUser().name || 'ไม่ระบุ';
+            try { const ref = await findCorrectionDocRef(id, item); if (!ref) throw new Error('ไม่พบรายการ'); await updateDoc(ref, { scheduledFixDate, followUpUpdatedAt, followUpUpdatedBy }); Object.assign(item, { scheduledFixDate, followUpUpdatedAt, followUpUpdatedBy }); localStorage.setItem('weed_correction_records_cloud', JSON.stringify(getCorrectionHistoryRecords())); localStorage.setItem('weed_correction_records', JSON.stringify(getCorrectionHistoryRecords())); renderCorrectionRecords(); showModal('success','บันทึกวันนัดสำเร็จ', scheduledFixDate ? `นัดแก้ไขวันที่ ${scheduledFixDate}` : 'ล้างวันที่นัดแล้ว'); } catch (error) { console.error(error); showModal('error','บันทึกวันนัดไม่สำเร็จ','ไม่สามารถบันทึกข้อมูลลง Firebase ได้'); }
+        };
+        window.sendCorrectionFollowupReminder = async function(id) {
+            const item = getCorrectionHistoryRecords().find(i => i.id === id || i.docId === id); if (!item) return;
+            const user = getCurrentLoginUser().name || 'ไม่ระบุ'; const msg = `⏰ **ติดตามงานแจ้งแก้ไขที่ค้าง**
+🏢 หน่วยงาน: **${item.department || '-'}**
+⚡ แนวสาย: **${item.lineName || '-'}**
+🗼 จุดตรวจ: **${item.towerInfo || item.tower || '-'}**
+📅 วันที่แจ้ง: **${formatDateToThai(item.timestamp)}**
+📅 วันที่นัด: **${item.scheduledFixDate || '-'}**
+🔄 สถานะ: **${item.status || 'แจ้งแก้ไข'}**
+👤 ผู้ส่งเตือน: **${user}**`;
+            try { await sendDiscordNotification(DISCORD_WEBHOOK_UPDATE, msg); showModal('success','ส่งเตือนงานค้างแล้ว','ส่งข้อความติดตามไปยัง Discord เรียบร้อยแล้ว'); } catch (error) { showModal('error','ส่งเตือนไม่สำเร็จ','ไม่สามารถส่งข้อความไป Discord ได้'); }
+        };
+        window.showCorrectionComparison = function(id) {
+            const item = getCorrectionHistoryRecords().find(i => i.id === id || i.docId === id); if (!item) return;
+            const before = (item.photos || (item.photo ? [item.photo] : [])).filter(Boolean); const after = (item.afterPhotos || []).filter(Boolean);
+            const modal = document.createElement('div'); modal.id = 'correctionCompareModal'; modal.className = 'fixed inset-0 z-[90] bg-black/70 flex items-center justify-center p-4';
+            modal.innerHTML = `<div class="bg-white rounded-xl max-w-5xl w-full max-h-[90vh] overflow-y-auto p-5"><div class="flex justify-between items-center mb-4"><h3 class="font-bold text-lg text-gray-800">เปรียบเทียบภาพก่อน–หลังแก้ไข</h3><button type="button" onclick="document.getElementById('correctionCompareModal')?.remove()" class="text-gray-500 text-2xl">×</button></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><section><h4 class="font-semibold text-amber-800 mb-2">ก่อนแก้ไข (${before.length} รูป)</h4><div class="grid grid-cols-2 gap-2">${before.map((src,i)=>`<figure><img src="${src}" class="w-full h-40 object-cover rounded-lg border border-amber-200 cursor-pointer" onclick="openImageModal('${src}')"><figcaption class="text-xs text-center mt-1">มุมก่อนแก้ไข ${i+1}</figcaption></figure>`).join('') || '<p class="text-sm text-gray-400">ไม่มีรูปก่อนแก้ไข</p>'}</div></section><section><h4 class="font-semibold text-blue-800 mb-2">หลังแก้ไข (${after.length} รูป)</h4><div class="grid grid-cols-2 gap-2">${after.map((src,i)=>`<figure><img src="${src}" class="w-full h-40 object-cover rounded-lg border border-blue-200 cursor-pointer" onclick="openImageModal('${src}')"><figcaption class="text-xs text-center mt-1">มุมหลังแก้ไข ${i+1}</figcaption></figure>`).join('') || '<p class="text-sm text-gray-400">ยังไม่มีหลักฐานหลังแก้ไข</p>'}</div><p class="text-xs text-gray-600 mt-3">${reportEscape(item.afterNote || 'ยังไม่มีรายละเอียดหลังแก้ไข')}</p></section></div></div>`;
+            modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); }); document.body.appendChild(modal);
+        };
         async function findCorrectionDocRef(id, item) {
             const querySnapshot = await getDocs(collection(db, "corrections"));
             for (const docSnap of querySnapshot.docs) {
@@ -8500,12 +8643,15 @@ ${gpsText}`;
 
                 card.innerHTML = `
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3 border-b border-gray-100 pb-3 gap-2">
-                        <div>
+                        <div class="flex items-start gap-2">
+                            <input type="checkbox" class="history-record-checkbox mt-1.5 h-4 w-4 rounded border-gray-300 text-indigo-600" data-record-id="${reportEscape(record.id)}" onchange="updateSelectedHistoryCount()" aria-label="เลือก ${reportEscape(record.tower || 'รายการ')}" />
+                            <div>
                             <div class="flex items-center gap-2">
                                 <h3 class="font-bold text-lg text-blue-700">${record.tower === 'GENERIC-TOWER' ? 'บันทึกงานทั่วไป' : 'Tower ' + record.tower}</h3>
                                 <span class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-200 font-medium">${record.department || '-'}</span>
                             </div>
                             <p class="text-xs text-gray-500 mt-1">แนวสาย: <span class="font-semibold text-gray-700">${record.lineName || '-'}</span> | ผู้ส่งงาน: <span class="font-semibold text-gray-700">${record.inspector || 'ผู้รับเหมา'}</span></p>
+                            </div>
                         </div>
                         <div class="flex items-center gap-3">
                             <select id="inspection-status-${record.id}" class="text-xs font-semibold rounded-lg border border-gray-300 px-2 py-1.5 bg-white focus:ring-green-500 focus:border-green-500" title="เลือกสถานะงานที่จะบันทึก">
@@ -8523,13 +8669,86 @@ ${gpsText}`;
                             </button>
                         </div>
                     </div>
-                    <div class="flex gap-3 overflow-x-auto pb-2 hide-scroll">
+                    <div class="flex flex-wrap items-center gap-2 mt-3 text-xs">
+                        <span class="rounded-full bg-blue-50 text-blue-700 px-2.5 py-1">รูปภาพ ${Object.keys(record.photos || {}).filter(key => record.photos[key]).length}/5</span>
+                        <span class="rounded-full ${Object.keys(record.photos || {}).filter(key => record.photos[key]).length >= 5 ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-700'} px-2.5 py-1">${5 - Object.keys(record.photos || {}).filter(key => record.photos[key]).length > 0 ? `ขาด ${5 - Object.keys(record.photos || {}).filter(key => record.photos[key]).length} รูป` : 'รูปครบแล้ว'}</span>
+                        <span class="rounded-full bg-gray-50 text-gray-600 px-2.5 py-1">สถานะล่าสุดโดย ${reportEscape(record.statusUpdatedBy || (Array.isArray(record.statusHistory) && record.statusHistory.length ? record.statusHistory[record.statusHistory.length - 1].changedBy : '-') || '-')}</span>
+                        ${(() => { const meta = Object.values(record.photoMetadata || {}).find(m => m?.lat && m?.lng); return meta ? `<a href="https://www.google.com/maps?q=${encodeURIComponent(meta.lat + ',' + meta.lng)}" target="_blank" rel="noopener" class="rounded-full bg-red-50 text-red-700 px-2.5 py-1 hover:bg-red-100">เปิด Google Maps</a>` : '<span class="rounded-full bg-gray-50 text-gray-500 px-2.5 py-1">ไม่มีพิกัด GPS</span>'; })()}
+                    </div>
+                    <div class="mt-3 rounded-lg border border-gray-100 bg-gray-50 p-3">
+                        <div class="flex flex-col sm:flex-row gap-2 sm:items-end">
+                            <label class="flex-1 text-xs font-semibold text-gray-600">หมายเหตุภายใน
+                                <textarea id="history-note-${reportEscape(record.id)}" rows="2" class="mt-1 w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm bg-white" placeholder="บันทึกหมายเหตุสำหรับทีมงาน">${reportEscape(record.internalNote || '')}</textarea>
+                            </label>
+                            <button type="button" onclick="saveHistoryNote('${reportEscape(record.id)}')" class="px-3 py-2 rounded-lg bg-gray-700 hover:bg-gray-800 text-white text-xs font-semibold whitespace-nowrap">บันทึกหมายเหตุ</button>
+                        </div>
+                        ${record.noteUpdatedAt ? `<p class="text-[11px] text-gray-500 mt-1">แก้ไขล่าสุดโดย ${reportEscape(record.noteUpdatedBy || '-')} เมื่อ ${reportEscape(formatDateToThai(record.noteUpdatedAt))}</p>` : ''}
+                    </div>
+                    <div class="flex gap-3 overflow-x-auto pb-2 hide-scroll mt-3">
                         ${imagesHtml || '<p class="text-sm text-gray-400 italic">ไม่มีรูปภาพ</p>'}
                     </div>
                 `;
                 container.appendChild(card);
             });
         }
+
+        function getSelectedHistoryIds() {
+            return [...document.querySelectorAll('.history-record-checkbox:checked')].map(el => el.dataset.recordId).filter(Boolean);
+        }
+        window.updateSelectedHistoryCount = function() {
+            const count = getSelectedHistoryIds().length;
+            const el = document.getElementById('selectedHistoryCount');
+            if (el) el.textContent = `เลือกแล้ว ${count} รายการ`;
+            const boxes = [...document.querySelectorAll('.history-record-checkbox')];
+            const selectAll = document.getElementById('selectAllHistory');
+            if (selectAll) { selectAll.checked = boxes.length > 0 && boxes.every(box => box.checked); selectAll.indeterminate = count > 0 && count < boxes.length; }
+        };
+        window.toggleSelectAllHistory = function(checked) {
+            document.querySelectorAll('.history-record-checkbox').forEach(box => { box.checked = checked; });
+            updateSelectedHistoryCount();
+        };
+        window.saveBulkHistoryStatus = async function() {
+            const ids = getSelectedHistoryIds();
+            const status = document.getElementById('bulkHistoryStatus')?.value || '';
+            if (!ids.length || !inspectionStatuses.includes(status)) { showModal('error', 'ยังเลือกข้อมูลไม่ครบ', 'กรุณาเลือกรายการอย่างน้อย 1 รายการและเลือกสถานะใหม่'); return; }
+            const records = getHistoryRecords();
+            const selected = records.filter(r => ids.includes(r.id));
+            const user = getCurrentLoginUser().name || 'ไม่ระบุ';
+            const changedAt = new Date().toISOString();
+            const updates = [];
+            selected.forEach(record => {
+                const previous = record.status || 'รอตรวจสอบ';
+                if (previous === status) return;
+                const history = Array.isArray(record.statusHistory) ? [...record.statusHistory] : [{ status: previous, changedAt: record.timestamp || changedAt, changedBy: record.inspector || 'ข้อมูลเดิม' }];
+                history.push({ status, changedAt, changedBy: user });
+                record.status = status; record.statusUpdatedAt = changedAt; record.statusUpdatedBy = user; record.statusHistory = history;
+                updates.push(updateDoc(doc(db, 'inspections', record.id), { status, statusUpdatedAt: changedAt, statusUpdatedBy: user, statusHistory: history }));
+            });
+            if (!updates.length) { showModal('success', 'ไม่มีการเปลี่ยนแปลง', 'รายการที่เลือกมีสถานะนี้อยู่แล้ว'); return; }
+            try {
+                localStorage.setItem('weed_inspection_firebase_cache', JSON.stringify(records));
+                await Promise.all(updates);
+                loadHistoryData(); refreshDashboard();
+                await sendDiscordNotification(DISCORD_WEBHOOK_STATUS, `📌 **บันทึกสถานะงานตรวจแบบกลุ่ม**
+🔄 สถานะใหม่: **${status}**
+📋 จำนวน: **${updates.length} รายการ**
+👤 ผู้บันทึก: **${user}**
+🕒 เวลา: ${formatDateToThai(changedAt)}`);
+                showModal('success', 'บันทึกสถานะแบบกลุ่มสำเร็จ', `อัปเดตแล้ว ${updates.length} รายการ`);
+            } catch (error) { console.error('Bulk status error:', error); showModal('error', 'บันทึกสถานะแบบกลุ่มไม่สำเร็จ', 'บางรายการอาจยังไม่ได้บันทึก กรุณารีเฟรชแล้วตรวจสอบอีกครั้ง'); }
+        };
+        window.saveHistoryNote = async function(id) {
+            const textarea = document.getElementById(`history-note-${id}`);
+            const note = textarea?.value.trim() || '';
+            const records = getHistoryRecords(); const record = records.find(r => r.id === id); if (!record) return;
+            const noteUpdatedAt = new Date().toISOString(); const noteUpdatedBy = getCurrentLoginUser().name || 'ไม่ระบุ';
+            try {
+                await updateDoc(doc(db, 'inspections', id), { internalNote: note, noteUpdatedAt, noteUpdatedBy });
+                record.internalNote = note; record.noteUpdatedAt = noteUpdatedAt; record.noteUpdatedBy = noteUpdatedBy;
+                localStorage.setItem('weed_inspection_firebase_cache', JSON.stringify(records)); loadHistoryData();
+                showModal('success', 'บันทึกหมายเหตุสำเร็จ', 'บันทึกหมายเหตุภายในรายการแล้ว');
+            } catch (error) { console.error('History note error:', error); showModal('error', 'บันทึกหมายเหตุไม่สำเร็จ', 'ไม่สามารถบันทึกหมายเหตุลง Firebase ได้'); }
+        };
 
         window.openInspectionDetails = function(id) {
             const record = getHistoryRecords().find(item => item.id === id);
@@ -8649,11 +8868,11 @@ ${gpsText}`;
                 showModal('error', 'ไม่มีข้อมูลสำหรับส่งออก', 'กรุณาปรับตัวกรองหรือรอให้มีรายการประวัติก่อน');
                 return;
             }
-            const headers = ['วันที่ส่งงาน', 'หน่วยงาน', 'แนวสาย', 'หมายเลขเสา', 'สถานะงาน', 'ผู้ส่งงาน', 'จำนวนรูปภาพ', 'จำนวนรูปมี GPS', 'พิกัด GPS ของรูป', 'วันที่เปลี่ยนสถานะล่าสุด', 'ผู้เปลี่ยนสถานะล่าสุด'];
+            const headers = ['วันที่ส่งงาน', 'หน่วยงาน', 'แนวสาย', 'หมายเลขเสา', 'สถานะงาน', 'ผู้ส่งงาน', 'จำนวนรูปภาพ', 'จำนวนรูปมี GPS', 'พิกัด GPS ของรูป', 'วันที่เปลี่ยนสถานะล่าสุด', 'ผู้เปลี่ยนสถานะล่าสุด', 'หมายเหตุภายใน'];
             const rows = records.map(r => {
                 const gps = Object.values(r.photoMetadata || {}).filter(m => m?.lat && m?.lng).map(m => `${m.lat}, ${m.lng}`).join(' | ');
                 const gpsCount = Object.values(r.photoMetadata || {}).filter(m => m?.lat && m?.lng).length;
-                return [formatDateToThai(r.timestamp), r.department || '', r.lineName || '', r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : `Tower ${r.tower || ''}`, r.status || 'รอตรวจสอบ', r.inspector || '', Object.keys(r.photos || {}).length, gpsCount, gps, r.statusUpdatedAt ? formatDateToThai(r.statusUpdatedAt) : '', r.statusUpdatedBy || ''];
+                return [formatDateToThai(r.timestamp), r.department || '', r.lineName || '', r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : `Tower ${r.tower || ''}`, r.status || 'รอตรวจสอบ', r.inspector || '', Object.keys(r.photos || {}).length, gpsCount, gps, r.statusUpdatedAt ? formatDateToThai(r.statusUpdatedAt) : '', r.statusUpdatedBy || '', r.internalNote || ''];
             });
             const csv = '\ufeff' + [headers, ...rows].map(row => row.map(csvCell).join(',')).join('\r\n');
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
@@ -8679,7 +8898,7 @@ ${gpsText}`;
             }
             const rows = records.map((r, index) => {
                 const photos = Object.entries(r.photos || {}).filter(([, src]) => src).map(([key, src]) => `<figure><img src="${src}" alt="${reportEscape(key)}"><figcaption>${reportEscape(key.replace('photo', 'มุมที่ '))}</figcaption></figure>`).join('');
-                return `<article class="record"><h2>${index + 1}. ${reportEscape(r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + (r.tower || ''))}</h2><p><b>หน่วยงาน:</b> ${reportEscape(r.department || '-')} &nbsp; <b>แนวสาย:</b> ${reportEscape(r.lineName || '-')}</p><p><b>ผู้ส่งงาน:</b> ${reportEscape(r.inspector || '-')} &nbsp; <b>วันที่:</b> ${reportEscape(formatDateToThai(r.timestamp))} &nbsp; <b>สถานะ:</b> ${reportEscape(r.status || 'รอตรวจสอบ')}</p><div class="photos">${photos || '<p>ไม่มีรูปภาพ</p>'}</div></article>`;
+                return `<article class="record"><h2>${index + 1}. ${reportEscape(r.tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : 'Tower ' + (r.tower || ''))}</h2><p><b>หน่วยงาน:</b> ${reportEscape(r.department || '-')} &nbsp; <b>แนวสาย:</b> ${reportEscape(r.lineName || '-')}</p><p><b>ผู้ส่งงาน:</b> ${reportEscape(r.inspector || '-')} &nbsp; <b>วันที่:</b> ${reportEscape(formatDateToThai(r.timestamp))} &nbsp; <b>สถานะ:</b> ${reportEscape(r.status || 'รอตรวจสอบ')} &nbsp; <b>ผู้เปลี่ยนล่าสุด:</b> ${reportEscape(r.statusUpdatedBy || '-')}</p><p><b>หมายเหตุภายใน:</b> ${reportEscape(r.internalNote || '-')}</p><div class="photos">${photos || '<p>ไม่มีรูปภาพ</p>'}</div></article>`;
             }).join('');
             // เปิดหน้าต่างจาก event ของปุ่มโดยตรง หลีกเลี่ยง noopener/noreferrer
             // ซึ่งบางเบราว์เซอร์จะคืนค่า null และทำให้เข้าใจว่าเปิดป๊อปอัปไม่ได้
