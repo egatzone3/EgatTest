@@ -5933,7 +5933,51 @@
             const csv='\ufeff'+rows.map(row=>row.map(v=>'"'+String(v ?? '').replace(/"/g,'""')+'"').join(',')).join('\r\n'); const url=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); const link=document.createElement('a'); link.href=url; link.download=`ปฏิทินเอกสาร_PO_${new Date().toISOString().slice(0,10)}.csv`; document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
         };
         window.printPOCalendar = function() {
-            const items = getFilteredPOCalendarItems(); const rows = items.map((item,i)=>`<tr><td>${i+1}</td><td>${poSafe(poDueDateOnly(item.dueDate) || 'ยังไม่มีวันครบกำหนด')}</td><td>${poSafe(item.title || item.fileName || '')}</td><td>${poSafe(item.department || '-')}</td><td>${poSafe(item.responsible || 'ยังไม่ได้กำหนด')}</td><td>${poSafe(item.status || 'รอตรวจสอบ')}</td></tr>`).join(''); const win=window.open('','_blank'); if(!win){showModal('error','เปิดหน้าพิมพ์ไม่ได้','กรุณาอนุญาตป๊อปอัปแล้วลองใหม่');return;} win.document.write(`<html lang="th"><head><meta charset="utf-8"><title>ปฏิทินเอกสาร PO</title><style>body{font-family:Arial,sans-serif;padding:24px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #ccc;padding:8px;text-align:left}th{background:#eef2ff}@media print{button{display:none}}</style></head><body><h2>ปฏิทินเอกสาร PO</h2><p>พิมพ์เมื่อ ${new Date().toLocaleString('th-TH')}</p><table><thead><tr><th>ลำดับ</th><th>วันครบกำหนด</th><th>เอกสาร</th><th>หน่วยงาน</th><th>ผู้รับผิดชอบ</th><th>สถานะ</th></tr></thead><tbody>${rows}</tbody></table></body></html>`); win.document.close(); win.focus(); setTimeout(()=>win.print(),400);
+            const items = getFilteredPOCalendarItems();
+            const year = poCalendarDate.getFullYear();
+            const month = poCalendarDate.getMonth();
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const itemByDate = {};
+            items.filter(item => poCalendarDateKey(item.dueDate)).forEach(item => {
+                const key = poCalendarDateKey(item.dueDate);
+                (itemByDate[key] ||= []).push(item);
+            });
+            const weekdays = ['อา.','จ.','อ.','พ.','พฤ.','ศ.','ส.'];
+            const styleFor = (item, key) => {
+                const days = poCalendarDaysUntilDue(key);
+                if (item.status === 'อนุมัติ') return { bg: '#dbeafe', border: '#60a5fa', text: '#1e3a8a' };
+                if (item.status === 'ยกเลิก') return { bg: '#f3f4f6', border: '#9ca3af', text: '#6b7280' };
+                if (days < 0) return { bg: '#fecaca', border: '#f87171', text: '#991b1b' };
+                if (days <= 7) return { bg: '#fef3c7', border: '#fbbf24', text: '#92400e' };
+                return { bg: '#dcfce7', border: '#86efac', text: '#166534' };
+            };
+            const responsibleColor = item => {
+                const colors = ['#9333ea','#db2777','#0891b2','#ea580c','#7c3aed'];
+                const text = String(item.responsible || 'ยังไม่ได้กำหนด'); let hash = 0;
+                for (let i = 0; i < text.length; i++) hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
+                return colors[hash % colors.length];
+            };
+            let cells = '';
+            for (let i = 0; i < firstDay; i++) cells += '<div class="day empty"></div>';
+            for (let day = 1; day <= daysInMonth; day++) {
+                const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayItems = itemByDate[key] || [];
+                const first = dayItems[0];
+                const style = first ? styleFor(first, key) : { bg: '#fff', border: '#e5e7eb', text: '#111827' };
+                const today = key === poCalendarTodayKey() ? ' today' : '';
+                const entries = dayItems.slice(0, 3).map(item => `<div class="entry" style="border-left-color:${responsibleColor(item)};color:${styleFor(item, key).text}"><div class="entry-title">• ${poSafe(item.title || item.fileName || 'เอกสาร')}</div><div class="entry-owner">♟ ${poSafe(item.responsible || 'ยังไม่ได้กำหนด')}</div></div>`).join('');
+                const more = dayItems.length > 3 ? `<div class="more">+ อีก ${dayItems.length - 3} รายการ</div>` : '';
+                cells += `<div class="day${today}" style="background:${style.bg};border-color:${style.border};color:${style.text}"><div class="day-number">${day}</div>${entries}${more}</div>`;
+            }
+            const noDue = items.filter(item => !poCalendarDateKey(item.dueDate));
+            const noDueNote = noDue.length ? `<div class="no-due"><b>รายการที่ยังไม่มีวันครบกำหนด (${noDue.length})</b>: ${noDue.slice(0, 8).map(item => poSafe(item.title || item.fileName || 'เอกสาร')).join(' · ')}${noDue.length > 8 ? ' · ...' : ''}</div>` : '';
+            const win = window.open('', '_blank');
+            if (!win) { showModal('error','เปิดหน้าพิมพ์ไม่ได้','กรุณาอนุญาตป๊อปอัปแล้วลองใหม่'); return; }
+            win.document.write(`<html lang="th"><head><meta charset="utf-8"><title>ปฏิทินเอกสาร PO - ${poCalendarThaiMonth(poCalendarDate)}</title><style>
+                *{box-sizing:border-box}body{font-family:Arial,'Tahoma',sans-serif;color:#263238;margin:0;padding:18px;background:#fff}.header{text-align:center;margin-bottom:10px}.title{font-size:22px;font-weight:700;color:#286447;margin-bottom:10px}.legend{display:flex;flex-wrap:wrap;gap:14px;justify-content:flex-start;font-size:12px;color:#4b5563;margin-bottom:12px}.legend span{display:inline-flex;align-items:center;gap:4px}.dot{width:13px;height:13px;border-radius:4px;display:inline-block}.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.weekday{text-align:center;font-weight:700;font-size:12px;color:#4b5563;padding:3px 0}.day{height:104px;border:1px solid;border-radius:9px;padding:5px 6px;overflow:hidden}.day.empty{background:#fafafa;border-color:transparent}.day.today{outline:2px solid #6366f1;outline-offset:0}.day-number{font-size:13px;font-weight:700;margin-bottom:4px}.entry{border-left:4px solid;padding-left:4px;margin:2px 0;font-size:10px;line-height:1.25;overflow:hidden}.entry-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.entry-owner{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:9px;opacity:.82}.more{font-size:9px;margin-top:3px;color:#4b5563}.no-due{margin-top:12px;padding:8px 10px;border:1px solid #d1d5db;border-radius:7px;font-size:11px;color:#4b5563}.print-meta{text-align:right;color:#6b7280;font-size:10px;margin-top:8px}@page{size:A4 landscape;margin:10mm}@media print{body{padding:0}.day{height:36mm}.no-due{page-break-inside:avoid}}
+            </style></head><body><div class="header"><div class="title">${poCalendarThaiMonth(poCalendarDate)}</div><div class="legend"><span><i class="dot" style="background:#bbf7d0"></i>ปกติ</span><span><i class="dot" style="background:#fde68a"></i>ใกล้ครบกำหนด</span><span><i class="dot" style="background:#fecaca"></i>ครบกำหนด/เกินกำหนด</span><span><i class="dot" style="background:#93c5fd"></i>อนุมัติ</span><span><i class="dot" style="background:#9333ea"></i>แถบสีผู้รับผิดชอบ</span></div></div><div class="grid">${weekdays.map(day => `<div class="weekday">${day}</div>`).join('')}${cells}</div>${noDueNote}<div class="print-meta">พิมพ์เมื่อ ${new Date().toLocaleString('th-TH')} · แสดง ${items.length} รายการตามตัวกรองปัจจุบัน</div></body></html>`);
+            win.document.close(); win.focus(); setTimeout(() => win.print(), 400);
         };
         window.openPOCalendarDetails = function(fileId) {
             const item = poDocuments.find(document => document.fileId === fileId);
