@@ -29,6 +29,9 @@
         #loginGate { background: linear-gradient(135deg, #eef8f0 0%, #dcefe0 100%); }
         body.login-locked > *:not(#loginGate) { display: none !important; }
         body.login-locked { overflow: hidden; }
+        #appLoadingOverlay { background: rgba(238, 246, 239, 0.94); backdrop-filter: blur(3px); }
+        .app-loading-spinner { width: 42px; height: 42px; border: 4px solid #cce6d2; border-top-color: #2f6f4e; border-radius: 9999px; animation: app-loading-spin .8s linear infinite; }
+        @keyframes app-loading-spin { to { transform: rotate(360deg); } }
         .login-card { box-shadow: 0 20px 50px rgba(36, 88, 62, 0.18); }
 
         /* Natural green theme */
@@ -82,6 +85,16 @@
     </section>
 
 
+    <div id="appLoadingOverlay" class="hidden fixed inset-0 z-[90] items-center justify-center p-4" role="status" aria-live="polite" aria-busy="true">
+        <div class="w-full max-w-sm rounded-2xl bg-white border border-green-100 shadow-xl p-6 text-center">
+            <div class="app-loading-spinner mx-auto mb-4"></div>
+            <h2 class="text-lg font-bold text-green-800">กำลังโหลดข้อมูล...</h2>
+            <p id="appLoadingStep" class="mt-2 text-sm font-semibold text-gray-700">กำลังเตรียมระบบ</p>
+            <p id="appLoadingDetail" class="mt-1 text-xs text-gray-500">กรุณารอสักครู่</p>
+            <div class="mt-4 h-2 overflow-hidden rounded-full bg-green-100"><div id="appLoadingProgress" class="h-full rounded-full bg-green-600 transition-all duration-300" style="width: 8%"></div></div>
+            <p id="appLoadingPercent" class="mt-2 text-[11px] text-gray-400">8%</p>
+        </div>
+    </div>
     <header class="bg-blue-700 text-white shadow-md sticky top-0 z-50">
         <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center gap-3">
@@ -1068,6 +1081,7 @@
                 document.getElementById('loginGate').classList.add('hidden');
                 document.getElementById('headerSubtitle').textContent = `ผู้ใช้งาน: ${user.name} | ${user.unit}`;
                 try { await sendLoginLog(user); } catch (err) { console.error('Login log error:', err); }
+                await initializeAppAfterLogin();
                 maybeOfferFormDraftRecovery();
             });
         }
@@ -5205,13 +5219,51 @@
             }
         }
 
-        window.onload = async function() {
-            syncCloudData();
+        let appInitialLoadStarted = false;
+        function setAppLoading(step, detail = '', progress = 0) {
+            const overlay = document.getElementById('appLoadingOverlay');
+            if (overlay) { overlay.classList.remove('hidden'); overlay.classList.add('flex'); }
+            const stepEl = document.getElementById('appLoadingStep');
+            const detailEl = document.getElementById('appLoadingDetail');
+            const progressEl = document.getElementById('appLoadingProgress');
+            const percentEl = document.getElementById('appLoadingPercent');
+            if (stepEl) stepEl.textContent = step;
+            if (detailEl) detailEl.textContent = detail;
+            if (progressEl) progressEl.style.width = `${Math.max(0, Math.min(100, progress))}%`;
+            if (percentEl) percentEl.textContent = `${Math.round(progress)}%`;
+        }
+        function hideAppLoading() {
+            const overlay = document.getElementById('appLoadingOverlay');
+            if (!overlay) return;
+            overlay.classList.add('hidden');
+            overlay.classList.remove('flex');
+        }
+        async function initializeAppAfterLogin() {
+            if (appInitialLoadStarted) return;
+            appInitialLoadStarted = true;
+            setAppLoading('กำลังเตรียมระบบ', 'ตรวจสอบข้อมูลการเข้าสู่ระบบ', 15);
+            try {
+                setAppLoading('กำลังโหลดประวัติการตรวจ', 'กำลังเชื่อมต่อ Firebase และเตรียมข้อมูลล่าสุด', 35);
+                await syncCloudData();
+                setAppLoading('กำลังเตรียมประวัติแจ้งแก้ไข', 'เปิดการติดตามข้อมูลแบบเรียลไทม์', 58);
+                initCorrectionRealtimeListener();
+                setAppLoading('กำลังเตรียมข้อมูลในเครื่อง', 'ตรวจสอบรายการล่าสุดและแบบร่างที่บันทึกไว้', 80);
+                updateCorrectionAutoDate();
+                renderRecentLocations();
+                setAppLoading('พร้อมใช้งาน', 'สามารถเลือกเมนูหรือเริ่มบันทึกงานได้', 100);
+                await new Promise(resolve => setTimeout(resolve, 250));
+            } catch (error) {
+                console.warn('เตรียมระบบหลังเข้าสู่ระบบไม่สมบูรณ์:', error);
+                setAppLoading('พร้อมใช้งานแบบออฟไลน์', 'ใช้ข้อมูลที่บันทึกไว้ในเครื่อง และจะลองเชื่อมต่อใหม่เมื่อเปิดเมนู', 100);
+                await new Promise(resolve => setTimeout(resolve, 700));
+            } finally {
+                hideAppLoading();
+                console.log('ระบบพร้อมใช้งาน ตรวจสอบสถานะสมบูรณ์');
+            }
+        }
+        window.onload = function() {
             updateCorrectionAutoDate();
-            initCorrectionRealtimeListener();
-            try { await loadPOUsers(); } catch (error) { console.warn('โหลดรายชื่อผู้ใช้งานเริ่มต้นไม่สำเร็จ:', error); }
             renderRecentLocations();
-            console.log("ระบบพร้อมใช้งาน ตรวจสอบสถานะสมบูรณ์");
         };
 
         function getFormDraft() {
@@ -5607,6 +5659,15 @@
             populateCorrectionReporterSelect();
         }
 
+        document.getElementById('inspectorName')?.addEventListener('focus', () => {
+            if (poUsers.length) return;
+            const select = document.getElementById('inspectorName');
+            if (select) select.innerHTML = '<option value="">กำลังโหลดรายชื่อผู้ใช้งาน...</option>';
+            loadPOUsers().catch(error => {
+                console.warn('โหลดรายชื่อผู้ปฏิบัติงานไม่สำเร็จ:', error);
+                if (select) select.innerHTML = '<option value="">โหลดรายชื่อไม่สำเร็จ</option>';
+            });
+        });
         function populateCorrectionReporterSelect() {
             const select = document.getElementById('corrReporterSelect');
             if (!select) return;
@@ -6136,17 +6197,23 @@
         function poMissingDueDate(item) { return !String(item?.dueDate || '').trim(); }
         window.loadPODocuments = async function() {
             const list = document.getElementById('poDocumentList');
+            setAppLoading('กำลังโหลดไฟล์เอกสาร TOR/PO', 'กำลังเตรียมข้อมูลรายการเอกสาร', 25);
             if (list) list.innerHTML = '<p class="text-sm text-gray-400">กำลังโหลดรายการเอกสาร...</p>';
             try {
                 if (!poUsers.length) {
+                    setAppLoading('กำลังโหลดรายชื่อผู้ใช้งาน', 'ใช้สำหรับผู้รับผิดชอบ ผู้รับเหมา และคณะกรรมการ', 45);
                     try { await loadPOUsers(); } catch (userError) { console.warn('โหลดรายชื่อผู้รับผิดชอบไม่สำเร็จ:', userError); }
                 }
+                setAppLoading('กำลังโหลดรายการเอกสาร', 'กำลังอ่านข้อมูลจาก Google Drive และ Google Sheets', 70);
                 const loaded = await poApiList(document.getElementById('poSearchInput')?.value || '');
                 poDocuments = Array.isArray(loaded) ? loaded : [];
                 updatePOHistoryCount();
                 poDocumentsLoaded = true;
+                setAppLoading('พร้อมใช้งาน', `พบเอกสาร ${poDocuments.length} รายการ`, 100);
+                setTimeout(hideAppLoading, 250);
             } catch (error) {
                 console.error('Load PO documents error:', error);
+                hideAppLoading();
                 poDocuments = [];
                 updatePOHistoryCount();
                 if (list) list.innerHTML = `<p class="text-sm text-red-500">โหลดรายการไม่สำเร็จ: ${poSafe(error?.message || 'ไม่ทราบสาเหตุ')}</p>`;
