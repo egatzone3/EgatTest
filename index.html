@@ -655,7 +655,7 @@
                 <button type="button" onclick="exportPOSummaryReport()" class="bg-purple-600 text-white hover:bg-purple-700 px-3 py-2 rounded-lg text-sm font-semibold">รายงานสรุป</button>
                 <button type="button" onclick="backupPOData()" class="bg-blue-600 text-white hover:bg-blue-700 px-3 py-2 rounded-lg text-sm font-semibold">สำรองข้อมูล</button>
                 <button type="button" onclick="togglePOTrash()" class="bg-red-600 text-white hover:bg-red-700 px-3 py-2 rounded-lg text-sm font-semibold">ถังขยะ</button>
-                <button type="button" onclick="togglePOAudit()" class="bg-gray-700 text-white hover:bg-gray-800 px-3 py-2 rounded-lg text-sm font-semibold">ประวัติการเปลี่ยนแปลง</button>
+                <button type="button" onclick="togglePOAudit()" class="bg-gray-700 text-white hover:bg-gray-800 px-3 py-2 rounded-lg text-sm font-semibold">ประวัติการใช้งาน / เปลี่ยนแปลง</button>
             </div>
         </div>
 
@@ -705,7 +705,7 @@
             <div id="poTrashList" class="space-y-3"><p class="text-sm text-gray-400">ยังไม่ได้โหลดข้อมูล</p></div>
         </section>
         <section id="poAuditPanel" class="bg-white rounded-xl shadow-sm border border-gray-300 p-5 hidden">
-            <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-800">ประวัติการเปลี่ยนแปลง</h3><button type="button" onclick="loadPOAudit()" class="text-sm text-gray-700">รีเฟรช</button></div>
+            <div class="flex justify-between items-center mb-4"><h3 class="font-bold text-gray-800">ประวัติการใช้งานเอกสาร</h3><button type="button" onclick="loadPOAudit()" class="text-sm text-gray-700">รีเฟรช</button></div>
             <div id="poAuditList" class="space-y-2"><p class="text-sm text-gray-400">ยังไม่ได้โหลดข้อมูล</p></div>
         </section>
     </main>
