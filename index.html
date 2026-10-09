@@ -668,7 +668,7 @@
             <div class="relative">
                 <div class="flex flex-col sm:flex-row gap-3">
                     <div class="relative flex-1">
-                        <input id="poSearchInput" type="search" oninput="renderPODocuments(1)" class="w-full border border-gray-300 rounded-lg p-3 pl-10 text-sm focus:border-green-600 focus:ring-green-600" placeholder="ค้นหาชื่อเอกสาร ประเภท รายละเอียด หรือชื่อไฟล์...">
+                        <input id="poSearchInput" type="search" oninput="schedulePODocumentSearch()" class="w-full border border-gray-300 rounded-lg p-3 pl-10 text-sm focus:border-green-600 focus:ring-green-600" placeholder="ค้นหาชื่อเอกสาร ประเภท รายละเอียด หรือชื่อไฟล์...">
                         <span class="absolute left-3 top-3 text-gray-400">⌕</span>
                     </div>
                     <select id="poYearFilter" onchange="renderPODocuments(1)" class="border border-gray-300 rounded-lg p-3 text-sm sm:w-40 focus:border-green-600 focus:ring-green-600">
@@ -5521,7 +5521,11 @@
         let poDocuments = [];
         let poDocumentsLoaded = false;
         const PO_PAGE_SIZE = 5;
+        const PO_SERVER_PAGE_SIZE = 20;
         let poCurrentPage = 1;
+        let poServerPage = 1;
+        let poServerTotal = 0;
+        let poServerTotalPages = 1;
         const PO_DOCUMENT_CACHE_KEY = 'weed_po_documents_cache_v1';
         const PO_DOCUMENT_CACHE_TTL_MS = 60 * 1000;
         function readPODocumentCache() {
@@ -5530,12 +5534,17 @@
                 return cached && Array.isArray(cached.documents) ? cached : null;
             } catch (_) { return null; }
         }
-        function writePODocumentCache(documents) {
-            try { localStorage.setItem(PO_DOCUMENT_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), documents })); } catch (_) { /* พื้นที่จัดเก็บเต็ม ให้ใช้ข้อมูลออนไลน์ต่อ */ }
+        function writePODocumentCache(documents, meta = {}) {
+            try { localStorage.setItem(PO_DOCUMENT_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), documents, ...meta })); } catch (_) { /* พื้นที่จัดเก็บเต็ม ให้ใช้ข้อมูลออนไลน์ต่อ */ }
+        }
+        let poSearchTimer = null;
+        function schedulePODocumentSearch() {
+            clearTimeout(poSearchTimer);
+            poSearchTimer = setTimeout(() => loadPODocuments({ force: true, page: 1 }), 350);
         }
         function updatePOHistoryCount() {
             const badge = document.getElementById('poHistoryBadgeCount');
-            if (badge) badge.textContent = String(Array.isArray(poDocuments) ? poDocuments.length : 0);
+            if (badge) badge.textContent = String(poServerTotal || (Array.isArray(poDocuments) ? poDocuments.length : 0));
         }
         let poCalendarDate = new Date();
         let poCalendarMode = 'calendar';
@@ -5628,19 +5637,23 @@
             }
         }
 
-        async function poApiList(query = '') {
-            const response = await fetch(`${PO_APPS_SCRIPT_URL}?q=${encodeURIComponent(query)}&_=${Date.now()}`, {
-                method: 'GET',
-                mode: 'cors',
-                cache: 'no-store',
-                redirect: 'follow'
+        async function poApiList(query = '', page = 1, limit = PO_SERVER_PAGE_SIZE) {
+            const response = await fetch(`${PO_APPS_SCRIPT_URL}?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}&_=${Date.now()}`, {
+                method: 'GET', mode: 'cors', cache: 'no-store', redirect: 'follow'
             });
             if (!response.ok) throw new Error(`Google Apps Script ตอบกลับสถานะ ${response.status}`);
             const payload = await response.json();
             if (!payload?.ok) throw new Error(payload?.error || 'โหลดข้อมูลไม่สำเร็จ');
-            return Array.isArray(payload.documents) ? payload.documents : [];
+            return {
+                documents: Array.isArray(payload.documents) ? payload.documents : [],
+                total: Number(payload.total || 0),
+                page: Number(payload.page || page),
+                pageSize: Number(payload.pageSize || limit),
+                totalPages: Number(payload.totalPages || 1),
+                hasNext: Boolean(payload.hasNext),
+                hasPrevious: Boolean(payload.hasPrevious)
+            };
         }
-
         // ผู้รับเหมาใช้รายชื่อจากชีตผู้ใช้งานตั้งแต่แถวที่ 33 เป็นต้นไป (นับรวมแถวหัวตาราง)
         function getPOContractorUsers() { return poUsers.slice(31); }
         const PO_USERS_CACHE_KEY = 'weed_po_users_cache_v1';
@@ -6240,14 +6253,18 @@
         window.loadPODocuments = async function(options = {}) {
             const forceRefresh = options?.force === true;
             const query = document.getElementById('poSearchInput')?.value || '';
+            const requestedServerPage = Math.max(1, Number(options?.page || poServerPage || 1));
             const list = document.getElementById('poDocumentList');
-            const cached = !query.trim() ? readPODocumentCache() : null;
-            if (!forceRefresh && !query.trim() && cached && (!poDocumentsLoaded || !poDocuments.length)) {
+            const cached = !query.trim() && requestedServerPage === 1 ? readPODocumentCache() : null;
+            if (!forceRefresh && requestedServerPage === 1 && !query.trim() && cached && (!poDocumentsLoaded || !poDocuments.length)) {
                 poDocuments = cached.documents;
+                poServerPage = Number(cached.page || 1);
+                poServerTotal = Number(cached.total || poDocuments.length);
+                poServerTotalPages = Number(cached.totalPages || 1);
                 updatePOHistoryCount();
                 poDocumentsLoaded = true;
             }
-            if (!forceRefresh && !query.trim() && cached && Date.now() - Number(cached.savedAt || 0) < PO_DOCUMENT_CACHE_TTL_MS) {
+            if (!forceRefresh && requestedServerPage === 1 && !query.trim() && cached && Date.now() - Number(cached.savedAt || 0) < PO_DOCUMENT_CACHE_TTL_MS) {
                 renderPODocuments();
                 setAppLoading('พร้อมใช้งาน', `แสดงข้อมูลล่าสุด ${poDocuments.length} รายการ`, 100);
                 setTimeout(hideAppLoading, 180);
@@ -6261,12 +6278,16 @@
                     try { await loadPOUsers(); } catch (userError) { console.warn('โหลดรายชื่อผู้รับผิดชอบไม่สำเร็จ:', userError); }
                 }
                 setAppLoading('กำลังโหลดรายการเอกสาร', 'กำลังอ่านข้อมูลจาก Google Drive และ Google Sheets', 70);
-                const loaded = await poApiList(query);
-                poDocuments = Array.isArray(loaded) ? loaded : [];
-                writePODocumentCache(poDocuments);
+                const result = await poApiList(query, requestedServerPage, PO_SERVER_PAGE_SIZE);
+                poDocuments = Array.isArray(result.documents) ? result.documents : [];
+                poServerPage = result.page;
+                poServerTotal = result.total;
+                poServerTotalPages = result.totalPages;
+                if (poServerPage === 1 && !query.trim()) writePODocumentCache(poDocuments, { page: poServerPage, total: poServerTotal, totalPages: poServerTotalPages });
                 updatePOHistoryCount();
                 poDocumentsLoaded = true;
-                setAppLoading('พร้อมใช้งาน', `พบเอกสาร ${poDocuments.length} รายการ`, 100);
+                poCurrentPage = 1;
+                setAppLoading('พร้อมใช้งาน', `ชุดที่ ${poServerPage}/${poServerTotalPages} · พบทั้งหมด ${poServerTotal} รายการ`, 100);
                 setTimeout(hideAppLoading, 250);
             } catch (error) {
                 console.error('Load PO documents error:', error);
@@ -6295,6 +6316,12 @@
             }
             buttons.push(addButton('ถัดไป ›', Math.min(totalPages, poCurrentPage + 1), poCurrentPage === totalPages));
             return `<div class="flex flex-wrap items-center justify-center gap-1.5 mt-5 pt-4 border-t border-gray-100"><span class="text-xs text-gray-500 mr-1">หน้า ${poCurrentPage} / ${totalPages} (${totalItems} รายการ)</span>${buttons.join('')}</div>`;
+        }
+        function renderPOServerPagination() {
+            if (poServerTotalPages <= 1) return '';
+            const previousDisabled = poServerPage <= 1 ? 'disabled opacity-40 cursor-not-allowed' : '';
+            const nextDisabled = poServerPage >= poServerTotalPages ? 'disabled opacity-40 cursor-not-allowed' : '';
+            return `<div class="flex flex-wrap items-center justify-center gap-2 mt-2 pt-3 border-t border-teal-100"><span class="text-xs text-teal-700 font-semibold">ชุดข้อมูล ${poServerPage} / ${poServerTotalPages} · ทั้งหมด ${poServerTotal} รายการ</span><button type="button" ${previousDisabled} onclick="loadPODocuments({ force: true, page: ${Math.max(1, poServerPage - 1)} })" class="px-3 py-1.5 rounded-lg border border-teal-200 text-xs font-semibold text-teal-700 hover:bg-teal-50">‹ ชุดก่อนหน้า</button><button type="button" ${nextDisabled} onclick="loadPODocuments({ force: true, page: ${Math.min(poServerTotalPages, poServerPage + 1)} })" class="px-3 py-1.5 rounded-lg border border-teal-200 text-xs font-semibold text-teal-700 hover:bg-teal-50">ชุดถัดไป ›</button></div>`;
         }
         window.renderPODocuments = function(page) {
             if (Number.isInteger(page) && page > 0) poCurrentPage = page;
@@ -6345,7 +6372,7 @@
             if (!filtered.length) { list.innerHTML = `<p class="text-sm text-gray-400">${poDocuments.length ? 'ไม่พบเอกสารที่ค้นหา' : 'ยังไม่มีเอกสาร'}</p>`; return; }
             const grouped = pageItems.reduce((groups, item) => { const key = String(item.year || 'ไม่ระบุปี'); (groups[key] ||= []).push(item); return groups; }, {});
                 list.innerHTML = Object.keys(grouped).sort((a, b) => Number(b) - Number(a)).map(year => `<div class="pt-2"><h4 class="text-lg font-bold text-green-800 border-b border-green-100 pb-2 mb-3">ปี ${poSafe(year)} <span class="text-xs font-normal text-gray-500">(${grouped[year].length} เอกสาร)</span></h4><div class="space-y-3">${grouped[year].map(item => `<article id="po-doc-${item.fileId}" class="border border-gray-200 rounded-xl p-4 hover:border-green-300 transition"><div class="flex flex-col sm:flex-row gap-3 sm:items-start sm:justify-between"><div class="flex gap-3 min-w-0 flex-1 w-full"><div class="text-3xl shrink-0">${poFileIcon(item.fileType || item.fileName || '')}</div><div class="flex-1 min-w-0 w-full"><h4 class="font-bold text-green-800 break-words">${poSafe(item.title || item.fileName || 'ไม่มีชื่อเอกสาร')}</h4><p class="text-xs text-gray-500 mt-1">${poSafe(item.category || 'เอกสาร')} | ปี ${poSafe(item.year || '-')} | หน่วยงาน ${poSafe(item.department || '-')} | ${formatFileSize(item.fileSize)} | ${poSafe(item.fileName || '')}</p><p class="text-xs text-gray-600 mt-2">${poSafe(item.description || 'ไม่มีรายละเอียด')}</p>${poAttachmentStatusHtml(item)}${poMissingDueDate(item) ? '<p class="text-xs text-red-600 font-semibold mt-1">⚠ ยังไม่มีวันครบกำหนด</p>' : ''}${item.ecmNumber ? `<p class="text-xs text-gray-600 mt-1">เลขที่ ECM: <span class="font-semibold">${poSafe(item.ecmNumber)}</span></p>` : ''}${item.startDate || item.endDate ? `<p class="text-xs text-gray-600 mt-1">ช่วงงาน: ${poSafe(poDueDateOnly(item.startDate) || '-')} - ${poSafe(poDueDateOnly(item.endDate) || '-')}</p>` : ''}${Array.isArray(item.attachments) && item.attachments.length ? `<details class="mt-2 w-full border border-green-100 rounded-lg overflow-hidden"><summary class="cursor-pointer bg-green-50 px-3 py-2 text-xs font-semibold text-green-800">ไฟล์แนบ (${item.attachments.length}) <span class="font-normal text-green-600">กดเพื่อขยาย</span></summary><div class="w-full p-2 space-y-2">${item.attachments.map(file => `<div class="flex items-center gap-2 w-full min-w-0"><span class="basis-0 flex-1 min-w-[70px] overflow-hidden text-ellipsis whitespace-nowrap text-xs text-gray-700" title="${poSafe(file.fileName || '')}"><span class="font-semibold text-green-700">${poSafe(file.type || 'ไฟล์')}</span> · ${poSafe(file.fileName || 'ไม่มีชื่อไฟล์')}</span><div class="flex items-center gap-1 shrink-0"><button type="button" onclick="previewPOFile('${item.fileId}','${file.fileId}')" class="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 text-[11px] font-semibold hover:bg-blue-100 whitespace-nowrap">ดู</button><button type="button" onclick="downloadPOFile('${item.fileId}','${file.fileId}')" class="px-2 py-1 rounded-lg bg-gray-100 text-gray-700 text-[11px] font-semibold hover:bg-gray-200 whitespace-nowrap">โหลด</button><button type="button" onclick="deletePOAttachment('${item.fileId}','${file.fileId}')" class="px-2 py-1 rounded-lg bg-red-50 text-red-600 text-[11px] font-semibold hover:bg-red-100 whitespace-nowrap">ลบ</button></div></div>`).join('')}</div></details>` : '<p class="text-xs text-gray-400 mt-2">ยังไม่มีไฟล์แนบเพิ่ม</p>'}<p class="text-[11px] text-gray-400 mt-2">เพิ่มโดย ${poSafe(item.uploadedByName || '-')} เมื่อ ${poFormatDate(item.uploadedAt)}</p><p class="text-xs text-gray-600 mt-2">ผู้รับผิดชอบ: <span class="font-semibold">${poSafe(item.responsible || 'ยังไม่ได้กำหนด')}</span> · ผู้รับเหมา: <span class="font-semibold">${poSafe(item.contractor || 'ยังไม่ได้กำหนด')}</span></p><div class="mt-2">${poDueBadge(item)}</div><details class="mt-2 text-xs text-gray-600"><summary class="cursor-pointer font-semibold text-green-700">คณะกรรมการตรวจรับงาน</summary><ol class="list-decimal list-inside mt-1 space-y-1">${[item.committee1, item.committee2, item.committee3].filter(Boolean).map(name => `<li>${poSafe(name)}</li>`).join('') || '<li>ยังไม่ได้กำหนด</li>'}</ol></details><span class="inline-block mt-2 px-2 py-1 rounded-full text-xs font-semibold ${item.status === 'ปิดงาน' ? 'bg-gray-100 text-gray-700' : item.status === 'อนุมัติแล้ว' ? 'bg-green-100 text-green-700' : item.status === 'แจ้งเข้าทำงาน' ? 'bg-blue-100 text-blue-700' : item.status === 'ตรวจรับแล้ว' ? 'bg-purple-100 text-purple-700' : 'bg-yellow-100 text-yellow-700'}">สถานะ: ${poSafe(item.status || 'รอตรวจสอบ')}</span>${Array.isArray(item.editHistory) && item.editHistory.length ? `<details class="mt-2 text-xs text-gray-600"><summary class="cursor-pointer font-semibold text-teal-700">ประวัติแก้ไขเอกสาร (${item.editHistory.length})</summary><div class="mt-1 space-y-1 border-l-2 border-teal-200 pl-2">${item.editHistory.slice().reverse().slice(0, 10).map(history => `<div><span class="font-semibold">${poSafe(history.event || "แก้ไข")}</span> · ${poSafe(history.userName || "-")} · ${poFormatDate(history.time)}<div class="text-gray-500">${poSafe(history.detail || "")}</div></div>`).join("")}</div></details>` : ""}</div></div><div class="flex flex-col gap-2 shrink-0"><div class="flex gap-2 flex-wrap"><button type="button" onclick="previewPOFile('${item.fileId}','${item.fileId}')" class="bg-green-700 hover:bg-green-800 text-white px-3 py-2 rounded-lg text-xs font-semibold">ดูตัวอย่าง</button><button type="button" onclick="downloadPOFile('${item.fileId}','${item.fileId}')" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-lg text-xs font-semibold">ดาวน์โหลด</button><button type="button" onclick="downloadPOZip('${item.fileId}')" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">ZIP ทั้งหมด</button><button type="button" onclick="showPOQRCode('${item.fileId}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">QR Code</button></div><div class="flex gap-2 flex-wrap"><button type="button" onclick="editPODocument('${item.fileId}')" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">แก้ไข</button><button type="button" onclick="editPOStatus('${item.fileId}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">แก้ไขสถานะ</button><button type="button" onclick="addPOAttachment('${item.fileId}')" class="bg-orange-500 hover:bg-orange-600 text-white px-3 py-2 rounded-lg text-xs font-semibold">แนบเพิ่ม</button></div><div class="flex gap-2 flex-wrap"><button type="button" onclick="editPODueDate('${item.fileId}')" class="bg-amber-500 hover:bg-amber-600 text-white px-3 py-2 rounded-lg text-xs font-semibold">แก้ไขวันครบกำหนด</button><button type="button" onclick="editPOContractor('${item.fileId}')" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded-lg text-xs font-semibold">แก้ไขผู้รับเหมา</button><button type="button" onclick="deletePODocument('${item.fileId}')" class="bg-gray-100 hover:bg-red-50 text-gray-600 hover:text-red-600 px-3 py-2 rounded-lg text-xs font-semibold">ลบ</button></div></div></div></div></article>`).join('')}</div></div>`).join('');
-            list.insertAdjacentHTML('beforeend', renderPOPagination(totalPages, filtered.length));
+            list.insertAdjacentHTML('beforeend', renderPOPagination(totalPages, filtered.length) + renderPOServerPagination());
         };
 
         window.editPODueDate = async function(fileId) {
@@ -6722,7 +6749,8 @@
             renderDashboardTracking(inspections, corrections);
             if (!poDocumentsLoaded) {
                 try {
-                    const loadedPO = await poApiList('');
+                    const loadedPOResult = await poApiList('', 1, 100);
+                    const loadedPO = loadedPOResult.documents;
                     poDocuments = Array.isArray(loadedPO) ? loadedPO : [];
                     updatePOHistoryCount();
                     poDocumentsLoaded = true;
@@ -6833,7 +6861,8 @@
                     poDocumentsLoaded = true;
                     updatePOHistoryCount();
                 } else {
-                    documents = await poApiList('');
+                    const dashboardResult = await poApiList('', 1, 100);
+                    documents = dashboardResult.documents;
                     poDocuments = Array.isArray(documents) ? documents : [];
                     writePODocumentCache(poDocuments);
                     poDocumentsLoaded = true;
