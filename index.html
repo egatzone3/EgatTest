@@ -6560,9 +6560,14 @@
             'คณะกรรมการคนที่ 1': 'committee1', 'committee1': 'committee1', 'คณะกรรมการคนที่ 2': 'committee2', 'committee2': 'committee2', 'คณะกรรมการคนที่ 3': 'committee3', 'committee3': 'committee3',
             'สถานะ': 'status', 'status': 'status'
         };
+        function normalizePOImportHeader(key) {
+            const raw = String(key || '').trim();
+            const withoutAlias = raw.replace(/\s*\([^)]*\)\s*/g, '').trim();
+            return poImportHeaderMap[raw] || poImportHeaderMap[withoutAlias] || poImportHeaderMap[raw.split('(')[0].trim()] || '';
+        }
         function normalizePOImportRows(rows) {
             return rows.map(source => Object.entries(source).reduce((row, [key, value]) => {
-                const mapped = poImportHeaderMap[String(key || '').trim()];
+                const mapped = normalizePOImportHeader(key);
                 if (mapped) row[mapped] = String(value ?? '').trim();
                 return row;
             }, {})).filter(row => Object.values(row).some(Boolean));
@@ -6590,9 +6595,12 @@
             const preview = document.getElementById('poImportPreview');
             try {
                 const result = await poApiPost({ action: 'import', rows: poImportRows, user: getCurrentLoginUser() });
-                preview.innerHTML = '<p class="text-sm text-green-700 font-semibold">ส่งรายการนำเข้าแล้ว กำลังอัปเดตรายการเอกสาร...</p>';
-                setTimeout(() => loadPODocuments({ force: true, page: 1 }), 1800);
-                showModal('success', 'ส่งรายการนำเข้าสำเร็จ', `ส่งข้อมูล ${poImportRows.length} รายการไป Google Sheets แล้ว กรุณารีเฟรชเพื่อตรวจสอบผลลัพธ์`);
+                const submittedCount = poImportRows.length;
+                preview.innerHTML = '<p class="text-sm text-green-700 font-semibold">ส่งข้อมูลไป Google Apps Script แล้ว กำลังอัปเดตรายการเอกสาร...</p><p class="text-xs text-gray-600 mt-1">หากรายการยังไม่ขึ้น ให้ตรวจสอบว่าได้ Deploy Code.gs เวอร์ชันล่าสุดแล้ว และบัญชีผู้ใช้งานมีสิทธิ์เปิดไฟล์ Google Drive</p>';
+                setTimeout(() => loadPODocuments({ force: true, page: 1 }), 2500);
+                showModal('success', 'ส่งรายการนำเข้าสำเร็จ', `ส่งข้อมูล ${submittedCount} รายการไป Google Sheets แล้ว กรุณารอสักครู่แล้วรีเฟรชรายการ`);
+                const fileInput = document.getElementById('poImportFile');
+                if (fileInput) fileInput.value = '';
                 poImportRows = [];
             } catch (error) { showModal('error', 'นำเข้าไม่สำเร็จ', error.message || 'ไม่สามารถเชื่อมต่อ Google Apps Script ได้'); }
         };
