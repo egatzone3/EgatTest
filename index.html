@@ -5612,7 +5612,20 @@
 
         const PO_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvR45TvLX7E5v23kKQDEF2GfHzC55fLLUowL2Pqrg9OwRSZlu4xSlLx0e4ABFlG4bu/exec';
         const DISCORD_PO_WEBHOOK = 'https://discord.com/api/webhooks/1552877861118152796/eIdEaiuduzIipaoH_EwsDdazudkDpKRgKXdR0oZ31L2823gkHvDhjlg6p0fQTtTdaBQg';
+        const DISCORD_PO_STATUS_WEBHOOK = 'https://discord.com/api/webhooks/1557940270644072559/ccfYbDTHy6SNq278NyjxVz3WVb6Rp7Ot_smmdiOtNmlNwBv7opvlDAq3SJ7DVYu2hE59';
 
+        async function sendPOStatusDiscordNotification(item, previousStatus, nextStatus) {
+            const user = getCurrentLoginUser();
+            const message = `🔔 **สถานะเอกสาร TOR/PO เปลี่ยนแปลง**\n📄 เอกสาร: **${item.title || item.fileName || '-'}**\n🔁 สถานะเดิม: **${previousStatus || 'รอตรวจสอบ'}**\n✅ สถานะใหม่: **${nextStatus}**\n🏢 หน่วยงาน: **${item.department || '-'}**\n👤 ผู้รับผิดชอบ: **${item.responsible || 'ยังไม่ได้กำหนด'}**\n👷 ผู้รับเหมา: **${item.contractor || 'ยังไม่ได้กำหนด'}**\n👤 ผู้ดำเนินการ: **${user.name || '-'}** (${user.code || '-'})\n🕒 เวลา: ${new Date().toLocaleString('th-TH', { timeZone: 'Asia/Bangkok' })}`;
+            try {
+                await fetch(DISCORD_PO_STATUS_WEBHOOK, {
+                    method: 'POST', mode: 'cors', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: 'แจ้งเตือนสถานะเอกสาร TOR/PO', content: message })
+                });
+            } catch (error) {
+                console.warn('ส่งแจ้งเตือนสถานะเอกสารไป Discord ไม่สำเร็จ แต่การบันทึกสถานะสำเร็จแล้ว:', error);
+            }
+        }
         async function sendPODiscordNotification(event, data) {
             const isUpload = event === 'upload';
             const isUpdate = event === 'update';
@@ -6422,9 +6435,11 @@
                 return;
             }
             try {
-                await poApiPost({ action: 'update', fileId, status: status.trim(), user: getCurrentLoginUser(), title: item.title || '' });
-                sendPODiscordNotification('update', { title: item.title || item.fileName, fileName: item.fileName, fileId, status: status.trim() });
-                showModal('success', 'แก้ไขสถานะสำเร็จ', `เปลี่ยนสถานะเป็น ${status.trim()}`);
+                const previousStatus = item.status || 'รอตรวจสอบ';
+                const nextStatus = status.trim();
+                await poApiPost({ action: 'update', fileId, status: nextStatus, user: getCurrentLoginUser(), title: item.title || '' });
+                if (previousStatus !== nextStatus) await sendPOStatusDiscordNotification(item, previousStatus, nextStatus);
+                showModal('success', 'แก้ไขสถานะสำเร็จ', `เปลี่ยนสถานะเป็น ${nextStatus}`);
                 setTimeout(() => loadPODocuments({ force: true }), 1000);
             } catch (error) {
                 console.error('Update PO status error:', error);
