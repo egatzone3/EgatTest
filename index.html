@@ -669,6 +669,37 @@
                 </div>
                 <a href="data:text/csv;charset=utf-8,%EF%BB%BFtitle,fileUrl,category,year,department,description,responsible,contractor,dueDate,ecmNumber,startDate,endDate,committee1,committee2,committee3,status%0Aตัวอย่างเอกสาร,https%3A%2F%2Fdrive.google.com%2Ffile%2Fd%2Fรหัสไฟล์%2Fview,TOR,2569,หน่วยงาน,,,,2026-12-31,,,,,,รอตรวจสอบ" download="ตัวอย่างนำเข้าเอกสาร_TOR_PO.csv" class="text-xs text-blue-700 underline">ดาวน์โหลดไฟล์ตัวอย่าง</a>
             </div>
+            <details class="mt-4 rounded-lg border border-blue-200 bg-blue-50/60">
+                <summary class="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-900">คู่มือการจัดเตรียมไฟล์ Excel/CSV</summary>
+                <div class="px-3 pb-3 text-xs text-gray-700 space-y-3">
+                    <div>
+                        <p class="font-semibold text-blue-900 mb-1">ขั้นตอนการเตรียมไฟล์</p>
+                        <ol class="list-decimal list-inside space-y-1">
+                            <li>ใช้แถวที่ 1 เป็นชื่อคอลัมน์ และเริ่มข้อมูลเอกสารตั้งแต่แถวที่ 2</li>
+                            <li>หนึ่งแถวต่อหนึ่งเอกสาร ห้ามรวมหลายเอกสารไว้ในแถวเดียว</li>
+                            <li>ต้องมี <strong>ชื่อเอกสาร</strong> และ <strong>fileUrl หรือ fileId</strong> ของไฟล์ใน Google Drive</li>
+                            <li>ตรวจสอบสิทธิ์การเข้าถึงไฟล์ Drive ให้บัญชีที่ใช้ระบบเปิดไฟล์ได้</li>
+                            <li>บันทึกเป็น .xlsx, .xls หรือ .csv และนำเข้าได้ไม่เกิน 100 รายการต่อครั้ง</li>
+                        </ol>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-blue-900 mb-1">คอลัมน์ที่จำเป็น</p>
+                        <div class="overflow-x-auto"><table class="min-w-full bg-white border border-blue-100 rounded text-left"><thead><tr class="border-b border-blue-100"><th class="p-2">คอลัมน์</th><th class="p-2">จำเป็น</th><th class="p-2">รายละเอียด</th><th class="p-2">ตัวอย่าง</th></tr></thead><tbody>
+                            <tr class="border-b border-blue-50"><td class="p-2 font-semibold">title</td><td class="p-2 text-red-600">ต้องมี</td><td class="p-2">ชื่อเอกสาร</td><td class="p-2">TOR งานจ้างถาง ปี 2569</td></tr>
+                            <tr class="border-b border-blue-50"><td class="p-2 font-semibold">fileUrl หรือ fileId</td><td class="p-2 text-red-600">ต้องมีอย่างใดอย่างหนึ่ง</td><td class="p-2">ลิงก์หรือรหัสไฟล์ Google Drive</td><td class="p-2">https://drive.google.com/file/d/รหัสไฟล์/view</td></tr>
+                            <tr><td class="p-2">category, year, department, status</td><td class="p-2">แนะนำ</td><td class="p-2">ประเภท ปี หน่วยงาน และสถานะ</td><td class="p-2">TOR, 2569, บสส.นราธิวาส, รอตรวจสอบ</td></tr>
+                        </tbody></table></div>
+                    </div>
+                    <div>
+                        <p class="font-semibold text-blue-900 mb-1">คอลัมน์เพิ่มเติมที่รองรับ</p>
+                        <p>description, responsible, contractor, dueDate, ecmNumber, startDate, endDate, committee1, committee2, committee3 และ fileName</p>
+                    </div>
+                    <div class="rounded border border-amber-200 bg-amber-50 p-2 text-amber-800">
+                        <strong>รูปแบบวันที่:</strong> ใช้ YYYY-MM-DD เช่น 2026-12-31 · สถานะที่ใช้ได้: รอตรวจสอบ, อนุมัติแล้ว, แจ้งเข้าทำงาน, ตรวจรับแล้ว, ปิดงาน
+                    </div>
+                    <div class="overflow-x-auto"><p class="font-semibold text-blue-900 mb-1">ตัวอย่างหัวตาราง</p><code class="block min-w-[1100px] bg-white border border-blue-100 rounded p-2 text-[11px]">ชื่อเอกสาร (title) | ลิงก์ไฟล์ (fileUrl) | ประเภท (category) | ปี (year) | หน่วยงาน (department) | รายละเอียด (description) | ผู้รับผิดชอบ (responsible) | ผู้รับเหมา (contractor) | วันครบกำหนด (dueDate) | เลขที่ ECM (ecmNumber) | วันที่เริ่มงาน (startDate) | วันสิ้นสุดงาน (endDate) | คณะกรรมการคนที่ 1 (committee1) | คณะกรรมการคนที่ 2 (committee2) | คณะกรรมการคนที่ 3 (committee3) | สถานะ (status)</code></div>
+                </div>
+            </details>
             <div class="flex flex-col sm:flex-row gap-3 items-start sm:items-center mt-4">
                 <input id="poImportFile" type="file" accept=".xlsx,.xls,.csv" class="flex-1 w-full border border-gray-300 rounded-lg p-2 text-sm bg-gray-50">
                 <button type="button" onclick="previewPOImportFile()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap">ตรวจสอบข้อมูล</button>
