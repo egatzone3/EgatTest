@@ -111,15 +111,15 @@
             </div>
             <div class="flex flex-col gap-1.5 items-end">
                 <div class="flex flex-wrap justify-end gap-1.5">
-                    <button onclick="toggleCorrectionView()" id="correctionToggleBtn" class="text-xs sm:text-sm bg-amber-500 text-white font-semibold px-2.5 py-1.5 rounded-lg shadow-sm hover:bg-amber-600 transition">แจ้งแก้ไขงาน</button>
-                    <button onclick="togglePODocumentsView()" id="poDocumentsToggleBtn" class="text-xs sm:text-sm bg-green-700 text-white font-semibold px-2.5 py-1.5 rounded-lg shadow-sm hover:bg-green-800 transition">เพิ่มเอกสาร TOR/PO</button>
-                    <button onclick="toggleDashboardView()" id="dashboardToggleBtn" class="text-xs sm:text-sm bg-indigo-500 text-white font-semibold px-2.5 py-1.5 rounded-lg shadow-sm hover:bg-indigo-600 transition">แดชบอร์ด</button>
-                    <button onclick="togglePOCalendarView()" id="poCalendarToggleBtn" class="text-xs sm:text-sm bg-indigo-700 text-white font-semibold px-2.5 py-1.5 rounded-lg shadow-sm hover:bg-indigo-800 transition">ปฏิทินกำหนดงาน</button>
+                    <button onclick="toggleCorrectionView()" id="correctionToggleBtn" data-role-permission="correction" class="text-xs sm:text-sm bg-amber-500 text-white font-semibold px-2.5 py-1.5 rounded-lg shadow-sm hover:bg-amber-600 transition">แจ้งแก้ไขงาน</button>
+                    <button onclick="togglePODocumentsView()" id="poDocumentsToggleBtn" data-role-permission="poRead" class="text-xs sm:text-sm bg-green-700 text-white font-semibold px-2.5 py-1.5 rounded-lg shadow-sm hover:bg-green-800 transition">เพิ่มเอกสาร TOR/PO</button>
+                    <button onclick="toggleDashboardView()" id="dashboardToggleBtn" data-role-permission="dashboard" class="text-xs sm:text-sm bg-indigo-500 text-white font-semibold px-2.5 py-1.5 rounded-lg shadow-sm hover:bg-indigo-600 transition">แดชบอร์ด</button>
+                    <button onclick="togglePOCalendarView()" id="poCalendarToggleBtn" data-role-permission="calendar" class="text-xs sm:text-sm bg-indigo-700 text-white font-semibold px-2.5 py-1.5 rounded-lg shadow-sm hover:bg-indigo-800 transition">ปฏิทินกำหนดงาน</button>
                 </div>
                 <div class="flex flex-wrap justify-end gap-1.5">
-                    <button onclick="toggleView()" id="viewToggleBtn" class="text-xs sm:text-sm bg-white text-blue-700 font-semibold px-2.5 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition">ประวัติกลาง (<span id="historyBadgeCount">0</span>)</button>
-                    <button onclick="toggleCorrectionHistoryView()" id="corrHistoryToggleBtn" class="text-xs sm:text-sm bg-amber-700 text-white font-semibold px-2.5 py-1.5 rounded-lg shadow-sm hover:bg-amber-800 transition">ประวัติแจ้งแก้ไข (<span id="corrHistoryBadgeCount">0</span>)</button>
-                    <button onclick="togglePOHistoryView()" id="poHistoryToggleBtn" class="text-xs sm:text-sm bg-teal-700 text-white font-semibold px-2.5 py-1.5 rounded-lg shadow-sm hover:bg-teal-800 transition">ไฟล์เอกสาร TOR/PO (<span id="poHistoryBadgeCount">0</span>)</button>
+                    <button onclick="toggleView()" id="viewToggleBtn" data-role-permission="history" class="text-xs sm:text-sm bg-white text-blue-700 font-semibold px-2.5 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition">ประวัติกลาง (<span id="historyBadgeCount">0</span>)</button>
+                    <button onclick="toggleCorrectionHistoryView()" id="corrHistoryToggleBtn" data-role-permission="correctionHistory" class="text-xs sm:text-sm bg-amber-700 text-white font-semibold px-2.5 py-1.5 rounded-lg shadow-sm hover:bg-amber-800 transition">ประวัติแจ้งแก้ไข (<span id="corrHistoryBadgeCount">0</span>)</button>
+                    <button onclick="togglePOHistoryView()" id="poHistoryToggleBtn" data-role-permission="poRead" class="text-xs sm:text-sm bg-teal-700 text-white font-semibold px-2.5 py-1.5 rounded-lg shadow-sm hover:bg-teal-800 transition">ไฟล์เอกสาร TOR/PO (<span id="poHistoryBadgeCount">0</span>)</button>
                 </div>
             </div>
         </div>
@@ -564,7 +564,7 @@
         </div>
 
     
-        <section class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+        <section data-role-permission="poWrite" class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
             <h3 class="font-bold text-gray-800 mb-4">เพิ่มเอกสาร TOR/PO</h3>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -661,7 +661,7 @@
         </div>
 
 
-        <section class="bg-white rounded-xl shadow-sm border border-blue-200 p-5">
+        <section data-role-permission="poWrite" class="bg-white rounded-xl shadow-sm border border-blue-200 p-5">
             <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
                 <div>
                     <h3 class="font-bold text-blue-900">นำเข้าเอกสารหลายรายการจาก Excel/CSV</h3>
@@ -1175,7 +1175,8 @@
                 sessionWarningShown = false;
                 document.body.classList.remove('login-locked');
                 document.getElementById('loginGate').classList.add('hidden');
-                document.getElementById('headerSubtitle').textContent = `ผู้ใช้งาน: ${user.name} | ${user.unit}`;
+                document.getElementById('headerSubtitle').textContent = `ผู้ใช้งาน: ${user.name} | ${user.unit || '-'} | สิทธิ์: ${user.role || 'ผู้ดูเอกสาร'}`;
+                applyRoleBasedUI();
                 try { await sendLoginLog(user); } catch (err) { console.error('Login log error:', err); }
                 await initializeAppAfterLogin();
                 maybeOfferFormDraftRecovery();
@@ -5651,6 +5652,32 @@
             catch (_) { return {}; }
         }
 
+        const ROLE_PERMISSIONS = {
+            'ผู้ดูแลระบบ': ['all'],
+            'ผู้ตรวจงาน': ['correction', 'poWrite', 'attachmentWrite', 'attachmentDelete', 'zip', 'dashboard', 'calendar', 'history', 'correctionHistory', 'poRead'],
+            'ผู้รับผิดชอบงาน': ['correction', 'attachmentWrite', 'zip', 'dashboard', 'calendar', 'history', 'correctionHistory', 'poRead'],
+            'ผู้รับเหมา': ['correction', 'attachmentWrite', 'dashboard', 'calendar', 'correctionHistory', 'poRead'],
+            'ผู้ดูเอกสาร': ['dashboard', 'calendar', 'history', 'correctionHistory', 'poRead']
+        };
+        function currentUserRole() { return getCurrentLoginUser().role || 'ผู้ดูเอกสาร'; }
+        function hasRolePermission(permission) {
+            const permissions = ROLE_PERMISSIONS[currentUserRole()] || ROLE_PERMISSIONS['ผู้ดูเอกสาร'];
+            return permissions.includes('all') || permissions.includes(permission);
+        }
+        function applyRoleBasedUI() {
+            document.querySelectorAll('[data-role-permission]').forEach(element => {
+                element.classList.toggle('hidden', !hasRolePermission(element.dataset.rolePermission));
+            });
+            const user = getCurrentLoginUser();
+            const subtitle = document.getElementById('headerSubtitle');
+            if (subtitle && user.name) subtitle.textContent = `ผู้ใช้งาน: ${user.name} | ${user.unit || '-'} | สิทธิ์: ${currentUserRole()}`;
+        }
+        function requireClientPermission(permission) {
+            if (hasRolePermission(permission)) return true;
+            showModal('error', 'ไม่มีสิทธิ์ใช้งาน', `บทบาท ${currentUserRole()} ไม่สามารถดำเนินการส่วนนี้ได้`);
+            return false;
+        }
+
         function formatFileSize(bytes) {
             if (!bytes) return '0 KB';
             const units = ['B', 'KB', 'MB', 'GB'];
@@ -5667,6 +5694,7 @@
         }
 
         window.togglePODocumentsView = function() {
+            if (!requireClientPermission('poRead')) return;
             if (currentViewMode === 'po_documents') { goHome(); return; }
             currentViewMode = 'po_documents';
             ['formView', 'correctionView', 'correctionHistoryView', 'historyView', 'dashboardView', 'poHistoryView', 'poCalendarView'].forEach(id => document.getElementById(id)?.classList.replace('block', 'hidden'));
@@ -5674,10 +5702,12 @@
             document.getElementById('bottomActionBar')?.classList.replace('block', 'hidden');
             document.getElementById('photoCountBadge')?.classList.add('hidden');
             ['correctionToggleBtn', 'poDocumentsToggleBtn', 'dashboardToggleBtn', 'viewToggleBtn', 'corrHistoryToggleBtn', 'poHistoryToggleBtn'].forEach(id => document.getElementById(id)?.classList.remove('hidden'));
+            applyRoleBasedUI();
             loadPODocuments();
         };
 
         window.togglePOHistoryView = function() {
+            if (!requireClientPermission('poRead')) return;
             if (currentViewMode === 'po_history') { goHome(); return; }
             currentViewMode = 'po_history';
             ['formView', 'correctionView', 'correctionHistoryView', 'historyView', 'dashboardView', 'poDocumentsView', 'poCalendarView'].forEach(id => document.getElementById(id)?.classList.replace('block', 'hidden'));
@@ -5687,12 +5717,14 @@
             document.getElementById('bottomActionBar')?.classList.replace('block', 'hidden');
             document.getElementById('photoCountBadge')?.classList.add('hidden');
             ['correctionToggleBtn', 'poDocumentsToggleBtn', 'dashboardToggleBtn', 'viewToggleBtn', 'corrHistoryToggleBtn', 'poHistoryToggleBtn'].forEach(id => document.getElementById(id)?.classList.remove('hidden'));
+            applyRoleBasedUI();
             const list = document.getElementById('poDocumentList');
             if (list) list.innerHTML = '<p class="text-sm text-gray-400">กำลังโหลดรายการเอกสาร...</p>';
             loadPODocuments();
         };
 
         window.togglePOCalendarView = function() {
+            if (!requireClientPermission('calendar')) return;
             if (currentViewMode === 'po_calendar') { togglePOHistoryView(); return; }
             currentViewMode = 'po_calendar';
             ['formView', 'correctionView', 'correctionHistoryView', 'historyView', 'dashboardView', 'poDocumentsView', 'poHistoryView'].forEach(id => document.getElementById(id)?.classList.replace('block', 'hidden'));
@@ -5702,6 +5734,7 @@
             document.getElementById('bottomActionBar')?.classList.replace('block', 'hidden');
             document.getElementById('photoCountBadge')?.classList.add('hidden');
             ['correctionToggleBtn', 'poDocumentsToggleBtn', 'dashboardToggleBtn', 'viewToggleBtn', 'corrHistoryToggleBtn', 'poHistoryToggleBtn'].forEach(id => document.getElementById(id)?.classList.remove('hidden'));
+            applyRoleBasedUI();
             if (poDocumentsLoaded) renderPOCalendar(poDocuments);
             else loadPODocuments();
         };
@@ -5934,7 +5967,8 @@
             if (!list) return;
             list.innerHTML = '<p class="text-sm text-gray-400">กำลังโหลดถังขยะ...</p>';
             try {
-                const response = await fetch(`${PO_APPS_SCRIPT_URL}?action=trash&_=${Date.now()}`, { cache: 'no-store' });
+                const accessUser = getCurrentLoginUser();
+                const response = await fetch(`${PO_APPS_SCRIPT_URL}?action=trash&userCode=${encodeURIComponent(accessUser.code || '')}&userName=${encodeURIComponent(accessUser.name || '')}&_=${Date.now()}`, { cache: 'no-store' });
                 const result = await response.json();
                 if (!result.ok) throw new Error(result.error || 'โหลดถังขยะไม่สำเร็จ');
                 const items = Array.isArray(result.trash) ? result.trash : [];
@@ -5962,7 +5996,8 @@
             if (!list) return;
             list.innerHTML = '<p class="text-sm text-gray-400">กำลังโหลดประวัติ...</p>';
             try {
-                const response = await fetch(`${PO_APPS_SCRIPT_URL}?action=audit&_=${Date.now()}`, { cache: 'no-store' });
+                const accessUser = getCurrentLoginUser();
+                const response = await fetch(`${PO_APPS_SCRIPT_URL}?action=audit&userCode=${encodeURIComponent(accessUser.code || '')}&userName=${encodeURIComponent(accessUser.name || '')}&_=${Date.now()}`, { cache: 'no-store' });
                 const result = await response.json();
                 if (!result.ok) throw new Error(result.error || 'โหลดประวัติไม่สำเร็จ');
                 const items = Array.isArray(result.audit) ? result.audit : [];
@@ -6662,6 +6697,7 @@
             preview.classList.remove('hidden');
         };
         window.importPOPreviewRows = async function() {
+            if (!requireClientPermission('poWrite')) return;
             if (!poImportRows.length) return;
             const preview = document.getElementById('poImportPreview');
             try {
@@ -6676,6 +6712,7 @@
             } catch (error) { showModal('error', 'นำเข้าไม่สำเร็จ', error.message || 'ไม่สามารถเชื่อมต่อ Google Apps Script ได้'); }
         };
         window.uploadPODocument = async function() {
+            if (!requireClientPermission('poWrite')) return;
             const titleInput = document.getElementById('poTitle');
             const category = document.getElementById('poCategory')?.value || 'TOR';
             const description = document.getElementById('poDescription')?.value.trim() || '';
@@ -6724,6 +6761,7 @@
         };
 
         window.addPOAttachment = async function(fileId) {
+            if (!requireClientPermission('attachmentWrite')) return;
             const item = poDocuments.find(document => document.fileId === fileId);
             if (!item) return;
             const input = document.createElement('input'); input.type = 'file'; input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png';
@@ -6741,6 +6779,7 @@
         };
 
         window.deletePOAttachment = async function(fileId, attachmentFileId) {
+            if (!requireClientPermission('attachmentDelete')) return;
             const item = poDocuments.find(document => document.fileId === fileId);
             const attachment = item?.attachments?.find(file => file.fileId === attachmentFileId);
             if (!item || !attachment) return;
@@ -6838,6 +6877,7 @@
         };
 
         window.downloadPOZip = async function(fileId) {
+            if (!requireClientPermission('zip')) return;
             const item = poDocuments.find(document => document.fileId === fileId);
             if (!item) return;
             const user = getCurrentLoginUser();
@@ -6862,6 +6902,7 @@
         };
 
         window.deletePODocument = async function(fileId) {
+            if (!requireClientPermission('deleteDocument')) return;
             const item = poDocuments.find(document => document.fileId === fileId);
             if (!item || !confirm(`ต้องการลบเอกสาร “${item.title || item.fileName}” ใช่หรือไม่?`)) return;
             const confirmation = prompt('เพื่อป้องกันการลบผิดพลาด กรุณาพิมพ์คำว่า ลบ');
@@ -7122,6 +7163,7 @@
         }
 
         window.toggleDashboardView = function() {
+            if (!requireClientPermission('dashboard')) return;
             if (currentViewMode === 'dashboard') { goHome(); return; }
             currentViewMode = 'dashboard';
             ['formView', 'correctionView', 'correctionHistoryView', 'historyView', 'poDocumentsView', 'poCalendarView'].forEach(id => document.getElementById(id)?.classList.replace('block', 'hidden'));
@@ -7129,11 +7171,13 @@
             document.getElementById('bottomActionBar')?.classList.replace('block', 'hidden');
             document.getElementById('photoCountBadge')?.classList.add('hidden');
             ['correctionToggleBtn', 'poDocumentsToggleBtn', 'dashboardToggleBtn', 'viewToggleBtn', 'corrHistoryToggleBtn', 'poHistoryToggleBtn'].forEach(id => document.getElementById(id)?.classList.remove('hidden'));
+            applyRoleBasedUI();
             refreshDashboard();
             refreshPODashboard();
         }
 
         window.toggleCorrectionView = function() {
+            if (!requireClientPermission('correction')) return;
             const formView = document.getElementById('formView');
             const correctionView = document.getElementById('correctionView');
             const correctionHistoryView = document.getElementById('correctionHistoryView');
@@ -7235,6 +7279,7 @@
         }
 
         window.toggleCorrectionHistoryView = function() {
+            if (!requireClientPermission('correctionHistory')) return;
             const formView = document.getElementById('formView');
             const correctionView = document.getElementById('correctionView');
             const correctionHistoryView = document.getElementById('correctionHistoryView');
@@ -8598,6 +8643,7 @@ ${gpsText}`;
         }
 
         window.toggleView = function() {
+            if (!requireClientPermission('history')) return;
             const formView = document.getElementById('formView');
             const historyView = document.getElementById('historyView');
             const poDocumentsView = document.getElementById('poDocumentsView');
