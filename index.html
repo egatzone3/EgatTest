@@ -711,19 +711,19 @@
                 <h3 class="font-bold text-gray-800">ค้นหาเอกสาร</h3>
                 <span id="poDocumentCount" class="text-xs text-gray-500">ยังไม่มีรายการ</span>
             </div>
-            <div class="relative">
-                <div class="flex flex-col sm:flex-row gap-3">
-                    <div class="relative flex-1">
+            <div class="space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div class="relative sm:col-span-2 lg:col-span-2">
                         <input id="poSearchInput" type="search" oninput="schedulePODocumentSearch()" class="w-full border border-gray-300 rounded-lg p-3 pl-10 text-sm focus:border-green-600 focus:ring-green-600" placeholder="ค้นหาชื่อเอกสาร ประเภท รายละเอียด หรือชื่อไฟล์...">
                         <span class="absolute left-3 top-3 text-gray-400">⌕</span>
                     </div>
-                    <select id="poYearFilter" onchange="renderPODocuments(1)" class="border border-gray-300 rounded-lg p-3 text-sm sm:w-40 focus:border-green-600 focus:ring-green-600">
+                    <select id="poYearFilter" onchange="renderPODocuments(1)" class="border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600">
                         <option value="">ทุกปี</option>
                     </select>
-                    <select id="poDepartmentFilter" onchange="renderPODocuments(1)" class="border border-gray-300 rounded-lg p-3 text-sm sm:w-48 focus:border-green-600 focus:ring-green-600">
+                    <select id="poDepartmentFilter" onchange="renderPODocuments(1)" class="border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600">
                         <option value="">ทุกหน่วยงาน</option>
                     </select>
-                    <select id="poStatusFilter" onchange="renderPODocuments(1)" class="border border-gray-300 rounded-lg p-3 text-sm sm:w-40 focus:border-green-600 focus:ring-green-600">
+                    <select id="poStatusFilter" onchange="renderPODocuments(1)" class="border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600">
                         <option value="">ทุกสถานะ</option>
                         <option value="รอตรวจสอบ">รอตรวจสอบ</option>
                         <option value="อนุมัติแล้ว">อนุมัติแล้ว</option>
@@ -731,13 +731,20 @@
                         <option value="ตรวจรับแล้ว">ตรวจรับแล้ว</option>
                         <option value="ปิดงาน">ปิดงาน</option>
                     </select>
-                    <select id="poResponsibleFilter" onchange="renderPODocuments(1)" class="border border-gray-300 rounded-lg p-3 text-sm sm:w-52 focus:border-green-600 focus:ring-green-600">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 pt-3 border-t border-gray-100">
+                    <select id="poResponsibleFilter" onchange="renderPODocuments(1)" class="border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600 lg:col-span-2">
                         <option value="">ผู้รับผิดชอบทุกคน</option>
                     </select>
-                    <select id="poAttachmentFilter" onchange="renderPODocuments(1)" class="border border-gray-300 rounded-lg p-3 text-sm sm:w-52 focus:border-green-600 focus:ring-green-600"><option value="">ไฟล์แนบทั้งหมด</option><option value="incomplete">ไฟล์แนบไม่ครบ</option><option value="missingDue">ยังไม่มีวันครบกำหนด</option></select>
-                    <input id="poDateFrom" type="date" onchange="renderPODocuments(1)" class="border border-gray-300 rounded-lg p-3 text-sm sm:w-40" title="วันที่เริ่มต้น">
-                    <input id="poDateTo" type="date" onchange="renderPODocuments(1)" class="border border-gray-300 rounded-lg p-3 text-sm sm:w-40" title="วันที่สิ้นสุด">
+                    <select id="poAttachmentFilter" onchange="renderPODocuments(1)" class="border border-gray-300 rounded-lg p-3 text-sm focus:border-green-600 focus:ring-green-600 lg:col-span-2"><option value="">ไฟล์แนบทั้งหมด</option><option value="incomplete">ไฟล์แนบไม่ครบ</option><option value="missingDue">ยังไม่มีวันครบกำหนด</option></select>
+                    <input id="poDateFrom" type="date" onchange="renderPODocuments(1)" class="border border-gray-300 rounded-lg p-3 text-sm" title="วันที่เริ่มต้น">
+                    <input id="poDateTo" type="date" onchange="renderPODocuments(1)" class="border border-gray-300 rounded-lg p-3 text-sm" title="วันที่สิ้นสุด">
                 </div>
+                <div class="flex flex-wrap items-center gap-2 pt-1">
+                    <button type="button" onclick="showAllPODocuments()" class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2.5 rounded-lg text-sm font-semibold">แสดงเอกสารทั้งหมด</button>
+                    <span class="text-xs text-gray-500">ล้างคำค้นหาและตัวกรองทั้งหมด แล้วแสดงรายการเอกสารทุกประเภท</span>
+                </div>
+            </div>
         </section>
 
 
@@ -6394,6 +6401,17 @@
             return `<div class="flex flex-wrap gap-1 mt-2" title="สถานะไฟล์แนบ">${chip('TOR', st.tor)}${chip('PO', st.po)}${chip('ใบแจ้งเข้าทำงาน', st.notice)}${chip('ขออนุมัติจ้าง', st.approval)}</div>`;
         }
         function poMissingDueDate(item) { return !String(item?.dueDate || '').trim(); }
+        window.showAllPODocuments = function() {
+            // ล้างตัวกรองที่ส่งต่อมาจากแดชบอร์ด เช่น ใกล้ครบกำหนด 7 วัน
+            dashboardPOFilter = '';
+            ['poSearchInput', 'poYearFilter', 'poDepartmentFilter', 'poStatusFilter', 'poResponsibleFilter', 'poAttachmentFilter', 'poDateFrom', 'poDateTo'].forEach(id => {
+                const field = document.getElementById(id);
+                if (field) field.value = '';
+            });
+            poCurrentPage = 1;
+            poServerPage = 1;
+            loadPODocuments({ force: true, page: 1 });
+        };
         window.loadPODocuments = async function(options = {}) {
             const forceRefresh = options?.force === true;
             const query = document.getElementById('poSearchInput')?.value || '';
