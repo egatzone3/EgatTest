@@ -6588,7 +6588,19 @@
             if (!file || !preview) { showModal('error', 'ยังไม่ได้เลือกไฟล์', 'กรุณาเลือกไฟล์ .xlsx, .xls หรือ .csv ก่อน'); return; }
             try {
                 if (!window.XLSX) throw new Error('ยังโหลดเครื่องมืออ่าน Excel ไม่เสร็จ กรุณาลองใหม่');
-                const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array', cellDates: false });
+                const fileBuffer = await file.arrayBuffer();
+                let workbook;
+                if (/\.csv$/i.test(file.name)) {
+                    const bytes = new Uint8Array(fileBuffer);
+                    const hasUtf8Bom = bytes.length >= 3 && bytes[0] === 0xef && bytes[1] === 0xbb && bytes[2] === 0xbf;
+                    const utf8Text = new TextDecoder('utf-8').decode(bytes);
+                    const thaiText = /[ก-๙]/.test(utf8Text) || hasUtf8Bom
+                        ? utf8Text
+                        : new TextDecoder('windows-874').decode(bytes);
+                    workbook = XLSX.read(thaiText, { type: 'string', cellDates: false });
+                } else {
+                    workbook = XLSX.read(fileBuffer, { type: 'array', cellDates: false });
+                }
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                 poImportRows = normalizePOImportRows(XLSX.utils.sheet_to_json(firstSheet, { defval: '' }));
                 if (!poImportRows.length) throw new Error('ไม่พบข้อมูลในชีตแรก');
