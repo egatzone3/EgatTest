@@ -1077,6 +1077,54 @@
             await sendDiscordNotification(DISCORD_WEBHOOK_LOGIN, message);
         }
 
+        const SESSION_IDLE_LIMIT_MS = 60 * 60 * 1000;
+        const SESSION_WARNING_MS = 5 * 60 * 1000;
+        let sessionLastActivityAt = 0;
+        let sessionWarningShown = false;
+        let sessionMonitorStarted = false;
+        let sessionActivityThrottle = null;
+
+        function hasActiveLoginSession() {
+            return Boolean(sessionStorage.getItem('weedLoginUser')) && !document.body.classList.contains('login-locked');
+        }
+        function markSessionActivity() {
+            if (!hasActiveLoginSession()) return;
+            sessionLastActivityAt = Date.now();
+            sessionWarningShown = false;
+        }
+        function expireLoginSession() {
+            sessionStorage.removeItem('weedLoginUser');
+            sessionLastActivityAt = 0;
+            sessionWarningShown = false;
+            document.body.classList.add('login-locked');
+            document.getElementById('loginGate')?.classList.remove('hidden');
+            const input = document.getElementById('loginCode');
+            const error = document.getElementById('loginError');
+            if (input) { input.value = ''; input.focus(); }
+            if (error) { error.textContent = 'Session หมดอายุเนื่องจากไม่มีการใช้งานเกิน 1 ชั่วโมง กรุณากรอกรหัสผู้ใช้งานใหม่'; error.classList.remove('hidden'); }
+            try { showModal('warning', 'Session หมดอายุ', 'ไม่มีการใช้งานเกิน 1 ชั่วโมง เพื่อความปลอดภัย กรุณาเข้าสู่ระบบใหม่'); } catch (_) {}
+        }
+        function checkLoginSession() {
+            if (!hasActiveLoginSession() || !sessionLastActivityAt) return;
+            const idleMs = Date.now() - sessionLastActivityAt;
+            if (idleMs >= SESSION_IDLE_LIMIT_MS) { expireLoginSession(); return; }
+            if (idleMs >= SESSION_IDLE_LIMIT_MS - SESSION_WARNING_MS && !sessionWarningShown) {
+                sessionWarningShown = true;
+                try { showModal('warning', 'ใกล้หมดอายุ Session', 'ระบบจะให้กรอกรหัสใหม่ใน 5 นาที หากไม่มีการใช้งาน'); } catch (_) {}
+            }
+        }
+        function startSessionMonitor() {
+            if (sessionMonitorStarted) return;
+            sessionMonitorStarted = true;
+            ['click', 'keydown', 'pointerdown', 'touchstart', 'scroll'].forEach(eventName => {
+                document.addEventListener(eventName, () => {
+                    if (sessionActivityThrottle) return;
+                    sessionActivityThrottle = setTimeout(() => { sessionActivityThrottle = null; markSessionActivity(); }, 1000);
+                }, { passive: true });
+            });
+            setInterval(checkLoginSession, 15000);
+        }
+
         function startLoginGate() {
             const form = document.getElementById('loginForm');
             const input = document.getElementById('loginCode');
@@ -1123,6 +1171,8 @@
                     return;
                 }
                 sessionStorage.setItem('weedLoginUser', JSON.stringify(user));
+                sessionLastActivityAt = Date.now();
+                sessionWarningShown = false;
                 document.body.classList.remove('login-locked');
                 document.getElementById('loginGate').classList.add('hidden');
                 document.getElementById('headerSubtitle').textContent = `ผู้ใช้งาน: ${user.name} | ${user.unit}`;
@@ -9634,6 +9684,7 @@ ${gpsText}`;
         }
 
         startLoginGate();
+        startSessionMonitor();
 
         window.closeModal = function() {
             const modal = document.getElementById('statusModal');
