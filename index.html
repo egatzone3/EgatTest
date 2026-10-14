@@ -667,7 +667,7 @@
                     <h3 class="font-bold text-blue-900">นำเข้าเอกสารหลายรายการจาก Excel/CSV</h3>
                     <p class="text-xs text-blue-700 mt-1">ใช้สำหรับนำเข้าข้อมูลรายการและลิงก์ไฟล์ Google Drive โดยไม่อัปโหลดไฟล์ซ้ำ</p>
                 </div>
-                <a href="data:text/csv;charset=utf-8,%EF%BB%BFtitle,fileUrl,category,year,department,description,responsible,contractor,dueDate,ecmNumber,startDate,endDate,committee1,committee2,committee3,status%0Aตัวอย่างเอกสาร,https%3A%2F%2Fdrive.google.com%2Ffile%2Fd%2Fรหัสไฟล์%2Fview,TOR,2569,หน่วยงาน,,,,2026-12-31,,,,,,รอตรวจสอบ" download="ตัวอย่างนำเข้าเอกสาร_TOR_PO.csv" class="text-xs text-blue-700 underline">ดาวน์โหลดไฟล์ตัวอย่าง</a>
+                <button type="button" onclick="downloadPOImportTemplateExcel()" class="text-xs text-blue-700 underline">ดาวน์โหลดไฟล์ตัวอย่าง Excel (ทุกช่องเป็น Text)</button>
             </div>
             <details class="mt-4 rounded-lg border border-blue-200 bg-blue-50/60">
                 <summary class="cursor-pointer px-3 py-2 text-sm font-semibold text-blue-900">คู่มือการจัดเตรียมไฟล์ Excel/CSV</summary>
@@ -6581,6 +6581,22 @@
                 return row;
             }, {})).filter(row => Object.values(row).some(Boolean));
         }
+        window.downloadPOImportTemplateExcel = function() {
+            if (!window.XLSX) { showModal('error', 'ยังโหลดเครื่องมือ Excel ไม่เสร็จ', 'กรุณารอสักครู่แล้วลองใหม่'); return; }
+            const rows = [
+                ['ชื่อเอกสาร', 'ลิงก์ไฟล์', 'ประเภท', 'ปี', 'หน่วยงาน', 'รายละเอียด', 'ผู้รับผิดชอบ', 'ผู้รับเหมา', 'วันครบกำหนด', 'เลขที่ ECM', 'วันที่เริ่มงาน', 'วันสิ้นสุดงาน', 'คณะกรรมการคนที่ 1', 'คณะกรรมการคนที่ 2', 'คณะกรรมการคนที่ 3', 'สถานะ'],
+                ['ตัวอย่างเอกสารแนวสาย 115kV', 'https://drive.google.com/file/d/รหัสไฟล์จริง/view', 'TOR', '2569', 'หน่วยงานตัวอย่าง', '', 'ชื่อผู้รับผิดชอบ', 'ชื่อผู้รับเหมา', '31/12/2026', 'ECM-ตัวอย่าง', '01/07/2026', '31/12/2026', 'กรรมการคนที่ 1', 'กรรมการคนที่ 2', 'กรรมการคนที่ 3', 'รอตรวจสอบ']
+            ];
+            const worksheet = XLSX.utils.aoa_to_sheet(rows);
+            Object.keys(worksheet).filter(address => !address.startsWith('!')).forEach(address => {
+                worksheet[address].t = 's';
+                worksheet[address].z = '@';
+            });
+            worksheet['!cols'] = rows[0].map(() => ({ wch: 24 }));
+            const workbook = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(workbook, worksheet, 'ตัวอย่างนำเข้าเอกสาร');
+            XLSX.writeFile(workbook, 'ตัวอย่างนำเข้าเอกสาร_TOR_PO_Text.xlsx', { bookType: 'xlsx' });
+        };
         window.previewPOImportFile = async function() {
             const input = document.getElementById('poImportFile');
             const preview = document.getElementById('poImportPreview');
