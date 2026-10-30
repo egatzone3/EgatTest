@@ -7318,7 +7318,7 @@
             document.getElementById('poCalendarView')?.classList.replace('block', 'hidden');
                 correctionView.classList.replace('hidden', 'block');
                 bottomBar.classList.replace('block', 'hidden');
-                photoCountBadge.classList.add('hidden');
+                photoCountBadge?.classList.add('hidden');
 
                 corrBtn.innerHTML = `
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -7365,7 +7365,7 @@
             dashboardView.classList.replace('block', 'hidden');
             formView.classList.replace('hidden', 'block');
             bottomBar.classList.replace('hidden', 'block');
-            photoCountBadge.classList.remove('hidden');
+            photoCountBadge?.classList.remove('hidden');
             historyBtn.classList.remove('hidden');
             corrHistoryBtn.classList.remove('hidden');
             corrBtn.classList.remove('hidden');
@@ -7422,7 +7422,7 @@
                 dashboardView.classList.replace('block', 'hidden');
                 correctionHistoryView.classList.replace('hidden', 'block');
                 bottomBar.classList.replace('block', 'hidden');
-                photoCountBadge.classList.add('hidden');
+                photoCountBadge?.classList.add('hidden');
                 corrHistoryBtn.innerHTML = `
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -8795,7 +8795,7 @@ ${gpsText}`;
                 dashboardView.classList.replace('block', 'hidden');
                 historyView.classList.replace('hidden', 'block');
                 bottomBar.classList.replace('block', 'hidden');
-                photoCountBadge.classList.add('hidden');
+                photoCountBadge?.classList.add('hidden');
 
                 toggleBtn.innerHTML = `
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -8813,7 +8813,7 @@ ${gpsText}`;
                 dashboardView.classList.replace('block', 'hidden');
                 formView.classList.replace('hidden', 'block');
                 bottomBar.classList.replace('hidden', 'block');
-                photoCountBadge.classList.remove('hidden');
+                photoCountBadge?.classList.remove('hidden');
                 corrBtn.classList.remove('hidden');
                 corrHistoryBtn.classList.remove('hidden');
 
@@ -9407,13 +9407,15 @@ ${gpsText}`;
                 
                 let imagesHtml = '';
                 for (let i = 1; i <= 5; i++) {
-                    if (record.photos && record.photos['photo' + i]) {
+                    const imageUrl = photoUrlValue(record.photos?.['photo' + i]);
+                    if (imageUrl) {
+                        const safeUrl = reportEscape(imageUrl);
                         imagesHtml += `
                             <div class="relative group flex-shrink-0">
-                                <img src="${record.photos['photo' + i]}" 
-                                     onclick="openImageModal('${record.photos['photo' + i]}')"
+                                <img src="${safeUrl}" 
+                                     onclick="openImageModal('${safeUrl}')"
                                      class="h-24 w-24 object-cover rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition shadow-sm" 
-                                     alt="รูปที่ ${i}">
+                                     alt="รูปที่ ${i}" loading="lazy" referrerpolicy="no-referrer">
                                 <span class="absolute bottom-1 right-1 bg-black bg-opacity-65 text-white text-[10px] px-1.5 py-0.5 rounded">มุม ${i}</span>
                             </div>
                         `;
