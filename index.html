@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+    <!-- รุ่น Email/Password + REST fallback สำหรับ iPad -->
     <!-- รุ่น Email/Password: ล็อกอิน Firebase เมื่อเปิดประวัติกลางเท่านั้น -->
     <!-- รุ่น Lazy History: เชื่อม Firebase เมื่อเปิดประวัติกลางเท่านั้น -->
     <meta charset="UTF-8">
@@ -8809,7 +8810,7 @@ ${gpsText}`;
                     console.error('เปิดประวัติกลางไม่สำเร็จ:', error);
                     loadHistoryData();
                     updateHistoryBadge();
-                    showModal('warning', 'เชื่อมต่อ Firebase ไม่สำเร็จ', 'ระบบจะแสดงข้อมูลที่บันทึกไว้ในเครื่องแทน');
+                    showModal('warning', 'เชื่อมต่อ Firebase ไม่สำเร็จ', `${error?.code || ''} ${error?.message || ''}`);
                 } finally {
                     hideAppLoading();
                 }
@@ -9207,6 +9208,43 @@ ${gpsText}`;
             }
         }
 
+        function decodeFirestoreValue(value) {
+            if (!value || typeof value !== 'object') return value;
+            if ('stringValue' in value) return value.stringValue;
+            if ('integerValue' in value) return Number(value.integerValue);
+            if ('doubleValue' in value) return Number(value.doubleValue);
+            if ('booleanValue' in value) return value.booleanValue;
+            if ('nullValue' in value) return null;
+            if ('timestampValue' in value) return value.timestampValue;
+            if ('referenceValue' in value) return value.referenceValue;
+            if ('bytesValue' in value) return value.bytesValue;
+            if ('arrayValue' in value) return (value.arrayValue.values || []).map(decodeFirestoreValue);
+            if ('mapValue' in value) return decodeFirestoreFields(value.mapValue.fields || {});
+            return value;
+        }
+        function decodeFirestoreFields(fields) {
+            return Object.fromEntries(Object.entries(fields || {}).map(([key, value]) => [key, decodeFirestoreValue(value)]));
+        }
+        async function loadInspectionsViaRest() {
+            await ensureFirebaseAuth();
+            const idToken = await auth.currentUser.getIdToken(true);
+            const url = 'https://firestore.googleapis.com/v1/projects/weed-srod3/databases/(default)/documents/inspections?pageSize=1000';
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: { Authorization: `Bearer ${idToken}` },
+                cache: 'no-store'
+            });
+            const body = await response.text();
+            if (!response.ok) {
+                throw new Error(`Firestore REST ${response.status}: ${body.slice(0, 300)}`);
+            }
+            const payload = JSON.parse(body);
+            return (payload.documents || []).map(document => ({
+                id: document.name.split('/').pop(),
+                ...decodeFirestoreFields(document.fields || {})
+            }));
+        }
+
         const INSPECTION_CACHE_TIME_KEY = 'weed_inspection_firebase_cache_saved_at';
         const INSPECTION_CACHE_TTL_MS = 60 * 1000;
         let cloudSyncPromise = null;
@@ -9238,11 +9276,26 @@ ${gpsText}`;
                     loadHistoryData();
                     updateHistoryBadge();
                     return { source: 'firebase', fresh: true };
-                } catch (e) {
-                    console.error('Firestore โหลดข้อมูลกลางไม่สำเร็จ:', e?.code, e?.message, e);
-                    loadHistoryData();
-                    updateHistoryBadge();
-                    return { source: 'cache', fresh: false, error: e };
+                } catch (sdkError) {
+                    console.warn('Firestore Web SDK โหลดไม่สำเร็จ กำลังลอง REST fallback:', sdkError);
+                    try {
+                        const restRecords = await loadInspectionsViaRest();
+                        restRecords.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                        localStorage.setItem('weed_inspection_firebase_cache', JSON.stringify(restRecords));
+                        localStorage.setItem(INSPECTION_CACHE_TIME_KEY, String(Date.now()));
+                        loadHistoryData();
+                        updateHistoryBadge();
+                        return { source: 'firebase-rest', fresh: true };
+                    } catch (restError) {
+                        const combinedError = new Error(`SDK: ${sdkError?.code || sdkError?.message || sdkError}; REST: ${restError?.message || restError}`);
+                        combinedError.code = sdkError?.code || 'firestore-load-failed';
+                        combinedError.sdkError = sdkError;
+                        combinedError.restError = restError;
+                        console.error('Firestore โหลดข้อมูลกลางไม่สำเร็จทั้ง SDK และ REST:', combinedError);
+                        loadHistoryData();
+                        updateHistoryBadge();
+                        return { source: 'cache', fresh: false, error: combinedError };
+                    }
                 }
             })();
             try { return await cloudSyncPromise; }
@@ -9255,7 +9308,7 @@ ${gpsText}`;
             const oldCacheTime = localStorage.getItem(INSPECTION_CACHE_TIME_KEY);
             try {
                 const result = await syncCloudData({ force: true });
-                if (result?.source === 'firebase') {
+                if (result?.source === 'firebase' || result?.source === 'firebase-rest') {
                     showModal('success', 'โหลดข้อมูลสำเร็จ', 'ดึงข้อมูลล่าสุดจาก Firebase แล้ว');
                 } else {
                     throw result?.error || new Error('ไม่สามารถโหลดข้อมูลจาก Firebase ได้');
