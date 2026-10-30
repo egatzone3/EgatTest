@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <!-- Google Apps Script + Google Sheets + Google Drive version; deployment updated 2026-10-30; photo thumbnail URL normalization -->
+    <!-- Google Apps Script + Google Sheets + Google Drive version; deployment updated 2026-10-30; photo thumbnail URL normalization; correction object adapter -->
     <!-- รุ่น Email/Password + REST fallback สำหรับ iPad -->
     <!-- รุ่น Email/Password: ล็อกอิน Google Sheets/Drive เมื่อเปิดประวัติกลางเท่านั้น -->
     <!-- รุ่น Lazy History: เชื่อม Google Sheets/Drive เมื่อเปิดประวัติกลางเท่านั้น -->
@@ -1122,8 +1122,12 @@
             const docs = (records || []).map(item => ({ id: item.id, ref: item, data: () => item }));
             return { docs, forEach(callback) { docs.forEach(callback); } };
         }
+        function photoListValue(value) {
+            const normalized = normalizeGooglePhotos(value);
+            return Array.isArray(normalized) ? normalized : Object.values(normalized || {}).filter(Boolean);
+        }
         function normalizeGoogleCorrection(item) {
-            return { ...item, photos: normalizeGooglePhotos(item.photos), afterPhotos: normalizeGooglePhotos(item.afterPhotos), towerInfo: item.towerInfo || `${item.lineName || ''} / ${item.tower || ''}`, details: item.details || item.detail || '', lastUpdated: item.lastUpdated || item.updatedAt || null, afterNote: item.afterNote || '', afterUpdatedAt: item.afterUpdatedAt || null, afterUpdatedBy: item.afterUpdatedBy || '' };
+            return { ...item, photos: photoListValue(item.photos), afterPhotos: photoListValue(item.afterPhotos), towerInfo: item.towerInfo || `${item.lineName || ''} / ${item.tower || ''}`, details: item.details || item.detail || '', lastUpdated: item.lastUpdated || item.updatedAt || null, afterNote: item.afterNote || '', afterUpdatedAt: item.afterUpdatedAt || null, afterUpdatedBy: item.afterUpdatedBy || '' };
         }
         async function getDocs(ref) {
             const user = getCurrentLoginUser();
@@ -7915,7 +7919,7 @@ ${gpsText}`;
                 const correctionId = item.id || item.docId;
                 const daysOpen = correctionDaysOpen(item);
                 const overdue = correctionIsOverdue(item);
-                let photos = item.photos || (item.photo ? [item.photo] : []);
+                let photos = photoListValue(item.photos || (item.photo ? [item.photo] : []));
                 
                 let photosHtml = '';
                 photos.forEach((p, idx) => {
@@ -7933,7 +7937,7 @@ ${gpsText}`;
 
                 const createdText = formatDateToThai(item.timestamp);
                 const updatedText = item.lastUpdated ? formatDateToThai(item.lastUpdated) : '-';
-                const afterPhotos = Array.isArray(item.afterPhotos) ? item.afterPhotos.filter(Boolean) : [];
+                const afterPhotos = photoListValue(item.afterPhotos);
                 const afterPhotosHtml = afterPhotos.map((p, idx) => `
                     <div class="relative group">
                         <img src="${p}" onclick="openImageModal('${p}')" class="w-20 h-20 object-cover rounded-lg border border-blue-200 cursor-pointer shadow-sm" alt="หลักฐานหลังแก้ไข ${idx + 1}">
