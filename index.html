@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <!-- Google Apps Script + Google Sheets + Google Drive version; deployment updated 2026-10-30; photo URL normalization -->
+    <!-- Google Apps Script + Google Sheets + Google Drive version; deployment updated 2026-10-30; photo thumbnail URL normalization -->
     <!-- รุ่น Email/Password + REST fallback สำหรับ iPad -->
     <!-- รุ่น Email/Password: ล็อกอิน Google Sheets/Drive เมื่อเปิดประวัติกลางเท่านั้น -->
     <!-- รุ่น Lazy History: เชื่อม Google Sheets/Drive เมื่อเปิดประวัติกลางเท่านั้น -->
@@ -1100,9 +1100,15 @@
         function collection(_db, name) { return { name }; }
         function doc(_db, collectionName, id) { return { collectionName, id }; }
         function photoUrlValue(value) {
-            if (typeof value === 'string') return value;
-            if (value && typeof value === 'object') return value.url || value.downloadURL || value.fileUrl || value.src || '';
-            return '';
+            if (value && typeof value === 'object') {
+                const fileId = value.fileId || value.id;
+                if (fileId) return `https://drive.google.com/thumbnail?id=${encodeURIComponent(fileId)}&sz=w1000`;
+                value = value.url || value.downloadURL || value.fileUrl || value.src || '';
+            }
+            if (typeof value !== 'string') return '';
+            const match = value.match(/[?&]id=([^&]+)/);
+            if (match && /drive\.google\.com/.test(value)) return `https://drive.google.com/thumbnail?id=${encodeURIComponent(match[1])}&sz=w1000`;
+            return value;
         }
         function normalizeGooglePhotos(value) {
             if (Array.isArray(value)) return value.map(photoUrlValue).filter(Boolean);
