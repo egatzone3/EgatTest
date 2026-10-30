@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
+    <!-- รุ่น Lazy History: เชื่อม Firebase เมื่อเปิดประวัติกลางเท่านั้น -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบบันทึกรูปภาพ งานตรวจจ้างถางวัชพืช</title>
@@ -5362,24 +5363,18 @@
             appInitialLoadStarted = true;
             setAppLoading('กำลังเตรียมระบบ', 'ตรวจสอบข้อมูลการเข้าสู่ระบบ', 15);
             try {
-                setAppLoading('กำลังตรวจสอบสิทธิ์ Firebase', 'กำลังเตรียมการเชื่อมต่อฐานข้อมูล', 25);
-                await ensureFirebaseAuth();
-                setAppLoading('กำลังโหลดประวัติการตรวจ', 'กำลังเชื่อมต่อ Firebase และเตรียมข้อมูลล่าสุด', 35);
-                await syncCloudData({ force: true });
-                setAppLoading('กำลังเตรียมประวัติแจ้งแก้ไข', 'เปิดการติดตามข้อมูลแบบเรียลไทม์', 58);
-                initCorrectionRealtimeListener();
-                setAppLoading('กำลังเตรียมข้อมูลในเครื่อง', 'ตรวจสอบรายการล่าสุดและแบบร่างที่บันทึกไว้', 80);
+                // รุ่น Lazy History: ยังไม่เชื่อมต่อ Firebase ตอนเข้าสู่ระบบ
+                // จะเชื่อมต่อเมื่อผู้ใช้กดเมนู “ประวัติกลาง” เท่านั้น
+                setAppLoading('กำลังเตรียมข้อมูลในเครื่อง', 'เตรียมแบบฟอร์มและรายการล่าสุด', 55);
                 updateCorrectionAutoDate();
                 renderRecentLocations();
-                setAppLoading('พร้อมใช้งาน', 'สามารถเลือกเมนูหรือเริ่มบันทึกงานได้', 100);
+                setAppLoading('พร้อมใช้งาน', 'สามารถเริ่มบันทึกงานได้ หรือกดประวัติกลางเพื่อโหลดข้อมูลจาก Firebase', 100);
                 await new Promise(resolve => setTimeout(resolve, 250));
             } catch (error) {
                 console.warn('เตรียมระบบหลังเข้าสู่ระบบไม่สมบูรณ์:', error);
-                setAppLoading('พร้อมใช้งานแบบออฟไลน์', 'ใช้ข้อมูลที่บันทึกไว้ในเครื่อง และจะลองเชื่อมต่อใหม่เมื่อเปิดเมนู', 100);
-                await new Promise(resolve => setTimeout(resolve, 700));
             } finally {
                 hideAppLoading();
-                console.log('ระบบพร้อมใช้งาน ตรวจสอบสถานะสมบูรณ์');
+                console.log('ระบบพร้อมใช้งานแบบ Lazy History');
             }
         }
         window.onload = function() {
@@ -8681,7 +8676,7 @@ ${gpsText}`;
             saveBtn.disabled = !(towerSelected && uploadedPhotosCount > 0);
         }
 
-        window.toggleView = function() {
+        window.toggleView = async function() {
             if (!requireClientPermission('history')) return;
             const formView = document.getElementById('formView');
             const historyView = document.getElementById('historyView');
@@ -8696,6 +8691,23 @@ ${gpsText}`;
             const corrHistoryBtn = document.getElementById('corrHistoryToggleBtn');
 
             if (currentViewMode === 'form') {
+                setAppLoading('กำลังตรวจสอบสิทธิ์ Firebase', 'กำลังเตรียมข้อมูลประวัติกลาง', 25);
+                try {
+                    await ensureFirebaseAuth();
+                    const result = await syncCloudData({ force: true });
+                    if (result?.error) {
+                        console.warn('โหลด Firebase ไม่สำเร็จ ใช้ข้อมูล cache:', result.error);
+                        showModal('warning', 'โหลดข้อมูลจาก Firebase ไม่สำเร็จ', 'ระบบจะแสดงข้อมูลที่บันทึกไว้ในเครื่องแทน');
+                    }
+                } catch (error) {
+                    console.error('เปิดประวัติกลางไม่สำเร็จ:', error);
+                    loadHistoryData();
+                    updateHistoryBadge();
+                    showModal('warning', 'เชื่อมต่อ Firebase ไม่สำเร็จ', 'ระบบจะแสดงข้อมูลที่บันทึกไว้ในเครื่องแทน');
+                } finally {
+                    hideAppLoading();
+                }
+
                 currentViewMode = 'history';
                 formView.classList.replace('block', 'hidden');
                 correctionHistoryView.classList.replace('block', 'hidden');
@@ -8711,16 +8723,12 @@ ${gpsText}`;
                     <span>กลับไปหน้าส่งงาน</span>
                 `;
                 toggleBtn.classList.replace('text-blue-700', 'text-gray-700');
-                syncCloudData();
             } else {
                 currentViewMode = 'form';
                 historyView.classList.replace('block', 'hidden');
-            poHistoryView?.classList.replace('block', 'hidden');
-            document.getElementById('poCalendarView')?.classList.replace('block', 'hidden');
-            poDocumentsView?.classList.replace('block', 'hidden');
                 poHistoryView?.classList.replace('block', 'hidden');
                 document.getElementById('poCalendarView')?.classList.replace('block', 'hidden');
-            document.getElementById('poCalendarView')?.classList.replace('block', 'hidden');
+                poDocumentsView?.classList.replace('block', 'hidden');
                 dashboardView.classList.replace('block', 'hidden');
                 formView.classList.replace('hidden', 'block');
                 bottomBar.classList.replace('hidden', 'block');
@@ -8735,10 +8743,8 @@ ${gpsText}`;
                     <span>ประวัติกลาง (<span id="historyBadgeCount">0</span>)</span>
                 `;
                 toggleBtn.classList.replace('text-gray-700', 'text-blue-700');
-                syncCloudData();
             }
         }
-
         function compressImage(file, maxWidth = 500, maxHeight = 500, quality = 0.35) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -9137,22 +9143,24 @@ ${gpsText}`;
             finally { cloudSyncPromise = null; }
         }
 
-        // ล้าง cache เฉพาะข้อมูลประวัติกลาง แล้วดึงข้อมูลล่าสุดจาก Firestore ใหม่
+        // ล้าง cache เฉพาะข้อมูลประวัติกลาง โดยเก็บ cache เดิมไว้จนกว่าจะโหลดใหม่สำเร็จ
         window.clearInspectionCache = async function() {
+            const oldCache = localStorage.getItem('weed_inspection_firebase_cache');
+            const oldCacheTime = localStorage.getItem(INSPECTION_CACHE_TIME_KEY);
             try {
-                localStorage.removeItem('weed_inspection_firebase_cache');
-                localStorage.removeItem(INSPECTION_CACHE_TIME_KEY);
-                loadHistoryData();
-                updateHistoryBadge();
                 const result = await syncCloudData({ force: true });
                 if (result?.source === 'firebase') {
-                    showModal('success', 'ล้างแคชสำเร็จ', 'ดึงข้อมูลล่าสุดจาก Firebase แล้ว');
+                    showModal('success', 'โหลดข้อมูลสำเร็จ', 'ดึงข้อมูลล่าสุดจาก Firebase แล้ว');
                 } else {
-                    showModal('error', 'โหลดข้อมูลใหม่ไม่สำเร็จ', result?.error?.message || 'กรุณาตรวจสอบการเชื่อมต่อและสิทธิ์ Firebase');
+                    throw result?.error || new Error('ไม่สามารถโหลดข้อมูลจาก Firebase ได้');
                 }
             } catch (error) {
+                if (oldCache !== null) localStorage.setItem('weed_inspection_firebase_cache', oldCache);
+                if (oldCacheTime !== null) localStorage.setItem(INSPECTION_CACHE_TIME_KEY, oldCacheTime);
+                loadHistoryData();
+                updateHistoryBadge();
                 console.error('Clear inspection cache error:', error);
-                showModal('error', 'ล้างแคชไม่สำเร็จ', error?.message || 'ไม่ทราบสาเหตุ');
+                showModal('error', 'โหลดข้อมูลใหม่ไม่สำเร็จ', error?.message || 'ระบบจะแสดงข้อมูลเดิมจากเครื่อง');
             }
         };
 
