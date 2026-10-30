@@ -2,10 +2,9 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <!-- Google Apps Script + Google Sheets + Google Drive version -->
     <!-- รุ่น Email/Password + REST fallback สำหรับ iPad -->
-    <!-- รุ่น Email/Password: ล็อกอิน Google Sheets/Drive เมื่อเปิดประวัติกลางเท่านั้น -->
-    <!-- รุ่น Lazy History: เชื่อม Google Sheets/Drive เมื่อเปิดประวัติกลางเท่านั้น -->
+    <!-- รุ่น Email/Password: ล็อกอิน Firebase เมื่อเปิดประวัติกลางเท่านั้น -->
+    <!-- รุ่น Lazy History: เชื่อม Firebase เมื่อเปิดประวัติกลางเท่านั้น -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบบันทึกรูปภาพ งานตรวจจ้างถางวัชพืช</title>
@@ -95,12 +94,12 @@
             <div class="text-center mb-5">
                 <div class="mx-auto mb-3 w-14 h-14 rounded-full bg-green-100 flex items-center justify-center text-2xl">🔐</div>
                 <h2 class="text-xl font-bold text-green-800">เข้าสู่ข้อมูลประวัติกลาง</h2>
-                <p class="text-sm text-gray-500 mt-2">กรอกอีเมลและรหัสผ่านที่สร้างไว้ใน Google Sheets/Drive</p>
+                <p class="text-sm text-gray-500 mt-2">กรอกอีเมลและรหัสผ่านที่สร้างไว้ใน Firebase</p>
             </div>
             <form id="firebaseLoginForm" class="space-y-3">
-                <label for="firebaseEmailInput" class="block text-sm font-semibold text-gray-700">อีเมล Google Sheets/Drive</label>
+                <label for="firebaseEmailInput" class="block text-sm font-semibold text-gray-700">อีเมล Firebase</label>
                 <input id="firebaseEmailInput" type="email" autocomplete="username" required class="w-full border border-gray-300 rounded-xl p-3 focus:border-green-600 focus:ring-green-600" placeholder="your@email.com">
-                <label for="firebasePasswordInput" class="block text-sm font-semibold text-gray-700">รหัสผ่าน Google Sheets/Drive</label>
+                <label for="firebasePasswordInput" class="block text-sm font-semibold text-gray-700">รหัสผ่าน Firebase</label>
                 <input id="firebasePasswordInput" type="password" autocomplete="current-password" required class="w-full border border-gray-300 rounded-xl p-3 focus:border-green-600 focus:ring-green-600" placeholder="รหัสผ่าน">
                 <p id="firebaseLoginError" class="hidden text-sm text-red-600 text-center"></p>
                 <div class="flex gap-2 pt-2">
@@ -899,7 +898,7 @@
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                     </svg>
-                    รายการงานตรวจรับทั้งหมด (Google Sheets/Drive Cloud)
+                    รายการงานตรวจรับทั้งหมด (Firebase Cloud)
                 </h2>
                 <p class="text-xs text-gray-500 mt-1">ข้อมูลและรูปภาพจากผู้รับเหมาจะซิงค์มาแสดงที่นี่โดยอัตโนมัติ</p>
             </div>
@@ -1069,78 +1068,119 @@
     </div>
 
     <script type="module">
-        // ===== Google Apps Script backend =====
-        const GOOGLE_APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxvR45TvLX7E5v23kKQDEF2GfHzC55fLLUowL2Pqrg9OwRSZlu4xSlLx0e4ABFlG4bu/exec';
-        const db = { provider: 'google-apps-script' };
-        const auth = { currentUser: null };
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import {
+            getAuth,
+            signInWithEmailAndPassword,
+            signOut,
+            setPersistence,
+            browserLocalPersistence
+        } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        async function googleApiPost(payload) {
-            const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify(payload),
-                redirect: 'follow'
+        const firebaseConfig = {
+            apiKey: "AIzaSyB_SWCXmlSUb4GbE5vWxMTZLQaznPX2VEc",
+            authDomain: "weed-srod3.firebaseapp.com",
+            projectId: "weed-srod3",
+            storageBucket: "weed-srod3.firebasestorage.app",
+            messagingSenderId: "1024562203345",
+            appId: "1:1024562203345:web:3e6282dd955c7b17ca53f0",
+            measurementId: "G-W7W1JRVGPF"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // ล็อกอิน Firebase ด้วยอีเมล/รหัสผ่าน เฉพาะเมื่อเปิดประวัติกลาง
+        let firebaseAuthPromise = null;
+        let firebasePersistencePromise = null;
+
+        function firebaseAuthErrorMessage(error) {
+            const messages = {
+                'auth/invalid-credential': 'อีเมลหรือรหัสผ่าน Firebase ไม่ถูกต้อง',
+                'auth/invalid-login-credentials': 'อีเมลหรือรหัสผ่าน Firebase ไม่ถูกต้อง',
+                'auth/user-not-found': 'ไม่พบบัญชีอีเมลนี้ใน Firebase',
+                'auth/wrong-password': 'รหัสผ่าน Firebase ไม่ถูกต้อง',
+                'auth/too-many-requests': 'พยายามเข้าสู่ระบบหลายครั้งเกินไป กรุณารอสักครู่',
+                'auth/network-request-failed': 'เชื่อมต่อ Firebase ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ต'
+            };
+            return messages[error?.code] || error?.message || 'เข้าสู่ Firebase ไม่สำเร็จ';
+        }
+
+        async function requestFirebaseEmailLogin() {
+            const gate = document.getElementById('firebaseLoginGate');
+            const form = document.getElementById('firebaseLoginForm');
+            const emailInput = document.getElementById('firebaseEmailInput');
+            const passwordInput = document.getElementById('firebasePasswordInput');
+            const errorBox = document.getElementById('firebaseLoginError');
+            const submitButton = document.getElementById('firebaseLoginButton');
+            const cancelButton = document.getElementById('firebaseLoginCancel');
+
+            return new Promise((resolve, reject) => {
+                gate.classList.remove('hidden');
+                gate.classList.add('flex');
+                errorBox.classList.add('hidden');
+                emailInput.focus();
+
+                const cleanup = () => {
+                    gate.classList.add('hidden');
+                    gate.classList.remove('flex');
+                    form.onsubmit = null;
+                    cancelButton.onclick = null;
+                    emailInput.value = '';
+                    passwordInput.value = '';
+                };
+
+                cancelButton.onclick = () => {
+                    cleanup();
+                    reject(new Error('ยกเลิกการเข้าสู่ Firebase'));
+                };
+
+                form.onsubmit = async (event) => {
+                    event.preventDefault();
+                    errorBox.classList.add('hidden');
+                    submitButton.disabled = true;
+                    submitButton.textContent = 'กำลังตรวจสอบ...';
+                    try {
+                        if (!firebasePersistencePromise) {
+                            firebasePersistencePromise = setPersistence(auth, browserLocalPersistence);
+                        }
+                        await firebasePersistencePromise;
+                        const credential = await signInWithEmailAndPassword(
+                            auth,
+                            emailInput.value.trim(),
+                            passwordInput.value
+                        );
+                        cleanup();
+                        resolve(credential.user);
+                    } catch (error) {
+                        errorBox.textContent = firebaseAuthErrorMessage(error);
+                        errorBox.classList.remove('hidden');
+                        submitButton.disabled = false;
+                        submitButton.textContent = 'เข้าสู่ประวัติกลาง';
+                    }
+                };
             });
-            const text = await response.text();
-            if (!response.ok) throw new Error(`Google Apps Script HTTP ${response.status}`);
-            if (/^\s*</.test(text)) throw new Error('Google Apps Script ตอบกลับเป็นหน้าเว็บ ไม่ใช่ JSON กรุณาตรวจ Deployment');
-            const result = JSON.parse(text);
-            if (!result.ok) throw new Error(result.error || 'Google Apps Script ทำรายการไม่สำเร็จ');
-            return result;
         }
-        async function googleApiGet(action, params = {}) {
-            const query = new URLSearchParams({ action, ...params, _: `${Date.now()}_${Math.random()}` });
-            const response = await fetch(`${GOOGLE_APPS_SCRIPT_URL}?${query.toString()}`, { cache: 'no-store', redirect: 'follow' });
-            const text = await response.text();
-            if (!response.ok || /^\s*</.test(text)) throw new Error('Google Apps Script ตอบกลับไม่สมบูรณ์');
-            const result = JSON.parse(text);
-            if (!result.ok) throw new Error(result.error || 'โหลดข้อมูลจาก Google Apps Script ไม่สำเร็จ');
-            return result;
-        }
-        function collection(_db, name) { return { name }; }
-        function doc(_db, collectionName, id) { return { collectionName, id }; }
-        function makeSnapshot(records) {
-            const docs = (records || []).map(item => ({ id: item.id, ref: item, data: () => item }));
-            return { docs, forEach(callback) { docs.forEach(callback); } };
-        }
-        function normalizeGoogleCorrection(item) {
-            return { ...item, towerInfo: item.towerInfo || `${item.lineName || ''} / ${item.tower || ''}`, details: item.details || item.detail || '', lastUpdated: item.lastUpdated || item.updatedAt || null, afterPhotos: item.afterPhotos || [], afterNote: item.afterNote || '', afterUpdatedAt: item.afterUpdatedAt || null, afterUpdatedBy: item.afterUpdatedBy || '' };
-        }
-        async function getDocs(ref) {
-            const user = getCurrentLoginUser();
-            if (ref.name === 'inspections') {
-                const result = await googleApiPost({ action: 'getInspections', user, page: 1, limit: 100 });
-                return makeSnapshot(result.inspections || []);
+
+        async function ensureFirebaseAuth() {
+            if (typeof auth.authStateReady === 'function') {
+                await auth.authStateReady();
             }
-            if (ref.name === 'corrections') {
-                const result = await googleApiPost({ action: 'getCorrections', user });
-                return makeSnapshot((result.corrections || []).map(normalizeGoogleCorrection));
+            // ไม่ใช้ Anonymous User เดิมที่อาจค้างอยู่จาก HTML รุ่นก่อน
+            if (auth.currentUser?.isAnonymous) {
+                await signOut(auth);
             }
-            throw new Error(`ไม่รองรับ collection ${ref.name}`);
-        }
-        async function addDoc(ref, data) {
-            const user = getCurrentLoginUser();
-            if (ref.name === 'inspections') {
-                const result = await googleApiPost({ action: 'submitInspection', user, ...data });
-                return { id: result.inspection?.id || '' };
+            if (auth.currentUser) return auth.currentUser;
+            if (!firebaseAuthPromise) {
+                firebaseAuthPromise = requestFirebaseEmailLogin().catch(error => {
+                    firebaseAuthPromise = null;
+                    throw error;
+                });
             }
-            if (ref.name === 'corrections') {
-                const photos = {};
-                (Array.isArray(data.photos) ? data.photos : []).slice(0, 5).forEach((value, index) => { photos[`photo${index + 1}`] = value; });
-                const result = await googleApiPost({ action: 'submitCorrection', user, department: data.department, lineName: data.lineName, tower: data.tower, detail: data.details || data.detail || '', photos });
-                return { id: result.correction?.id || '' };
-            }
-            throw new Error(`ไม่รองรับ collection ${ref.name}`);
+            return await firebaseAuthPromise;
         }
-        async function updateDoc(ref, patch) {
-            const user = getCurrentLoginUser();
-            if (ref.collectionName === 'inspections') return googleApiPost({ action: 'updateInspection', user, id: ref.id, ...patch });
-            throw new Error('ระบบ Google รุ่นแรกยังไม่รองรับการแก้ไขรายละเอียดแจ้งแก้ไขจากหน้านี้');
-        }
-        async function deleteDoc(ref) { throw new Error('ระบบ Google รุ่นแรกยังไม่รองรับการลบรายการจากหน้าเว็บ'); }
-        function onSnapshot(ref, onNext, onError) { getDocs(ref).then(onNext).catch(onError); return () => {}; }
-        async function ensureGoogleAuth() { return getCurrentLoginUser(); }
-        async function requestGoogleEmailLogin() { return getCurrentLoginUser(); }
 
         const DISCORD_WEBHOOK_LOGIN = "https://discord.com/api/webhooks/1552603472015134742/uKnHBSpV6yY8eBaF5C2N42wmHYyXgdLX1pq79aY7wsKbf7UT0qB0PbyZdBA4q1Nwu1j2";
 
@@ -5389,7 +5429,7 @@
         let draftSaveTimer = null;
         let isRestoringFormDraft = false;
 
-        // รูปที่ประทับข้อมูลแล้ว (ใช้ส่งเข้า Google Sheets/Drive โดยตรง)
+        // รูปที่ประทับข้อมูลแล้ว (ใช้ส่งเข้า Firebase โดยตรง)
         const stampedPhotoData = {};
         const stampedPhotoMeta = {};
         const corrStampedPhotoData = {};
@@ -5431,12 +5471,12 @@
             appInitialLoadStarted = true;
             setAppLoading('กำลังเตรียมระบบ', 'ตรวจสอบข้อมูลการเข้าสู่ระบบ', 15);
             try {
-                // รุ่น Lazy History: ยังไม่เชื่อมต่อ Google Sheets/Drive ตอนเข้าสู่ระบบ
+                // รุ่น Lazy History: ยังไม่เชื่อมต่อ Firebase ตอนเข้าสู่ระบบ
                 // จะเชื่อมต่อเมื่อผู้ใช้กดเมนู “ประวัติกลาง” เท่านั้น
                 setAppLoading('กำลังเตรียมข้อมูลในเครื่อง', 'เตรียมแบบฟอร์มและรายการล่าสุด', 55);
                 updateCorrectionAutoDate();
                 renderRecentLocations();
-                setAppLoading('พร้อมใช้งาน', 'สามารถเริ่มบันทึกงานได้ หรือกดประวัติกลางเพื่อโหลดข้อมูลจาก Google Sheets', 100);
+                setAppLoading('พร้อมใช้งาน', 'สามารถเริ่มบันทึกงานได้ หรือกดประวัติกลางเพื่อโหลดข้อมูลจาก Firebase', 100);
                 await new Promise(resolve => setTimeout(resolve, 250));
             } catch (error) {
                 console.warn('เตรียมระบบหลังเข้าสู่ระบบไม่สมบูรณ์:', error);
@@ -5679,7 +5719,7 @@
             if (badge2) badge2.textContent = count;
         }
 
-        // ดึงประวัติแจ้งแก้ไขจาก Google Sheets โดยตรง เพื่อให้ข้อมูลแสดงครบทุกครั้งที่เปิดหน้า
+        // ดึงประวัติแจ้งแก้ไขจาก Firebase โดยตรง เพื่อให้ข้อมูลแสดงครบทุกครั้งที่เปิดหน้า
         window.syncCorrectionCloudData = async function() {
             try {
                 const querySnapshot = await getDocs(collection(db, "corrections"));
@@ -5695,7 +5735,7 @@
                 updateCorrectionBadges();
                 return corrList;
             } catch (e) {
-                console.warn("ไม่สามารถดึงประวัติแจ้งแก้ไขจาก Google Sheets ได้ ใช้ข้อมูลในเครื่องแทน:", e);
+                console.warn("ไม่สามารถดึงประวัติแจ้งแก้ไขจาก Firebase ได้ ใช้ข้อมูลในเครื่องแทน:", e);
                 renderCorrectionRecords();
                 updateCorrectionBadges();
                 return [];
@@ -7416,7 +7456,7 @@
                     </svg>
                     <span>กลับหน้าแจ้งแก้ไข</span>
                 `;
-                // รีเฟรชจาก Google Sheets ทุกครั้งที่เปิดหน้าประวัติแจ้งแก้ไข
+                // รีเฟรชจาก Firebase ทุกครั้งที่เปิดหน้าประวัติแจ้งแก้ไข
                 syncCorrectionCloudData();
             } else {
                 currentViewMode = 'correction';
@@ -7718,7 +7758,7 @@
             }
 
             saveBtn.disabled = true;
-            saveBtn.innerText = 'กำลังบันทึกและส่งข้อมูลขึ้น Google Sheets/Drive...';
+            saveBtn.innerText = 'กำลังบันทึกและส่งข้อมูลขึ้น Firebase...';
 
             try {
                 await restampAllCorrectionPhotos();
@@ -7764,7 +7804,7 @@
 ${gpsText}`;
                 await sendDiscordNotification(DISCORD_WEBHOOK_CORRECTION, discordMsg);
 
-                showModal('success', 'บันทึกสำเร็จ', 'บันทึกและส่งคำสั่งแจ้งแก้ไขงานขึ้น Google Sheets/Drive เรียบร้อยแล้ว');
+                showModal('success', 'บันทึกสำเร็จ', 'บันทึกและส่งคำสั่งแจ้งแก้ไขงานขึ้น Firebase เรียบร้อยแล้ว');
 
                 clearCorrectionImage();
                 document.getElementById('corrDepartmentSelect').value = '';
@@ -7783,7 +7823,7 @@ ${gpsText}`;
 
             } catch (err) {
                 console.error(err);
-                showModal('error', 'บันทึกไม่สำเร็จ', 'เกิดข้อผิดพลาดในการเชื่อมต่อ Google Sheets/Drive หรือประมวลผลรูปภาพ');
+                showModal('error', 'บันทึกไม่สำเร็จ', 'เกิดข้อผิดพลาดในการเชื่อมต่อ Firebase หรือประมวลผลรูปภาพ');
             } finally {
                 saveBtn.disabled = false;
                 saveBtn.innerHTML = `
@@ -8097,7 +8137,7 @@ ${gpsText}`;
                 localStorage.setItem('weed_correction_records_cloud', JSON.stringify(corrList));
                 localStorage.setItem('weed_correction_records', JSON.stringify(corrList));
                 renderCorrectionRecords();
-                showModal('error', 'บันทึกสถานะไม่สำเร็จ', 'ไม่สามารถบันทึกสถานะการแก้ไขลง Google Sheets/Drive ได้');
+                showModal('error', 'บันทึกสถานะไม่สำเร็จ', 'ไม่สามารถบันทึกสถานะการแก้ไขลง Firebase ได้');
                 console.error('Error updating correction status:', error);
             }
         }
@@ -8105,7 +8145,7 @@ ${gpsText}`;
         window.saveCorrectionFollowUp = async function(id) {
             const input = document.getElementById(`corr-due-${id}`); const item = getCorrectionHistoryRecords().find(i => i.id === id || i.docId === id); if (!item || !input) return;
             const scheduledFixDate = input.value || ''; const followUpUpdatedAt = new Date().toISOString(); const followUpUpdatedBy = getCurrentLoginUser().name || 'ไม่ระบุ';
-            try { const ref = await findCorrectionDocRef(id, item); if (!ref) throw new Error('ไม่พบรายการ'); await updateDoc(ref, { scheduledFixDate, followUpUpdatedAt, followUpUpdatedBy }); Object.assign(item, { scheduledFixDate, followUpUpdatedAt, followUpUpdatedBy }); localStorage.setItem('weed_correction_records_cloud', JSON.stringify(getCorrectionHistoryRecords())); localStorage.setItem('weed_correction_records', JSON.stringify(getCorrectionHistoryRecords())); renderCorrectionRecords(); showModal('success','บันทึกวันนัดสำเร็จ', scheduledFixDate ? `นัดแก้ไขวันที่ ${scheduledFixDate}` : 'ล้างวันที่นัดแล้ว'); } catch (error) { console.error(error); showModal('error','บันทึกวันนัดไม่สำเร็จ','ไม่สามารถบันทึกข้อมูลลง Google Sheets/Drive ได้'); }
+            try { const ref = await findCorrectionDocRef(id, item); if (!ref) throw new Error('ไม่พบรายการ'); await updateDoc(ref, { scheduledFixDate, followUpUpdatedAt, followUpUpdatedBy }); Object.assign(item, { scheduledFixDate, followUpUpdatedAt, followUpUpdatedBy }); localStorage.setItem('weed_correction_records_cloud', JSON.stringify(getCorrectionHistoryRecords())); localStorage.setItem('weed_correction_records', JSON.stringify(getCorrectionHistoryRecords())); renderCorrectionRecords(); showModal('success','บันทึกวันนัดสำเร็จ', scheduledFixDate ? `นัดแก้ไขวันที่ ${scheduledFixDate}` : 'ล้างวันที่นัดแล้ว'); } catch (error) { console.error(error); showModal('error','บันทึกวันนัดไม่สำเร็จ','ไม่สามารถบันทึกข้อมูลลง Firebase ได้'); }
         };
         window.sendCorrectionFollowupReminder = async function(id) {
             const item = getCorrectionHistoryRecords().find(i => i.id === id || i.docId === id); if (!item) return;
@@ -8160,10 +8200,10 @@ ${gpsText}`;
                 const afterCount = (item.afterPhotos || []).filter(Boolean).length;
                 const afterEvidenceMsg = `🔄 **บันทึกหลักฐานหลังแก้ไขงาน!**\n🏢 หน่วยงาน: **${item.department || '-'}**\n⚡ แนวสาย: **${item.lineName || '-'}**\n🗼 จุดตรวจ: **${item.towerInfo || item.tower || '-'}**\n👤 ผู้แจ้งเดิม: **${item.reporterName || '-'}**\n🧑‍💼 ผู้บันทึกหลักฐาน: **${patch.afterUpdatedBy}**\n🖼️ รูปก่อนแก้ไข: **${beforeCount} รูป**\n✅ รูปหลังแก้ไข: **${afterCount} รูป**\n📝 รายละเอียดหลังแก้ไข: **${patch.afterNote || '-'}**\n📌 สถานะปัจจุบัน: **${item.status || 'แจ้งแก้ไข'}**\n🕒 เวลา: ${formatDateToThai(now)}`;
                 await sendDiscordNotification(DISCORD_WEBHOOK_UPDATE, afterEvidenceMsg);
-                showModal('success', 'บันทึกหลักฐานสำเร็จ', 'บันทึกภาพและรายละเอียดหลังแก้ไขลง Google Sheets/Drive แล้ว');
+                showModal('success', 'บันทึกหลักฐานสำเร็จ', 'บันทึกภาพและรายละเอียดหลังแก้ไขลง Firebase แล้ว');
             } catch (error) {
                 console.error('Error saving after-correction evidence:', error);
-                showModal('error', 'บันทึกหลักฐานไม่สำเร็จ', 'ไม่สามารถบันทึกหลักฐานหลังแก้ไขลง Google Sheets/Drive ได้');
+                showModal('error', 'บันทึกหลักฐานไม่สำเร็จ', 'ไม่สามารถบันทึกหลักฐานหลังแก้ไขลง Firebase ได้');
             }
         };
 
@@ -8191,7 +8231,7 @@ ${gpsText}`;
                 renderCorrectionRecords();
             } catch (error) {
                 console.error('Error adding after-correction photo:', error);
-                showModal('error', 'เพิ่มภาพไม่สำเร็จ', 'ไม่สามารถบันทึกภาพหลังแก้ไขลง Google Sheets/Drive ได้');
+                showModal('error', 'เพิ่มภาพไม่สำเร็จ', 'ไม่สามารถบันทึกภาพหลังแก้ไขลง Firebase ได้');
             } finally {
                 event.target.value = '';
             }
@@ -8213,7 +8253,7 @@ ${gpsText}`;
                 renderCorrectionRecords();
             } catch (error) {
                 console.error('Error removing after-correction photo:', error);
-                showModal('error', 'ลบภาพไม่สำเร็จ', 'ไม่สามารถลบภาพหลังแก้ไขจาก Google Sheets ได้');
+                showModal('error', 'ลบภาพไม่สำเร็จ', 'ไม่สามารถลบภาพหลังแก้ไขจาก Firebase ได้');
             }
         };
 
@@ -8272,7 +8312,7 @@ ${gpsText}`;
                     const updateMsg = `🔄 **อัปเดตรายละเอียดแจ้งแก้ไขงาน!**\n📍 จุด/แนวสาย: **${item.towerInfo}**\n📝 รายละเอียดที่แก้ไข: **${item.details}**\n🕒 เวลาอัปเดต: ${formatDateToThai(newTimestamp)}`;
                     await sendDiscordNotification(DISCORD_WEBHOOK_UPDATE, updateMsg);
                     
-                    showModal('success', 'บันทึกสำเร็จ', 'อัปเดตข้อมูลการแก้ไขและบันทึกเวลาบน Google Sheets/Drive เรียบร้อยแล้ว');
+                    showModal('success', 'บันทึกสำเร็จ', 'อัปเดตข้อมูลการแก้ไขและบันทึกเวลาบน Firebase เรียบร้อยแล้ว');
                 } catch (e) {
                     console.error("Error updating correction in Firestore:", e);
                     showModal('error', 'บันทึกไม่สำเร็จ', 'เกิดข้อผิดพลาดในการเชื่อมต่อฐานข้อมูล');
@@ -8759,19 +8799,19 @@ ${gpsText}`;
             const corrHistoryBtn = document.getElementById('corrHistoryToggleBtn');
 
             if (currentViewMode === 'form') {
-                setAppLoading('กำลังตรวจสอบสิทธิ์ Google Sheets/Drive', 'กำลังเตรียมข้อมูลประวัติกลาง', 25);
+                setAppLoading('กำลังตรวจสอบสิทธิ์ Firebase', 'กำลังเตรียมข้อมูลประวัติกลาง', 25);
                 try {
-                    await ensureGoogleAuth();
+                    await ensureFirebaseAuth();
                     const result = await syncCloudData({ force: true });
                     if (result?.error) {
-                        console.warn('โหลด Google Sheets/Drive ไม่สำเร็จ ใช้ข้อมูล cache:', result.error);
-                        showModal('warning', 'โหลดข้อมูลจาก Google Sheets ไม่สำเร็จ', 'ระบบจะแสดงข้อมูลที่บันทึกไว้ในเครื่องแทน');
+                        console.warn('โหลด Firebase ไม่สำเร็จ ใช้ข้อมูล cache:', result.error);
+                        showModal('warning', 'โหลดข้อมูลจาก Firebase ไม่สำเร็จ', 'ระบบจะแสดงข้อมูลที่บันทึกไว้ในเครื่องแทน');
                     }
                 } catch (error) {
                     console.error('เปิดประวัติกลางไม่สำเร็จ:', error);
                     loadHistoryData();
                     updateHistoryBadge();
-                    showModal('warning', 'เชื่อมต่อ Google Sheets/Drive ไม่สำเร็จ', `${error?.code || ''} ${error?.message || ''}`);
+                    showModal('warning', 'เชื่อมต่อ Firebase ไม่สำเร็จ', `${error?.code || ''} ${error?.message || ''}`);
                 } finally {
                     hideAppLoading();
                 }
@@ -9051,7 +9091,7 @@ ${gpsText}`;
                     <div class="mb-4 text-center">
                         <div class="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-green-100 text-3xl">✓</div>
                         <h3 class="text-xl font-bold text-green-800">ส่งงานสำเร็จ</h3>
-                        <p class="mt-2 text-sm text-gray-600">บันทึก ${tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : `Tower ${poSafe(tower)}`} ขึ้น Google Sheets/Drive แล้ว</p>
+                        <p class="mt-2 text-sm text-gray-600">บันทึก ${tower === 'GENERIC-TOWER' ? 'งานทั่วไป' : `Tower ${poSafe(tower)}`} ขึ้น Firebase แล้ว</p>
                     </div>
                     <div class="grid gap-2">
                         <button type="button" onclick="goToNextInspectionTower()" class="w-full rounded-lg bg-blue-600 px-4 py-3 text-sm font-bold text-white hover:bg-blue-700">ไปเสาถัดไป</button>
@@ -9112,7 +9152,7 @@ ${gpsText}`;
             const originalBtnText = saveBtn.innerText;
             
             saveBtn.disabled = true;
-            saveBtn.innerText = 'กำลังบีบอัดและส่งข้อมูลขึ้น Google Sheets/Drive...';
+            saveBtn.innerText = 'กำลังบีบอัดและส่งข้อมูลขึ้น Firebase...';
 
             try {
                 let photosData = {};
@@ -9161,7 +9201,7 @@ ${gpsText}`;
                 showPostSaveActions(department, lineName, tower);
                 
             } catch (error) {
-                console.error("Error saving document to Google Sheets/Drive: ", error);
+                console.error("Error saving document to Firebase: ", error);
                 showModal('error', 'ส่งงานไม่สำเร็จ', 'สัญญาณอินเทอร์เน็ตมีปัญหา หรือขนาดไฟล์รูปใหญ่เกินไป ลองใหม่อีกครั้ง');
             } finally {
                 saveBtn.innerText = originalBtnText;
@@ -9187,32 +9227,20 @@ ${gpsText}`;
             return Object.fromEntries(Object.entries(fields || {}).map(([key, value]) => [key, decodeFirestoreValue(value)]));
         }
         async function loadInspectionsViaRest() {
-            await ensureGoogleAuth();
+            await ensureFirebaseAuth();
             const idToken = await auth.currentUser.getIdToken(true);
-            const baseUrl = 'https://firestore.googleapis.com/v1/projects/weed-srod3/databases/(default)/documents/inspections';
-            const allDocuments = [];
-            let pageToken = '';
-            let pageNumber = 0;
-            do {
-                const url = new URL(baseUrl);
-                url.searchParams.set('pageSize', '300');
-                if (pageToken) url.searchParams.set('pageToken', pageToken);
-                const response = await fetch(url.toString(), {
-                    method: 'GET',
-                    headers: { Authorization: `Bearer ${idToken}` },
-                    cache: 'no-store'
-                });
-                const body = await response.text();
-                if (!response.ok) {
-                    throw new Error(`Firestore REST ${response.status}: ${body.slice(0, 300)}`);
-                }
-                const payload = JSON.parse(body);
-                allDocuments.push(...(payload.documents || []));
-                pageToken = payload.nextPageToken || '';
-                pageNumber += 1;
-                if (pageNumber > 100) throw new Error('Firestore REST pagination เกิน 100 หน้า');
-            } while (pageToken);
-            return allDocuments.map(document => ({
+            const url = 'https://firestore.googleapis.com/v1/projects/weed-srod3/databases/(default)/documents/inspections?pageSize=1000';
+            const response = await fetch(url, {
+                method: 'GET',
+                headers: { Authorization: `Bearer ${idToken}` },
+                cache: 'no-store'
+            });
+            const body = await response.text();
+            if (!response.ok) {
+                throw new Error(`Firestore REST ${response.status}: ${body.slice(0, 300)}`);
+            }
+            const payload = JSON.parse(body);
+            return (payload.documents || []).map(document => ({
                 id: document.name.split('/').pop(),
                 ...decodeFirestoreFields(document.fields || {})
             }));
@@ -9222,26 +9250,57 @@ ${gpsText}`;
         const INSPECTION_CACHE_TTL_MS = 60 * 1000;
         let cloudSyncPromise = null;
         window.syncCloudData = async function(options = {}) {
+            const forceRefresh = options?.force === true;
+            const cachedAt = Number(localStorage.getItem(INSPECTION_CACHE_TIME_KEY) || 0);
+            const hasCachedRecords = !!localStorage.getItem('weed_inspection_firebase_cache');
+            if (!forceRefresh && hasCachedRecords && Date.now() - cachedAt < INSPECTION_CACHE_TTL_MS) {
+                loadHistoryData();
+                updateHistoryBadge();
+                return { source: 'cache', fresh: true };
+            }
+            if (!forceRefresh && hasCachedRecords) {
+                loadHistoryData();
+                updateHistoryBadge();
+            }
             if (cloudSyncPromise) return cloudSyncPromise;
             cloudSyncPromise = (async () => {
                 try {
-                    const snapshot = await getDocs(collection(db, 'inspections'));
-                    const records = [];
-                    snapshot.forEach(docSnap => records.push({ id: docSnap.id, ...docSnap.data() }));
-                    records.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
+                    await ensureFirebaseAuth();
+                    const querySnapshot = await getDocs(collection(db, "inspections"));
+                    let records = [];
+                    querySnapshot.forEach((docSnap) => {
+                        records.push({ id: docSnap.id, ...docSnap.data() });
+                    });
+                    records.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
                     localStorage.setItem('weed_inspection_firebase_cache', JSON.stringify(records));
                     localStorage.setItem(INSPECTION_CACHE_TIME_KEY, String(Date.now()));
                     loadHistoryData();
                     updateHistoryBadge();
-                    return { source: 'google-sheets', fresh: true };
-                } catch (error) {
-                    console.error('Google Sheets โหลดข้อมูลกลางไม่สำเร็จ:', error);
-                    loadHistoryData();
-                    updateHistoryBadge();
-                    return { source: 'cache', fresh: false, error };
+                    return { source: 'firebase', fresh: true };
+                } catch (sdkError) {
+                    console.warn('Firestore Web SDK โหลดไม่สำเร็จ กำลังลอง REST fallback:', sdkError);
+                    try {
+                        const restRecords = await loadInspectionsViaRest();
+                        restRecords.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+                        localStorage.setItem('weed_inspection_firebase_cache', JSON.stringify(restRecords));
+                        localStorage.setItem(INSPECTION_CACHE_TIME_KEY, String(Date.now()));
+                        loadHistoryData();
+                        updateHistoryBadge();
+                        return { source: 'firebase-rest', fresh: true };
+                    } catch (restError) {
+                        const combinedError = new Error(`SDK: ${sdkError?.code || sdkError?.message || sdkError}; REST: ${restError?.message || restError}`);
+                        combinedError.code = sdkError?.code || 'firestore-load-failed';
+                        combinedError.sdkError = sdkError;
+                        combinedError.restError = restError;
+                        console.error('Firestore โหลดข้อมูลกลางไม่สำเร็จทั้ง SDK และ REST:', combinedError);
+                        loadHistoryData();
+                        updateHistoryBadge();
+                        return { source: 'cache', fresh: false, error: combinedError };
+                    }
                 }
             })();
-            try { return await cloudSyncPromise; } finally { cloudSyncPromise = null; }
+            try { return await cloudSyncPromise; }
+            finally { cloudSyncPromise = null; }
         }
 
         // ล้าง cache เฉพาะข้อมูลประวัติกลาง โดยเก็บ cache เดิมไว้จนกว่าจะโหลดใหม่สำเร็จ
@@ -9250,10 +9309,10 @@ ${gpsText}`;
             const oldCacheTime = localStorage.getItem(INSPECTION_CACHE_TIME_KEY);
             try {
                 const result = await syncCloudData({ force: true });
-                if (result?.source === 'firebase' || result?.source === 'firebase-rest' || result?.source === 'google-sheets') {
-                    showModal('success', 'โหลดข้อมูลสำเร็จ', 'ดึงข้อมูลล่าสุดจาก Google Sheets แล้ว');
+                if (result?.source === 'firebase' || result?.source === 'firebase-rest') {
+                    showModal('success', 'โหลดข้อมูลสำเร็จ', 'ดึงข้อมูลล่าสุดจาก Firebase แล้ว');
                 } else {
-                    throw result?.error || new Error('ไม่สามารถโหลดข้อมูลจาก Google Sheets ได้');
+                    throw result?.error || new Error('ไม่สามารถโหลดข้อมูลจาก Firebase ได้');
                 }
             } catch (error) {
                 if (oldCache !== null) localStorage.setItem('weed_inspection_firebase_cache', oldCache);
@@ -9512,7 +9571,7 @@ ${gpsText}`;
                 record.internalNote = note; record.noteUpdatedAt = noteUpdatedAt; record.noteUpdatedBy = noteUpdatedBy;
                 localStorage.setItem('weed_inspection_firebase_cache', JSON.stringify(records)); loadHistoryData();
                 showModal('success', 'บันทึกหมายเหตุสำเร็จ', 'บันทึกหมายเหตุภายในรายการแล้ว');
-            } catch (error) { console.error('History note error:', error); showModal('error', 'บันทึกหมายเหตุไม่สำเร็จ', 'ไม่สามารถบันทึกหมายเหตุลง Google Sheets/Drive ได้'); }
+            } catch (error) { console.error('History note error:', error); showModal('error', 'บันทึกหมายเหตุไม่สำเร็จ', 'ไม่สามารถบันทึกหมายเหตุลง Firebase ได้'); }
         };
 
         window.openInspectionDetails = function(id) {
@@ -9602,7 +9661,7 @@ ${gpsText}`;
                 record.statusHistory = previousStatusHistory;
                 localStorage.setItem('weed_inspection_firebase_cache', JSON.stringify(records));
                 loadHistoryData();
-                showModal('error', 'บันทึกสถานะไม่สำเร็จ', 'ไม่สามารถบันทึกสถานะลง Google Sheets/Drive ได้ กรุณาลองใหม่อีกครั้ง');
+                showModal('error', 'บันทึกสถานะไม่สำเร็จ', 'ไม่สามารถบันทึกสถานะลง Firebase ได้ กรุณาลองใหม่อีกครั้ง');
                 console.error('Error updating inspection status:', error);
             }
         }
@@ -9739,7 +9798,7 @@ ${gpsText}`;
             try {
                 await deleteDoc(doc(db, "inspections", id));
             } catch (e) {
-                console.log("Error deleting from Google Sheets/Drive (might be local id):", e);
+                console.log("Error deleting from Firebase (might be local id):", e);
             }
 
             records = records.filter(r => r.id !== id);
@@ -9773,7 +9832,7 @@ ${gpsText}`;
                 let foundMatch = false;
                 for (const docSnap of querySnapshot.docs) {
                     const data = docSnap.data();
-                    // ตรวจสอบทั้ง document ID ของ Google Sheets/Drive และ field 'id' ที่เราตั้งขึ้น
+                    // ตรวจสอบทั้ง document ID ของ Firebase และ field 'id' ที่เราตั้งขึ้น
                     if (docSnap.id === id || data.id === id) {
                         foundMatch = true;
                         await deleteDoc(docSnap.ref);
