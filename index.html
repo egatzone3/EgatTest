@@ -9284,7 +9284,8 @@ ${gpsText}`;
 
         function getHistoryRecords() {
             try {
-                return JSON.parse(localStorage.getItem('weed_inspection_firebase_cache') || '[]');
+                const records = JSON.parse(localStorage.getItem('weed_inspection_firebase_cache') || '[]');
+                return Array.isArray(records) ? records.map(normalizeGoogleInspection) : [];
             } catch (_) {
                 return [];
             }
