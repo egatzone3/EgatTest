@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <!-- Google Apps Script + Google Sheets + Google Drive version; deployment updated 2026-10-30 -->
+    <!-- Google Apps Script + Google Sheets + Google Drive version; deployment updated 2026-10-30; photo URL normalization -->
     <!-- รุ่น Email/Password + REST fallback สำหรับ iPad -->
     <!-- รุ่น Email/Password: ล็อกอิน Google Sheets/Drive เมื่อเปิดประวัติกลางเท่านั้น -->
     <!-- รุ่น Lazy History: เชื่อม Google Sheets/Drive เมื่อเปิดประวัติกลางเท่านั้น -->
@@ -1099,18 +1099,31 @@
         }
         function collection(_db, name) { return { name }; }
         function doc(_db, collectionName, id) { return { collectionName, id }; }
+        function photoUrlValue(value) {
+            if (typeof value === 'string') return value;
+            if (value && typeof value === 'object') return value.url || value.downloadURL || value.fileUrl || value.src || '';
+            return '';
+        }
+        function normalizeGooglePhotos(value) {
+            if (Array.isArray(value)) return value.map(photoUrlValue).filter(Boolean);
+            if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, photoUrlValue(item)]).filter(([, url]) => Boolean(url)));
+            return value || {};
+        }
+        function normalizeGoogleInspection(item) {
+            return { ...item, photos: normalizeGooglePhotos(item.photos), photoMetadata: item.photoMetadata || [], statusHistory: item.statusHistory || [] };
+        }
         function makeSnapshot(records) {
             const docs = (records || []).map(item => ({ id: item.id, ref: item, data: () => item }));
             return { docs, forEach(callback) { docs.forEach(callback); } };
         }
         function normalizeGoogleCorrection(item) {
-            return { ...item, towerInfo: item.towerInfo || `${item.lineName || ''} / ${item.tower || ''}`, details: item.details || item.detail || '', lastUpdated: item.lastUpdated || item.updatedAt || null, afterPhotos: item.afterPhotos || [], afterNote: item.afterNote || '', afterUpdatedAt: item.afterUpdatedAt || null, afterUpdatedBy: item.afterUpdatedBy || '' };
+            return { ...item, photos: normalizeGooglePhotos(item.photos), afterPhotos: normalizeGooglePhotos(item.afterPhotos), towerInfo: item.towerInfo || `${item.lineName || ''} / ${item.tower || ''}`, details: item.details || item.detail || '', lastUpdated: item.lastUpdated || item.updatedAt || null, afterNote: item.afterNote || '', afterUpdatedAt: item.afterUpdatedAt || null, afterUpdatedBy: item.afterUpdatedBy || '' };
         }
         async function getDocs(ref) {
             const user = getCurrentLoginUser();
             if (ref.name === 'inspections') {
                 const result = await googleApiPost({ action: 'getInspections', user, page: 1, limit: 100 });
-                return makeSnapshot(result.inspections || []);
+                return makeSnapshot((result.inspections || []).map(normalizeGoogleInspection));
             }
             if (ref.name === 'corrections') {
                 const result = await googleApiPost({ action: 'getCorrections', user });
