@@ -878,12 +878,20 @@
                 </h2>
                 <p class="text-xs text-gray-500 mt-1">ข้อมูลและรูปภาพจากผู้รับเหมาจะซิงค์มาแสดงที่นี่โดยอัตโนมัติ</p>
             </div>
-            <button onclick="syncCloudData({ force: true })" class="bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                </svg>
-                รีเฟรชข้อมูลคลาวด์
-            </button>
+            <div class="flex flex-wrap justify-end gap-2">
+                <button onclick="syncCloudData({ force: true })" class="bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    รีเฟรชข้อมูลคลาวด์
+                </button>
+                <button onclick="clearInspectionCache()" class="bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 px-3 py-2 rounded-lg text-sm font-semibold transition flex items-center gap-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    ล้างแคชและโหลดใหม่
+                </button>
+            </div>
         </div>
 
         <!-- Search & Filter Toolbar -->
@@ -1054,9 +1062,16 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        signInAnonymously(auth).catch((error) => {
-            console.warn("Anonymous auth info:", error.message);
-        });
+        // รอให้ Firebase Anonymous Authentication เสร็จก่อนอ่าน/เขียน Firestore
+        let firebaseAuthPromise = null;
+        async function ensureFirebaseAuth() {
+            if (auth.currentUser) return auth.currentUser;
+            if (!firebaseAuthPromise) {
+                firebaseAuthPromise = signInAnonymously(auth);
+            }
+            const result = await firebaseAuthPromise;
+            return result.user;
+        }
 
         const DISCORD_WEBHOOK_LOGIN = "https://discord.com/api/webhooks/1552603472015134742/uKnHBSpV6yY8eBaF5C2N42wmHYyXgdLX1pq79aY7wsKbf7UT0qB0PbyZdBA4q1Nwu1j2";
 
@@ -5347,8 +5362,10 @@
             appInitialLoadStarted = true;
             setAppLoading('กำลังเตรียมระบบ', 'ตรวจสอบข้อมูลการเข้าสู่ระบบ', 15);
             try {
+                setAppLoading('กำลังตรวจสอบสิทธิ์ Firebase', 'กำลังเตรียมการเชื่อมต่อฐานข้อมูล', 25);
+                await ensureFirebaseAuth();
                 setAppLoading('กำลังโหลดประวัติการตรวจ', 'กำลังเชื่อมต่อ Firebase และเตรียมข้อมูลล่าสุด', 35);
-                await syncCloudData();
+                await syncCloudData({ force: true });
                 setAppLoading('กำลังเตรียมประวัติแจ้งแก้ไข', 'เปิดการติดตามข้อมูลแบบเรียลไทม์', 58);
                 initCorrectionRealtimeListener();
                 setAppLoading('กำลังเตรียมข้อมูลในเครื่อง', 'ตรวจสอบรายการล่าสุดและแบบร่างที่บันทึกไว้', 80);
@@ -9097,6 +9114,7 @@ ${gpsText}`;
             if (cloudSyncPromise) return cloudSyncPromise;
             cloudSyncPromise = (async () => {
                 try {
+                    await ensureFirebaseAuth();
                     const querySnapshot = await getDocs(collection(db, "inspections"));
                     let records = [];
                     querySnapshot.forEach((docSnap) => {
@@ -9109,15 +9127,34 @@ ${gpsText}`;
                     updateHistoryBadge();
                     return { source: 'firebase', fresh: true };
                 } catch (e) {
-                    console.log("Using cached offline records due to fetch error.");
+                    console.error('Firestore โหลดข้อมูลกลางไม่สำเร็จ:', e?.code, e?.message, e);
                     loadHistoryData();
                     updateHistoryBadge();
-                    return { source: 'cache', fresh: false };
+                    return { source: 'cache', fresh: false, error: e };
                 }
             })();
             try { return await cloudSyncPromise; }
             finally { cloudSyncPromise = null; }
         }
+
+        // ล้าง cache เฉพาะข้อมูลประวัติกลาง แล้วดึงข้อมูลล่าสุดจาก Firestore ใหม่
+        window.clearInspectionCache = async function() {
+            try {
+                localStorage.removeItem('weed_inspection_firebase_cache');
+                localStorage.removeItem(INSPECTION_CACHE_TIME_KEY);
+                loadHistoryData();
+                updateHistoryBadge();
+                const result = await syncCloudData({ force: true });
+                if (result?.source === 'firebase') {
+                    showModal('success', 'ล้างแคชสำเร็จ', 'ดึงข้อมูลล่าสุดจาก Firebase แล้ว');
+                } else {
+                    showModal('error', 'โหลดข้อมูลใหม่ไม่สำเร็จ', result?.error?.message || 'กรุณาตรวจสอบการเชื่อมต่อและสิทธิ์ Firebase');
+                }
+            } catch (error) {
+                console.error('Clear inspection cache error:', error);
+                showModal('error', 'ล้างแคชไม่สำเร็จ', error?.message || 'ไม่ทราบสาเหตุ');
+            }
+        };
 
         window.filterHistory = function() {
             loadHistoryData();
