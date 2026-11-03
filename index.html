@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -5410,6 +5411,7 @@
         const RECENT_LOCATIONS_KEY = 'weed_recent_locations_v1';
         let draftSaveTimer = null;
         let isRestoringFormDraft = false;
+        let isSavingInspection = false;
 
         // รูปที่ประทับข้อมูลแล้ว (ใช้ส่งเข้า Google Sheets/Drive โดยตรง)
         const stampedPhotoData = {};
@@ -9126,6 +9128,8 @@ ${gpsText}`;
         };
 
         window.saveData = async function() {
+            if (isSavingInspection) return;
+            isSavingInspection = true;
             const department = document.getElementById('departmentSelect').value;
             const lineName = document.getElementById('lineSelect').value;
             const tower = document.getElementById('towerSelect').value;
@@ -9188,6 +9192,7 @@ ${gpsText}`;
             } finally {
                 saveBtn.innerText = originalBtnText;
                 saveBtn.disabled = false;
+                isSavingInspection = false;
             }
         }
 
