@@ -1161,7 +1161,13 @@
             if (ref.collectionName === 'inspections') return googleApiPost({ action: 'updateInspection', user, id: ref.id, ...patch });
             throw new Error('ระบบ Google รุ่นแรกยังไม่รองรับการแก้ไขรายละเอียดแจ้งแก้ไขจากหน้านี้');
         }
-        async function deleteDoc(ref) { throw new Error('ระบบ Google รุ่นแรกยังไม่รองรับการลบรายการจากหน้าเว็บ'); }
+        async function deleteDoc(ref, options = {}) {
+            const current = getCurrentLoginUser() || {};
+            const user = options.operatorCode ? { ...current, code: String(options.operatorCode).trim() } : current;
+            if (ref.collectionName === 'inspections') return googleApiPost({ action: 'deleteInspection', user, id: ref.id });
+            if (ref.collectionName === 'corrections') return googleApiPost({ action: 'deleteCorrection', user, id: ref.id });
+            throw new Error(`ไม่รองรับ collection ${ref.collectionName}`);
+        }
         function onSnapshot(ref, onNext, onError) { getDocs(ref).then(onNext).catch(onError); return () => {}; }
         async function ensureGoogleAuth() { return getCurrentLoginUser(); }
         async function requestGoogleEmailLogin() { return getCurrentLoginUser(); }
@@ -9787,9 +9793,11 @@ ${gpsText}`;
             closeDeleteModal();
 
             try {
-                await deleteDoc(doc(db, "inspections", id));
+                await deleteDoc(doc(db, "inspections", id), { operatorCode: empId });
             } catch (e) {
-                console.log("Error deleting from Google Sheets/Drive (might be local id):", e);
+                console.error("Error deleting inspection from Google Sheets/Drive:", e);
+                showModal('error', 'ลบไม่สำเร็จ', e?.message || 'ไม่สามารถลบรายการจาก Google Sheets ได้');
+                return;
             }
 
             records = records.filter(r => r.id !== id);
@@ -9819,27 +9827,11 @@ ${gpsText}`;
             closeDeleteModal();
 
             try {
-                const querySnapshot = await getDocs(collection(db, "corrections"));
-                let foundMatch = false;
-                for (const docSnap of querySnapshot.docs) {
-                    const data = docSnap.data();
-                    // ตรวจสอบทั้ง document ID ของ Google Sheets/Drive และ field 'id' ที่เราตั้งขึ้น
-                    if (docSnap.id === id || data.id === id) {
-                        foundMatch = true;
-                        await deleteDoc(docSnap.ref);
-                        break;
-                    }
-                }
-                
-                if (!foundMatch && id) {
-                    try {
-                        await deleteDoc(doc(db, "corrections", id));
-                    } catch(err) {
-                        console.log("Direct doc delete fallback error:", err);
-                    }
-                }
+                await deleteDoc(doc(db, "corrections", id), { operatorCode: empId });
             } catch (e) {
-                console.error("Error deleting correction from Firestore:", e);
+                console.error("Error deleting correction from Google Sheets/Drive:", e);
+                showModal('error', 'ลบไม่สำเร็จ', e?.message || 'ไม่สามารถลบรายการจาก Google Sheets ได้');
+                return;
             }
 
             corrList = corrList.filter(i => i.id !== id);
