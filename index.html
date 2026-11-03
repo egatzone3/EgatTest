@@ -1001,10 +1001,11 @@
             <div id="modalIconBg" class="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-gray-100">
                 <svg id="modalIconSuccess" class="w-8 h-8 text-green-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
                 <svg id="modalIconError" class="w-8 h-8 text-red-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                <svg id="modalIconWarning" class="w-8 h-8 text-amber-600 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v4m0 4h.01M10.29 3.86l-7.1 12.28A2 2 0 004.92 19h14.16a2 2 0 001.73-2.86l-7.1-12.28a2 2 0 00-3.42 0z"></path></svg>
             </div>
             <h3 class="text-xl font-bold text-center text-gray-800 mb-2" id="modalTitle">บันทึกสำเร็จ!</h3>
             <p class="text-center text-gray-600 mb-6" id="modalMessage">ข้อมูลถูกส่งเข้าระบบเรียบร้อยแล้ว</p>
-            <button onclick="closeModal()" class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700">
+            <button id="modalOkButton" onclick="closeModal()" class="w-full py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors">
                 ตกลง
             </button>
         </div>
@@ -9382,23 +9383,27 @@ ${gpsText}`;
             if (unique.includes(current)) select.value = current;
         }
 
+        function historyStatusTheme(status) {
+            const themes = {
+                'รอตรวจสอบ': { card: 'bg-amber-50 border-amber-500', badge: 'bg-amber-600 text-white border-amber-700' },
+                'ผ่าน': { card: 'bg-green-50 border-green-500', badge: 'bg-green-700 text-white border-green-800' },
+                'ไม่ผ่าน': { card: 'bg-red-50 border-red-500', badge: 'bg-red-700 text-white border-red-800' },
+                'แจ้งแก้ไข': { card: 'bg-orange-50 border-orange-500', badge: 'bg-orange-600 text-white border-orange-700' },
+                'แก้ไขแล้ว': { card: 'bg-blue-50 border-blue-500', badge: 'bg-blue-700 text-white border-blue-800' },
+                'ปิดงาน': { card: 'bg-slate-100 border-slate-500', badge: 'bg-slate-700 text-white border-slate-800' }
+            };
+            return themes[String(status || 'รอตรวจสอบ').trim()] || themes['รอตรวจสอบ'];
+        }
+
         function renderHistoryStatusSummary(records) {
             const box = document.getElementById('historyStatusSummary');
             if (!box) return;
-            const colors = {
-                'รอตรวจสอบ': 'bg-gray-100 text-gray-700 border-gray-200',
-                'ผ่าน': 'bg-green-100 text-green-700 border-green-200',
-                'ไม่ผ่าน': 'bg-red-100 text-red-700 border-red-200',
-                'แจ้งแก้ไข': 'bg-amber-100 text-amber-700 border-amber-200',
-                'แก้ไขแล้ว': 'bg-blue-100 text-blue-700 border-blue-200',
-                'ปิดงาน': 'bg-emerald-100 text-emerald-800 border-emerald-200'
-            };
             const counts = Object.fromEntries(inspectionStatuses.map(status => [status, 0]));
             records.forEach(record => {
                 const status = inspectionStatuses.includes(record.status) ? record.status : 'รอตรวจสอบ';
                 counts[status]++;
             });
-            box.innerHTML = inspectionStatuses.map(status => `<button type="button" onclick="setHistoryStatusFilter('${status}')" class="text-left rounded-lg border px-3 py-2 ${colors[status]} hover:brightness-95 transition"><span class="block text-[11px]">${status}</span><span class="block text-xl font-bold mt-0.5">${counts[status]}</span></button>`).join('');
+            box.innerHTML = inspectionStatuses.map(status => `<button type="button" onclick="setHistoryStatusFilter('${status}')" class="text-left rounded-lg border-2 px-3 py-2 ${historyStatusTheme(status).card} hover:brightness-95 transition"><span class="block text-[11px] font-semibold">${status}</span><span class="block text-xl font-bold mt-0.5">${counts[status]}</span></button>`).join('');
         }
 
         window.setHistoryStatusFilter = function(status) {
@@ -9429,7 +9434,9 @@ ${gpsText}`;
 
             records.forEach(record => {
                 const card = document.createElement('div');
-                card.className = "bg-white p-5 rounded-xl shadow-sm border border-gray-200 mb-4";
+                const recordStatus = inspectionStatuses.includes(record.status) ? record.status : 'รอตรวจสอบ';
+                const statusTheme = historyStatusTheme(recordStatus);
+                card.className = `${statusTheme.card} p-5 rounded-xl shadow-sm border-2 mb-4 transition hover:shadow-md`;
                 
                 let imagesHtml = '';
                 for (let i = 1; i <= 5; i++) {
@@ -9454,8 +9461,9 @@ ${gpsText}`;
                             <input type="checkbox" class="history-record-checkbox mt-1.5 h-4 w-4 rounded border-gray-300 text-indigo-600" data-record-id="${reportEscape(record.id)}" onchange="updateSelectedHistoryCount()" aria-label="เลือก ${reportEscape(record.tower || 'รายการ')}" />
                             <div>
                             <div class="flex items-center gap-2">
-                                <h3 class="font-bold text-lg text-blue-700">${record.tower === 'GENERIC-TOWER' ? 'บันทึกงานทั่วไป' : 'Tower ' + record.tower}</h3>
+                                <h3 class="font-bold text-lg text-blue-800">${record.tower === 'GENERIC-TOWER' ? 'บันทึกงานทั่วไป' : 'Tower ' + record.tower}</h3>
                                 <span class="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded border border-blue-200 font-medium">${record.department || '-'}</span>
+                                <span class="text-xs px-2 py-0.5 rounded-full border font-semibold ${statusTheme.badge}">${recordStatus}</span>
                             </div>
                             <p class="text-xs text-gray-500 mt-1">แนวสาย: <span class="font-semibold text-gray-700">${record.lineName || '-'}</span> | ผู้ส่งงาน: <span class="font-semibold text-gray-700">${record.inspector || 'ผู้รับเหมา'}</span></p>
                             </div>
@@ -9914,22 +9922,29 @@ ${gpsText}`;
             const content = document.getElementById('modalContent');
             const titleEl = document.getElementById('modalTitle');
             const messageEl = document.getElementById('modalMessage');
+            const okButton = document.getElementById('modalOkButton');
             
             const iconBg = document.getElementById('modalIconBg');
             const iconSuccess = document.getElementById('modalIconSuccess');
             const iconError = document.getElementById('modalIconError');
+            const iconWarning = document.getElementById('modalIconWarning');
 
             titleEl.textContent = title;
             messageEl.textContent = message;
 
+            [iconSuccess, iconError, iconWarning].forEach(icon => icon?.classList.add('hidden'));
             if (type === 'success') {
                 iconBg.className = 'w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-green-100';
                 iconSuccess.classList.remove('hidden');
-                iconError.classList.add('hidden');
+                if (okButton) okButton.className = 'w-full py-3 bg-green-700 text-white font-semibold rounded-lg hover:bg-green-800 transition-colors';
+            } else if (type === 'warning') {
+                iconBg.className = 'w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-amber-100';
+                iconWarning?.classList.remove('hidden');
+                if (okButton) okButton.className = 'w-full py-3 bg-amber-600 text-white font-semibold rounded-lg hover:bg-amber-700 transition-colors';
             } else {
                 iconBg.className = 'w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-red-100';
-                iconSuccess.classList.add('hidden');
                 iconError.classList.remove('hidden');
+                if (okButton) okButton.className = 'w-full py-3 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition-colors';
             }
 
             modal.classList.remove('hidden');
