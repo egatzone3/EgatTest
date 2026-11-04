@@ -1191,7 +1191,8 @@
         async function updateDoc(ref, patch) {
             const user = getCurrentLoginUser();
             if (ref.collectionName === 'inspections') return googleApiPost({ action: 'updateInspection', user, id: ref.id, ...patch });
-            throw new Error('ระบบ Google รุ่นแรกยังไม่รองรับการแก้ไขรายละเอียดแจ้งแก้ไขจากหน้านี้');
+            if (ref.collectionName === 'corrections') return googleApiPost({ action: 'updateCorrection', user, id: ref.id, ...patch });
+            throw new Error(`ไม่รองรับ collection ${ref.collectionName}`);
         }
         async function deleteDoc(ref, options = {}) {
             const current = getCurrentLoginUser() || {};
