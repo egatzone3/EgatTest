@@ -681,7 +681,7 @@
                 <button type="button" onclick="exportPOSummaryReport()" class="bg-purple-600 text-white hover:bg-purple-700 px-3 py-2 rounded-lg text-sm font-semibold">รายงานสรุป</button>
                 <button type="button" onclick="backupPOData()" class="bg-blue-600 text-white hover:bg-blue-700 px-3 py-2 rounded-lg text-sm font-semibold">สำรองข้อมูล</button>
                 <button type="button" onclick="togglePOTrash()" class="bg-red-600 text-white hover:bg-red-700 px-3 py-2 rounded-lg text-sm font-semibold">ถังขยะ</button>
-                <button type="button" onclick="togglePOAudit()" class="bg-gray-700 text-white hover:bg-gray-800 px-3 py-2 rounded-lg text-sm font-semibold">ประวัติการใช้งาน / เปลี่ยนแปลง</button>
+                <button type="button" data-role-permission="audit" onclick="togglePOAudit()" class="bg-gray-700 text-white hover:bg-gray-800 px-3 py-2 rounded-lg text-sm font-semibold">ประวัติการใช้งาน / เปลี่ยนแปลง</button>
             </div>
         </div>
 
@@ -928,6 +928,7 @@
                     ล้างแคชและโหลดใหม่
                 </button>
                 <button type="button" onclick="toggleInspectionTrash()" class="bg-gray-700 text-white hover:bg-gray-800 px-3 py-2 rounded-lg text-sm font-semibold transition">ถังขยะตรวจงาน</button>
+                <button type="button" data-role-permission="audit" onclick="toggleInspectionAudit()" class="bg-indigo-700 text-white hover:bg-indigo-800 px-3 py-2 rounded-lg text-sm font-semibold transition">ประวัติการเปลี่ยนแปลง</button>
             </div>
         </div>
 
@@ -937,6 +938,17 @@
                 <button type="button" onclick="loadInspectionTrash()" class="text-sm bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 px-3 py-2 rounded-lg font-semibold">รีเฟรชถังขยะ</button>
             </div>
             <div id="inspectionTrashList" class="space-y-2"><p class="text-sm text-gray-400">ยังไม่ได้โหลดข้อมูล</p></div>
+        </section>
+        <section id="inspectionAuditPanel" data-role-permission="audit" class="hidden bg-white rounded-xl shadow-sm border border-indigo-200 p-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-3">
+                <div><h3 class="font-bold text-indigo-900">ประวัติการเปลี่ยนแปลง</h3><p class="text-xs text-indigo-700 mt-1">ตรวจสอบผู้เพิ่ม แก้ไขสถานะ แก้ไขหมายเหตุ ลบ และกู้คืนรายการ</p></div>
+                <button type="button" onclick="loadInspectionAudit()" class="text-sm bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 px-3 py-2 rounded-lg font-semibold">รีเฟรชประวัติ</button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-3">
+                <input id="inspectionAuditSearch" oninput="filterInspectionAudit()" type="search" placeholder="ค้นหารหัสรายการ ผู้ดำเนินการ หรือรายละเอียด" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50">
+                <select id="inspectionAuditEvent" onchange="filterInspectionAudit()" class="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-gray-50"><option value="">ทุกเหตุการณ์</option></select>
+            </div>
+            <div id="inspectionAuditList" class="space-y-2"><p class="text-sm text-gray-400">ยังไม่ได้โหลดข้อมูล</p></div>
         </section>
 
         <!-- Search & Filter Toolbar -->
@@ -6093,6 +6105,7 @@
         };
 
         window.togglePOAudit = function() {
+            if (!requireClientPermission('audit')) return;
             const panel = document.getElementById('poAuditPanel');
             const trash = document.getElementById('poTrashPanel');
             panel?.classList.toggle('hidden');
@@ -9825,6 +9838,45 @@ ${gpsText}`;
             } catch (error) {
                 list.innerHTML = `<p class="text-sm text-red-600">โหลดถังขยะไม่สำเร็จ: ${poSafe(error?.message || '')}</p>`;
             }
+        };
+
+        let inspectionAuditItems = [];
+        window.toggleInspectionAudit = function() {
+            if (!requireClientPermission('audit')) return;
+            const panel = document.getElementById('inspectionAuditPanel');
+            if (!panel) return;
+            panel.classList.toggle('hidden');
+            if (!panel.classList.contains('hidden')) loadInspectionAudit();
+        };
+        window.loadInspectionAudit = async function() {
+            const list = document.getElementById('inspectionAuditList');
+            if (!list) return;
+            list.innerHTML = '<p class="text-sm text-gray-400">กำลังโหลดประวัติการเปลี่ยนแปลง...</p>';
+            try {
+                const user = getCurrentLoginUser() || {};
+                const result = await googleApiGet('audit', { userCode: user.code || '', userName: user.name || '' });
+                inspectionAuditItems = Array.isArray(result.audit) ? result.audit : [];
+                const eventSelect = document.getElementById('inspectionAuditEvent');
+                const events = [...new Set(inspectionAuditItems.map(item => item.event).filter(Boolean))];
+                if (eventSelect) eventSelect.innerHTML = '<option value="">ทุกเหตุการณ์</option>' + events.map(event => `<option value="${poSafe(event)}">${poSafe(event)}</option>`).join('');
+                filterInspectionAudit();
+            } catch (error) {
+                inspectionAuditItems = [];
+                list.innerHTML = `<p class="text-sm text-red-600">โหลดประวัติไม่สำเร็จ: ${poSafe(error?.message || '')}</p>`;
+            }
+        };
+        window.filterInspectionAudit = function() {
+            const list = document.getElementById('inspectionAuditList');
+            if (!list) return;
+            const query = String(document.getElementById('inspectionAuditSearch')?.value || '').trim().toLowerCase();
+            const event = String(document.getElementById('inspectionAuditEvent')?.value || '');
+            const items = inspectionAuditItems.filter(item => {
+                if (event && item.event !== event) return false;
+                if (!query) return true;
+                return [item.time, item.event, item.userName, item.userCode, item.fileId, item.title, item.detail].some(value => String(value || '').toLowerCase().includes(query));
+            });
+            if (!items.length) { list.innerHTML = '<p class="text-sm text-gray-400">ไม่พบประวัติที่ตรงกับตัวกรอง</p>'; return; }
+            list.innerHTML = items.map(item => `<div class="border border-indigo-100 rounded-lg p-3 bg-indigo-50/40"><div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1"><p class="font-semibold text-indigo-900">${poSafe(item.event || 'ไม่ระบุเหตุการณ์')}</p><span class="text-xs text-gray-500">${poSafe(formatDateToThai(item.time))}</span></div><p class="text-xs text-gray-700 mt-1">ผู้ดำเนินการ: <b>${poSafe(item.userName || '-')}</b> · รหัส ${poSafe(item.userCode || '-')}</p><p class="text-xs text-gray-700">รหัสรายการ: <b>${poSafe(item.fileId || '-')}</b>${item.title ? ` · ${poSafe(item.title)}` : ''}</p><p class="text-xs text-gray-600 mt-1">${poSafe(item.detail || '-')}</p></div>`).join('');
         };
 
         window.restoreInspectionTrash = async function(id, type) {
