@@ -1176,7 +1176,7 @@
                 return snapshot;
             }
             if (ref.name === 'corrections') {
-                const result = await googleApiPost({ action: 'getCorrections', user, page: options.page || 1, limit: HISTORY_PAGE_SIZE, q: options.q || '' });
+                const result = await googleApiPost({ action: 'getCorrections', user, page: options.page || 1, limit: HISTORY_PAGE_SIZE, q: options.q || '', department: options.department || '', status: options.status || '', from: options.from || '', to: options.to || '', tracking: options.tracking || '' });
                 const snapshot = makeSnapshot((result.corrections || []).map(normalizeGoogleCorrection));
                 snapshot.pageInfo = { page: result.page || options.page || 1, total: result.total || 0, pageSize: result.pageSize || HISTORY_PAGE_SIZE, hasNext: Boolean(result.hasNext), hasPrevious: Number(result.page || 1) > 1 };
                 return snapshot;
@@ -5755,7 +5755,7 @@
         // ดึงประวัติแจ้งแก้ไขจาก Google Sheets โดยตรง เพื่อให้ข้อมูลแสดงครบทุกครั้งที่เปิดหน้า
         window.syncCorrectionCloudData = async function(options = {}) {
             try {
-                const querySnapshot = await getDocs(collection(db, "corrections"), { page: options.page || correctionPagination.page || 1 });
+                const querySnapshot = await getDocs(collection(db, "corrections"), { page: options.page || correctionPagination.page || 1, ...(options.filters || getCorrectionServerFilters()) });
                 correctionPagination = { ...correctionPagination, ...(querySnapshot.pageInfo || {}) };
                 let corrList = [];
                 querySnapshot.forEach((docSnap) => {
@@ -7931,7 +7931,23 @@ ${gpsText}`;
         }
 
         window.filterCorrectionHistory = function() {
-            renderCorrectionRecords();
+            clearTimeout(window.correctionFilterTimer);
+            window.correctionFilterTimer = setTimeout(() => syncCorrectionCloudData({ page: 1, filters: getCorrectionServerFilters() }), 250);
+        }
+        function getCorrectionServerFilters() {
+            return {
+                q: (document.getElementById('correctionSearchInput')?.value || '').trim(),
+                department: document.getElementById('correctionDepartmentFilter')?.value || '',
+                status: document.getElementById('correctionStatusFilter')?.value || '',
+                from: document.getElementById('correctionDateFrom')?.value || '',
+                to: document.getElementById('correctionDateTo')?.value || '',
+                tracking: correctionViewFilter || ''
+            };
+        }
+
+        function isCorrectionServerFiltered() {
+            const filters = getCorrectionServerFilters();
+            return Boolean(filters.q || filters.department || filters.status || filters.from || filters.to || filters.tracking);
         }
 
         window.clearCorrectionHistoryFilters = function() {
@@ -7944,12 +7960,12 @@ ${gpsText}`;
             const status = document.getElementById('correctionStatusFilter');
             if (status) status.value = '';
             correctionViewFilter = '';
-            renderCorrectionRecords();
+            filterCorrectionHistory();
         }
 
         window.setCorrectionTrackingFilter = function(filter) {
             correctionViewFilter = correctionViewFilter === filter ? '' : filter;
-            renderCorrectionRecords();
+            filterCorrectionHistory();
         };
         function renderCorrectionPagination() {
             const box = document.getElementById('correctionPagination');
@@ -7960,7 +7976,7 @@ ${gpsText}`;
             box.innerHTML = `<button type="button" ${page <= 1 ? 'disabled' : ''} onclick="loadCorrectionPage(${page - 1})" class="px-3 py-2 rounded-lg text-sm font-semibold border ${page <= 1 ? 'text-gray-300 bg-gray-50' : 'text-amber-700 bg-white hover:bg-amber-50'}">ก่อนหน้า</button><span class="text-sm text-gray-600">หน้า ${page} / ${totalPages} · ${correctionPagination.total} รายการ</span><button type="button" ${page >= totalPages ? 'disabled' : ''} onclick="loadCorrectionPage(${page + 1})" class="px-3 py-2 rounded-lg text-sm font-semibold border ${page >= totalPages ? 'text-gray-300 bg-gray-50' : 'text-amber-700 bg-white hover:bg-amber-50'}">ถัดไป</button>`;
         }
         window.loadCorrectionPage = async function(page) {
-            await syncCorrectionCloudData({ page: Math.max(1, Number(page) || 1) });
+            await syncCorrectionCloudData({ page: Math.max(1, Number(page) || 1), filters: getCorrectionServerFilters() });
         };
         function renderCorrectionRecords() {
             const container = document.getElementById('correctionContainer');
@@ -7970,7 +7986,7 @@ ${gpsText}`;
             container.innerHTML = '';
             const allCorrectionRecords = getCorrectionHistoryRecords();
             populateCorrectionDepartmentFilter(allCorrectionRecords);
-            let corrList = getFilteredCorrectionRecords();
+            let corrList = isCorrectionServerFiltered() ? allCorrectionRecords : getFilteredCorrectionRecords();
             const countEl = document.getElementById('correctionResultCount');
             if (countEl) countEl.textContent = `แสดง ${corrList.length} จาก ${correctionPagination.total || allCorrectionRecords.length} รายการ · หน้า ${correctionPagination.page || 1}`;
             const summary = document.getElementById('correctionTrackingSummary');
@@ -9770,8 +9786,28 @@ ${gpsText}`;
             return '"' + text.replace(/"/g, '""') + '"';
         }
 
-        window.exportHistoryCSV = function() {
-            const records = getFilteredHistoryRecords();
+        async function fetchAllFilteredHistoryRecords() {
+            const filters = getHistoryServerFilters();
+            const user = getCurrentLoginUser();
+            const records = [];
+            let page = 1;
+            let totalPages = 1;
+            do {
+                const result = await googleApiPost({ action: 'getInspections', user, page, limit: 100, ...filters });
+                (result.inspections || []).forEach(item => records.push(normalizeGoogleInspection(item)));
+                totalPages = result.totalPages || Math.max(1, Math.ceil(Number(result.total || 0) / Number(result.pageSize || 100)));
+                page += 1;
+            } while (page <= totalPages);
+            return records;
+        }
+
+        window.exportHistoryCSV = async function() {
+            const button = document.querySelector('button[onclick="exportHistoryCSV()"]');
+            if (button) { button.disabled = true; button.textContent = 'กำลังเตรียมไฟล์...'; }
+            let records = [];
+            try { records = await fetchAllFilteredHistoryRecords(); }
+            catch (error) { showModal('error', 'ส่งออกข้อมูลไม่สำเร็จ', error?.message || 'ไม่สามารถโหลดข้อมูลเพื่อส่งออกได้'); return; }
+            finally { if (button) { button.disabled = false; button.textContent = 'ส่งออก Excel/CSV'; } }
             if (!records.length) {
                 showModal('error', 'ไม่มีข้อมูลสำหรับส่งออก', 'กรุณาปรับตัวกรองหรือรอให้มีรายการประวัติก่อน');
                 return;
