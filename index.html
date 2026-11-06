@@ -8156,25 +8156,23 @@ ${gpsText}`;
             localStorage.setItem('weed_correction_records_cloud', JSON.stringify(corrList));
             localStorage.setItem('weed_correction_records', JSON.stringify(corrList));
             try {
-                const querySnapshot = await getDocs(collection(db, 'corrections'));
-                let updated = false;
-                for (const docSnap of querySnapshot.docs) {
-                    const data = docSnap.data();
-                    if (docSnap.id === id || data.id === id || docSnap.id === item.docId) {
-                        await updateDoc(docSnap.ref, { status, statusUpdatedAt, statusUpdatedBy });
-                        updated = true;
-                        break;
-                    }
-                }
-                if (!updated && id) await updateDoc(doc(db, 'corrections', id), { status });
-                renderCorrectionRecords();
+                const recordId = String(item.id || item.docId || id);
+                await googleApiPost({
+                    action: 'updateCorrection',
+                    user: getCurrentLoginUser(),
+                    id: recordId,
+                    status,
+                    detail: item.details || item.detail || ''
+                });
+                await syncCorrectionCloudData();
                 refreshDashboard();
+                showModal('success', 'บันทึกสถานะสำเร็จ', `เปลี่ยนสถานะเป็น “${status}” แล้ว`);
             } catch (error) {
                 item.status = previousStatus;
                 localStorage.setItem('weed_correction_records_cloud', JSON.stringify(corrList));
                 localStorage.setItem('weed_correction_records', JSON.stringify(corrList));
                 renderCorrectionRecords();
-                showModal('error', 'บันทึกสถานะไม่สำเร็จ', 'ไม่สามารถบันทึกสถานะการแก้ไขลง Google Sheets/Drive ได้');
+                showModal('error', 'บันทึกสถานะไม่สำเร็จ', error?.message || 'ไม่สามารถบันทึกสถานะการแก้ไขลง Google Sheets/Drive ได้');
                 console.error('Error updating correction status:', error);
             }
         }
