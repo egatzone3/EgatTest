@@ -1170,7 +1170,7 @@
         async function getDocs(ref, options = {}) {
             const user = getCurrentLoginUser();
             if (ref.name === 'inspections') {
-                const result = await googleApiPost({ action: 'getInspections', user, page: options.page || 1, limit: HISTORY_PAGE_SIZE, q: options.q || '' });
+                const result = await googleApiPost({ action: 'getInspections', user, page: options.page || 1, limit: HISTORY_PAGE_SIZE, q: options.q || '', department: options.department || '', lineName: options.lineName || '', status: options.status || '', inspector: options.inspector || '', tower: options.tower || '', from: options.from || '', to: options.to || '', dashboard: options.dashboard || '', sort: options.sort || 'latest' });
                 const snapshot = makeSnapshot((result.inspections || []).map(normalizeGoogleInspection));
                 snapshot.pageInfo = { page: result.page || options.page || 1, total: result.total || 0, pageSize: result.pageSize || HISTORY_PAGE_SIZE, hasNext: Boolean(result.hasNext), hasPrevious: Number(result.page || 1) > 1 };
                 return snapshot;
@@ -7255,10 +7255,10 @@
             dashboardHistoryFilter = ['today','week','month','noPhoto'].includes(type) ? type : '';
             if (type === 'noPhoto') {
                 const input = document.getElementById('searchInput'); if (input) input.value = '';
-                loadHistoryData();
+                filterHistory();
                 document.getElementById('historyContainer')?.scrollIntoView({behavior:'smooth', block:'start'});
             } else {
-                loadHistoryData();
+                filterHistory();
             }
         };
 
@@ -9325,7 +9325,7 @@ ${gpsText}`;
             if (cloudSyncPromise) return cloudSyncPromise;
             cloudSyncPromise = (async () => {
                 try {
-                    const snapshot = await getDocs(collection(db, 'inspections'), { page: options.page || inspectionPagination.page || 1 });
+                    const snapshot = await getDocs(collection(db, 'inspections'), { page: options.page || inspectionPagination.page || 1, ...(options.filters || {}) });
                     inspectionPagination = { ...inspectionPagination, ...(snapshot.pageInfo || {}) };
                     const records = [];
                     snapshot.forEach(docSnap => records.push({ id: docSnap.id, ...docSnap.data() }));
@@ -9367,7 +9367,22 @@ ${gpsText}`;
         };
 
         window.filterHistory = function() {
-            loadHistoryData();
+            clearTimeout(window.historyFilterTimer);
+            window.historyFilterTimer = setTimeout(() => syncCloudData({ force: true, page: 1, filters: getHistoryServerFilters() }), 250);
+        }
+        function getHistoryServerFilters() {
+            return {
+                q: (document.getElementById('searchInput')?.value || '').trim(),
+                department: document.getElementById('historyDepartmentFilter')?.value || '',
+                lineName: document.getElementById('historyLineFilter')?.value || '',
+                status: document.getElementById('historyStatusFilter')?.value || '',
+                inspector: document.getElementById('historyInspectorFilter')?.value || '',
+                tower: (document.getElementById('historyTowerFilter')?.value || '').trim(),
+                from: document.getElementById('historyDateFrom')?.value || '',
+                to: document.getElementById('historyDateTo')?.value || '',
+                dashboard: dashboardHistoryFilter || '',
+                sort: document.getElementById('historySortFilter')?.value || 'latest'
+            };
         }
         function renderHistoryPagination() {
             const box = document.getElementById('historyPagination');
@@ -9378,7 +9393,7 @@ ${gpsText}`;
             box.innerHTML = `<button type="button" ${page <= 1 ? 'disabled' : ''} onclick="loadHistoryPage(${page - 1})" class="px-3 py-2 rounded-lg text-sm font-semibold border ${page <= 1 ? 'text-gray-300 bg-gray-50' : 'text-blue-700 bg-white hover:bg-blue-50'}">ก่อนหน้า</button><span class="text-sm text-gray-600">หน้า ${page} / ${totalPages} · ${inspectionPagination.total} รายการ</span><button type="button" ${page >= totalPages ? 'disabled' : ''} onclick="loadHistoryPage(${page + 1})" class="px-3 py-2 rounded-lg text-sm font-semibold border ${page >= totalPages ? 'text-gray-300 bg-gray-50' : 'text-blue-700 bg-white hover:bg-blue-50'}">ถัดไป</button>`;
         }
         window.loadHistoryPage = async function(page) {
-            await syncCloudData({ force: true, page: Math.max(1, Number(page) || 1) });
+            await syncCloudData({ force: true, page: Math.max(1, Number(page) || 1), filters: getHistoryServerFilters() });
         };
 
         function getHistoryRecords() {
@@ -9437,6 +9452,11 @@ ${gpsText}`;
             });
         }
 
+        function isHistoryServerFiltered() {
+            const filters = getHistoryServerFilters();
+            return Boolean(filters.q || filters.department || filters.lineName || filters.status || filters.inspector || filters.tower || filters.from || filters.to || filters.dashboard || filters.sort !== 'latest');
+        }
+
         function populateHistoryDepartmentFilter(records) {
             const select = document.getElementById('historyDepartmentFilter');
             if (!select) return;
@@ -9481,7 +9501,7 @@ ${gpsText}`;
         window.setHistoryStatusFilter = function(status) {
             const select = document.getElementById('historyStatusFilter');
             if (select) select.value = select.value === status ? '' : status;
-            loadHistoryData();
+            filterHistory();
         };
 
         function loadHistoryData() {
@@ -9493,7 +9513,7 @@ ${gpsText}`;
             populateHistorySelect('historyStatusFilter', 'ทุกสถานะ', allRecords.map(record => inspectionStatuses.includes(record.status) ? record.status : 'รอตรวจสอบ'));
             populateHistorySelect('historyInspectorFilter', 'ผู้ส่งงานทุกคน', allRecords.map(record => record.inspector || 'ผู้รับเหมาทั่วไป'));
             container.innerHTML = '';
-            let records = getFilteredHistoryRecords();
+            let records = isHistoryServerFiltered() ? getHistoryRecords() : getFilteredHistoryRecords();
             const countEl = document.getElementById('historyResultCount');
             if (countEl) countEl.textContent = `แสดง ${records.length} จาก ${allRecords.length} รายการ`;
             renderHistoryStatusSummary(records);
@@ -9742,7 +9762,7 @@ ${gpsText}`;
             });
             const sort = document.getElementById('historySortFilter');
             if (sort) sort.value = 'latest';
-            loadHistoryData();
+            filterHistory();
         }
 
         function csvCell(value) {
