@@ -899,7 +899,8 @@
 
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5">
             <div id="emptyCorrection" class="text-center py-12 text-gray-400 text-sm italic hidden">ยังไม่มีรายการแจ้งแก้ไขงาน</div>
-            <div id="correctionContainer" class="space-y-4"></div>
+        <div id="correctionContainer" class="space-y-4"></div>
+            <div id="correctionPagination" class="flex flex-wrap items-center justify-center gap-2 pt-4"></div>
         </div>
     </main>
 
@@ -1008,6 +1009,7 @@
         <div id="historyContainer" class="space-y-4">
             <!-- Dynamic History Cards -->
         </div>
+        <div id="historyPagination" class="flex flex-wrap items-center justify-center gap-2"></div>
     </main>
 
     <footer class="max-w-4xl mx-auto px-4 py-5 text-center text-xs text-gray-500">
@@ -1162,15 +1164,22 @@
         function normalizeGoogleCorrection(item) {
             return { ...item, photos: photoListValue(item.photos), afterPhotos: photoListValue(item.afterPhotos), towerInfo: item.towerInfo || `${item.lineName || ''} / ${item.tower || ''}`, details: item.details || item.detail || '', lastUpdated: item.lastUpdated || item.updatedAt || null, afterNote: item.afterNote || '', afterUpdatedAt: item.afterUpdatedAt || null, afterUpdatedBy: item.afterUpdatedBy || '' };
         }
-        async function getDocs(ref) {
+        const HISTORY_PAGE_SIZE = 10;
+        let inspectionPagination = { page: 1, total: 0, pageSize: HISTORY_PAGE_SIZE, hasNext: false };
+        let correctionPagination = { page: 1, total: 0, pageSize: HISTORY_PAGE_SIZE, hasNext: false };
+        async function getDocs(ref, options = {}) {
             const user = getCurrentLoginUser();
             if (ref.name === 'inspections') {
-                const result = await googleApiPost({ action: 'getInspections', user, page: 1, limit: 100 });
-                return makeSnapshot((result.inspections || []).map(normalizeGoogleInspection));
+                const result = await googleApiPost({ action: 'getInspections', user, page: options.page || 1, limit: HISTORY_PAGE_SIZE, q: options.q || '' });
+                const snapshot = makeSnapshot((result.inspections || []).map(normalizeGoogleInspection));
+                snapshot.pageInfo = { page: result.page || options.page || 1, total: result.total || 0, pageSize: result.pageSize || HISTORY_PAGE_SIZE, hasNext: Boolean(result.hasNext), hasPrevious: Number(result.page || 1) > 1 };
+                return snapshot;
             }
             if (ref.name === 'corrections') {
-                const result = await googleApiPost({ action: 'getCorrections', user });
-                return makeSnapshot((result.corrections || []).map(normalizeGoogleCorrection));
+                const result = await googleApiPost({ action: 'getCorrections', user, page: options.page || 1, limit: HISTORY_PAGE_SIZE, q: options.q || '' });
+                const snapshot = makeSnapshot((result.corrections || []).map(normalizeGoogleCorrection));
+                snapshot.pageInfo = { page: result.page || options.page || 1, total: result.total || 0, pageSize: result.pageSize || HISTORY_PAGE_SIZE, hasNext: Boolean(result.hasNext), hasPrevious: Number(result.page || 1) > 1 };
+                return snapshot;
             }
             throw new Error(`ไม่รองรับ collection ${ref.name}`);
         }
@@ -5736,7 +5745,7 @@
 
         function updateCorrectionBadges() {
             let corrList = JSON.parse(localStorage.getItem('weed_correction_records_cloud') || localStorage.getItem('weed_correction_records') || '[]');
-            const count = corrList.length;
+            const count = correctionPagination.total || corrList.length;
             const badge1 = document.getElementById('corrHistoryBadgeCount');
             const badge2 = document.getElementById('corrPageBadgeCount');
             if (badge1) badge1.textContent = count;
@@ -5744,9 +5753,10 @@
         }
 
         // ดึงประวัติแจ้งแก้ไขจาก Google Sheets โดยตรง เพื่อให้ข้อมูลแสดงครบทุกครั้งที่เปิดหน้า
-        window.syncCorrectionCloudData = async function() {
+        window.syncCorrectionCloudData = async function(options = {}) {
             try {
-                const querySnapshot = await getDocs(collection(db, "corrections"));
+                const querySnapshot = await getDocs(collection(db, "corrections"), { page: options.page || correctionPagination.page || 1 });
+                correctionPagination = { ...correctionPagination, ...(querySnapshot.pageInfo || {}) };
                 let corrList = [];
                 querySnapshot.forEach((docSnap) => {
                     corrList.push({ docId: docSnap.id, ...docSnap.data() });
@@ -5757,7 +5767,7 @@
                 localStorage.setItem('weed_correction_records', JSON.stringify(corrList));
                 renderCorrectionRecords();
                 updateCorrectionBadges();
-                return corrList;
+                return { records: corrList, pagination: correctionPagination };
             } catch (e) {
                 console.warn("ไม่สามารถดึงประวัติแจ้งแก้ไขจาก Google Sheets ได้ ใช้ข้อมูลในเครื่องแทน:", e);
                 renderCorrectionRecords();
@@ -7941,6 +7951,17 @@ ${gpsText}`;
             correctionViewFilter = correctionViewFilter === filter ? '' : filter;
             renderCorrectionRecords();
         };
+        function renderCorrectionPagination() {
+            const box = document.getElementById('correctionPagination');
+            if (!box) return;
+            const totalPages = Math.max(1, Math.ceil((correctionPagination.total || 0) / HISTORY_PAGE_SIZE));
+            const page = correctionPagination.page || 1;
+            if (totalPages <= 1) { box.innerHTML = ''; return; }
+            box.innerHTML = `<button type="button" ${page <= 1 ? 'disabled' : ''} onclick="loadCorrectionPage(${page - 1})" class="px-3 py-2 rounded-lg text-sm font-semibold border ${page <= 1 ? 'text-gray-300 bg-gray-50' : 'text-amber-700 bg-white hover:bg-amber-50'}">ก่อนหน้า</button><span class="text-sm text-gray-600">หน้า ${page} / ${totalPages} · ${correctionPagination.total} รายการ</span><button type="button" ${page >= totalPages ? 'disabled' : ''} onclick="loadCorrectionPage(${page + 1})" class="px-3 py-2 rounded-lg text-sm font-semibold border ${page >= totalPages ? 'text-gray-300 bg-gray-50' : 'text-amber-700 bg-white hover:bg-amber-50'}">ถัดไป</button>`;
+        }
+        window.loadCorrectionPage = async function(page) {
+            await syncCorrectionCloudData({ page: Math.max(1, Number(page) || 1) });
+        };
         function renderCorrectionRecords() {
             const container = document.getElementById('correctionContainer');
             const empty = document.getElementById('emptyCorrection');
@@ -7951,7 +7972,7 @@ ${gpsText}`;
             populateCorrectionDepartmentFilter(allCorrectionRecords);
             let corrList = getFilteredCorrectionRecords();
             const countEl = document.getElementById('correctionResultCount');
-            if (countEl) countEl.textContent = `แสดง ${corrList.length} จาก ${allCorrectionRecords.length} รายการ`;
+            if (countEl) countEl.textContent = `แสดง ${corrList.length} จาก ${correctionPagination.total || allCorrectionRecords.length} รายการ · หน้า ${correctionPagination.page || 1}`;
             const summary = document.getElementById('correctionTrackingSummary');
             if (summary) {
                 const pending = allCorrectionRecords.filter(item => item.status === 'แจ้งแก้ไข').length;
@@ -7962,6 +7983,7 @@ ${gpsText}`;
                 summary.innerHTML = [card('pending','ยังไม่แก้ไข',pending,'bg-amber-50 border-amber-200 text-amber-800'),card('fixed_open','แก้ไขแล้วแต่ยังไม่ปิด',fixedOpen,'bg-blue-50 border-blue-200 text-blue-800'),card('overdue','เกินวันที่นัด',overdue,'bg-red-50 border-red-200 text-red-800'),card('followup','มีวันนัดติดตาม',followup,'bg-indigo-50 border-indigo-200 text-indigo-800')].join('');
             }
             updateCorrectionBadges();
+            renderCorrectionPagination();
 
             if (corrList.length === 0) {
                 if (empty) empty.classList.remove('hidden');
@@ -9303,7 +9325,8 @@ ${gpsText}`;
             if (cloudSyncPromise) return cloudSyncPromise;
             cloudSyncPromise = (async () => {
                 try {
-                    const snapshot = await getDocs(collection(db, 'inspections'));
+                    const snapshot = await getDocs(collection(db, 'inspections'), { page: options.page || inspectionPagination.page || 1 });
+                    inspectionPagination = { ...inspectionPagination, ...(snapshot.pageInfo || {}) };
                     const records = [];
                     snapshot.forEach(docSnap => records.push({ id: docSnap.id, ...docSnap.data() }));
                     records.sort((a, b) => new Date(b.timestamp || 0) - new Date(a.timestamp || 0));
@@ -9311,7 +9334,7 @@ ${gpsText}`;
                     localStorage.setItem(INSPECTION_CACHE_TIME_KEY, String(Date.now()));
                     loadHistoryData();
                     updateHistoryBadge();
-                    return { source: 'google-sheets', fresh: true };
+                    return { source: 'google-sheets', fresh: true, pagination: inspectionPagination };
                 } catch (error) {
                     console.error('Google Sheets โหลดข้อมูลกลางไม่สำเร็จ:', error);
                     loadHistoryData();
@@ -9346,6 +9369,17 @@ ${gpsText}`;
         window.filterHistory = function() {
             loadHistoryData();
         }
+        function renderHistoryPagination() {
+            const box = document.getElementById('historyPagination');
+            if (!box) return;
+            const totalPages = Math.max(1, Math.ceil((inspectionPagination.total || 0) / HISTORY_PAGE_SIZE));
+            const page = inspectionPagination.page || 1;
+            if (totalPages <= 1) { box.innerHTML = ''; return; }
+            box.innerHTML = `<button type="button" ${page <= 1 ? 'disabled' : ''} onclick="loadHistoryPage(${page - 1})" class="px-3 py-2 rounded-lg text-sm font-semibold border ${page <= 1 ? 'text-gray-300 bg-gray-50' : 'text-blue-700 bg-white hover:bg-blue-50'}">ก่อนหน้า</button><span class="text-sm text-gray-600">หน้า ${page} / ${totalPages} · ${inspectionPagination.total} รายการ</span><button type="button" ${page >= totalPages ? 'disabled' : ''} onclick="loadHistoryPage(${page + 1})" class="px-3 py-2 rounded-lg text-sm font-semibold border ${page >= totalPages ? 'text-gray-300 bg-gray-50' : 'text-blue-700 bg-white hover:bg-blue-50'}">ถัดไป</button>`;
+        }
+        window.loadHistoryPage = async function(page) {
+            await syncCloudData({ force: true, page: Math.max(1, Number(page) || 1) });
+        };
 
         function getHistoryRecords() {
             try {
@@ -9463,6 +9497,7 @@ ${gpsText}`;
             const countEl = document.getElementById('historyResultCount');
             if (countEl) countEl.textContent = `แสดง ${records.length} จาก ${allRecords.length} รายการ`;
             renderHistoryStatusSummary(records);
+            renderHistoryPagination();
 
             if (records.length === 0) {
                 empty.classList.remove('hidden');
@@ -9782,7 +9817,7 @@ ${gpsText}`;
             let records = JSON.parse(localStorage.getItem('weed_inspection_firebase_cache') || '[]');
             const badgeEl = document.getElementById('historyBadgeCount');
             if (badgeEl) {
-                badgeEl.textContent = records.length;
+                badgeEl.textContent = inspectionPagination.total || records.length;
             }
         }
 
