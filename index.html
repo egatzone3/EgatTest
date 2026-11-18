@@ -8123,8 +8123,28 @@ ${gpsText}`;
             });
         }
 
-        window.exportCorrectionHistoryCSV = function() {
-            const records = getFilteredCorrectionRecords();
+        async function fetchAllFilteredCorrectionRecords() {
+            const filters = getCorrectionServerFilters();
+            const user = getCurrentLoginUser();
+            const records = [];
+            let page = 1;
+            let totalPages = 1;
+            do {
+                const result = await googleApiPost({ action: 'getCorrections', user, page, limit: 100, ...filters });
+                (result.corrections || []).forEach(item => records.push(normalizeGoogleCorrection(item)));
+                totalPages = result.totalPages || Math.max(1, Math.ceil(Number(result.total || 0) / Number(result.pageSize || 100)));
+                page += 1;
+            } while (page <= totalPages);
+            return records;
+        }
+
+        window.exportCorrectionHistoryCSV = async function() {
+            const button = document.querySelector('button[onclick="exportCorrectionHistoryCSV()"]');
+            if (button) { button.disabled = true; button.textContent = 'กำลังเตรียมไฟล์...'; }
+            let records = [];
+            try { records = await fetchAllFilteredCorrectionRecords(); }
+            catch (error) { showModal('error', 'ส่งออกข้อมูลไม่สำเร็จ', error?.message || 'ไม่สามารถโหลดข้อมูลเพื่อส่งออกได้'); return; }
+            finally { if (button) { button.disabled = false; button.textContent = 'ส่งออก Excel/CSV'; } }
             if (!records.length) {
                 showModal('error', 'ไม่มีข้อมูลสำหรับส่งออก', 'กรุณาปรับตัวกรองหรือรอให้มีรายการแจ้งแก้ไขก่อน');
                 return;
